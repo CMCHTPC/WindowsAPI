@@ -38,7 +38,7 @@ interface
 
 uses
     Windows, Classes, SysUtils,
-    CMC.NTDef, CMC.ProcessThreadsAPI;
+    Win32.NTDef, Win32.ProcessThreadsAPI;
 
 const
     shell32_dll = 'Shell32.dll';
@@ -49,6 +49,8 @@ const
 {$IFNDEF WIN64}
 {$A1}
 {$ENDIF}
+
+{$IF DEFINED(WINAPI_PARTITION_DESKTOP)}
 
 type
     HDROP = Handle;
@@ -527,8 +529,9 @@ function SHEmptyRecycleBinW(hwnd: HWND; pszRootPath: LPCWSTR; dwFlags: DWORD): H
 //// Taskbar notification definitions
 ////
 
-type
+
     {$IF  (NTDDI_VERSION >= NTDDI_VISTA)}
+type
     TQUERY_USER_NOTIFICATION_STATE = (
         QUNS_NOT_PRESENT = 1,
         // The user is not present.  Heuristic check for modes like: screen saver, locked machine, non-active FUS session
@@ -1138,11 +1141,13 @@ type
 
 {$ENDIF}{  _WIN32_IE >= $0600     }
 
+{$ENDIF} { WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) }
+
 {$IFNDEF _WIN64}
 {$A4}
 {$ENDIF}
 
-
+{$IF DEFINED (WINAPI_PARTITION_DESKTOP)}
 
 {$IF  (NTDDI_VERSION >= NTDDI_VISTA)}
 // API for new Network Address Control
@@ -1214,7 +1219,7 @@ begin
 end;
 
 
-
+{$IF  (NTDDI_VERSION >= NTDDI_VISTA)}
 function NetAddr_GetAddress(hwnd: Hwnd; pv: LParam): HResult;
 begin
     Result := SNDMSG(hwnd, NCM_GETADDRESS, 0, pv);
@@ -1240,6 +1245,9 @@ function NetAddr_DisplayErrorTip(hwnd: Hwnd): HResult;
 begin
     Result := SNDMSG(hwnd, NCM_DISPLAYERRORTIP, 0, 0);
 end;
+{$ENDIF}// (NTDDI_VERSION >= NTDDI_VISTA)
+
+{$ENDIF} { WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) }
 
 end.
 
