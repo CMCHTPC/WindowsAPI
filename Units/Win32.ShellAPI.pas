@@ -56,38 +56,55 @@ type
     HDROP = Handle;
     HINSTANCE = Handle;
 
-function DragQueryFileA(hDrop: HDROP; iFile: UINT; out lpszFile: LPSTR; cch: UINT): UINT; stdcall; external shell32_dll;
-function DragQueryFileW(hDrop: HDROP; iFile: UINT; out lpszFile: LPWSTR; cch: UINT): UINT; stdcall; external shell32_dll;
+function DragQueryFileA(hDrop: HDROP; iFile: UINT; out lpszFile: LPSTR; cch: UINT): UINT;
+    stdcall; external shell32_dll;
+function DragQueryFileW(hDrop: HDROP; iFile: UINT; out lpszFile: LPWSTR;
+    cch: UINT): UINT; stdcall; external shell32_dll;
 
-function DragQueryPoint(hDrop: HDROP; out ppt: POINT): boolean; stdcall; external shell32_dll;
+function DragQueryPoint(hDrop: HDROP; out ppt: POINT): boolean;
+    stdcall; external shell32_dll;
 procedure DragFinish(hDrop: HDROP); stdcall; external shell32_dll;
 procedure DragAcceptFiles(hWnd: HWND; fAccept: boolean); stdcall; external shell32_dll;
 
-function ShellExecuteA(hwnd: HWND; lpOperation: LPCSTR; lpFile: LPCSTR; lpParameters: LPCSTR; lpDirectory: LPCSTR;
-    nShowCmd: INT32): HINSTANCE; stdcall; external shell32_dll;
-function ShellExecuteW(hwnd: HWND; lpOperation: LPCWSTR; lpFile: LPCWSTR; lpParameters: LPCWSTR; lpDirectory: LPCWSTR;
-    nShowCmd: int32): HINSTANCE; stdcall; external shell32_dll;
+function ShellExecuteA(hwnd: HWND; lpOperation: LPCSTR; lpFile: LPCSTR;
+    lpParameters: LPCSTR; lpDirectory: LPCSTR; nShowCmd: INT32): HINSTANCE;
+    stdcall; external shell32_dll;
+function ShellExecuteW(hwnd: HWND; lpOperation: LPCWSTR; lpFile: LPCWSTR;
+    lpParameters: LPCWSTR; lpDirectory: LPCWSTR; nShowCmd: int32): HINSTANCE;
+    stdcall; external shell32_dll;
 
-function FindExecutableA(lpFile: LPCSTR; lpDirectory: LPCSTR; out lpResult: LPSTR): HINSTANCE; stdcall; external shell32_dll;
-function FindExecutableW(lpFile: LPCWSTR; lpDirectory: LPCWSTR; out lpResult: LPWSTR): HINSTANCE; stdcall; external shell32_dll;
+function FindExecutableA(lpFile: LPCSTR; lpDirectory: LPCSTR;
+    out lpResult: LPSTR): HINSTANCE; stdcall; external shell32_dll;
+function FindExecutableW(lpFile: LPCWSTR; lpDirectory: LPCWSTR;
+    out lpResult: LPWSTR): HINSTANCE; stdcall; external shell32_dll;
 
-function CommandLineToArgvW(lpCmdLine: LPCWSTR; out pNumArgs: int32): LPWSTR; stdcall; external shell32_dll;
+function CommandLineToArgvW(lpCmdLine: LPCWSTR; out pNumArgs: int32): LPWSTR;
+    stdcall; external shell32_dll;
 
-function ShellAboutA(hWnd: HWND; szApp: LPCSTR; szOtherStuff: LPCSTR; hIcon: HICON): INT32; stdcall; external shell32_dll;
-function ShellAboutW(hWnd: HWND; szApp: LPCWSTR; szOtherStuff: LPCWSTR; hIcon: HICON): INT32; stdcall; external shell32_dll;
+function ShellAboutA(hWnd: HWND; szApp: LPCSTR; szOtherStuff: LPCSTR;
+    hIcon: HICON): INT32; stdcall; external shell32_dll;
+function ShellAboutW(hWnd: HWND; szApp: LPCWSTR; szOtherStuff: LPCWSTR;
+    hIcon: HICON): INT32; stdcall; external shell32_dll;
 
-function DuplicateIcon(hInst: HINSTANCE; hIcon: HICON): HICON; stdcall; external shell32_dll;
+function DuplicateIcon(hInst: HINSTANCE; hIcon: HICON): HICON; stdcall;
+    external shell32_dll;
 // Retrieves a handle to an indexed icon found in a file or an icon found in an associated executable file.
-function ExtractAssociatedIconA(hInst: HINSTANCE; var pszIconPath: LPSTR; var piIcon: word): HICON; stdcall; external shell32_dll;
-function ExtractAssociatedIconW(hInst: HINSTANCE; var pszIconPath: LPWSTR; var piIcon: word): HICON; stdcall; external shell32_dll;
+function ExtractAssociatedIconA(hInst: HINSTANCE; var pszIconPath: LPSTR;
+    var piIcon: word): HICON; stdcall; external shell32_dll;
+function ExtractAssociatedIconW(hInst: HINSTANCE; var pszIconPath: LPWSTR;
+    var piIcon: word): HICON; stdcall; external shell32_dll;
 
-function ExtractAssociatedIconExA(hInst: HINSTANCE; var pszIconPath: LPSTR; var piIconIndex: word; var piIconId: word): HICON;
+function ExtractAssociatedIconExA(hInst: HINSTANCE; var pszIconPath: LPSTR;
+    var piIconIndex: word; var piIconId: word): HICON;
     stdcall; external shell32_dll;
-function ExtractAssociatedIconExW(hInst: HINSTANCE; var pszIconPath: LPWSTR; var piIconIndex: word; var piIconId: word): HICON;
+function ExtractAssociatedIconExW(hInst: HINSTANCE; var pszIconPath: LPWSTR;
+    var piIconIndex: word; var piIconId: word): HICON;
     stdcall; external shell32_dll;
 
-function ExtractIconA(hInst: HINSTANCE; pszExeFileName: LPCSTR; nIconIndex: UINT): HICON; stdcall; external shell32_dll;
-function ExtractIconW(hInst: HINSTANCE; pszExeFileName: LPCWSTR; nIconIndex: UINT): HICON; stdcall; external shell32_dll;
+function ExtractIconA(hInst: HINSTANCE; pszExeFileName: LPCSTR; nIconIndex: UINT): HICON;
+    stdcall; external shell32_dll;
+function ExtractIconW(hInst: HINSTANCE; pszExeFileName: LPCWSTR;
+    nIconIndex: UINT): HICON; stdcall; external shell32_dll;
 
 type
 
@@ -160,20 +177,25 @@ type
     PAPPBARDATA = ^TAPPBARDATA;
 
 
-function SHAppBarMessage(dwMessage: DWORD; var pData: TAPPBARDATA): UINT_PTR; stdcall; external Shell32_dll;
+function SHAppBarMessage(dwMessage: DWORD; var pData: TAPPBARDATA): UINT_PTR;
+    stdcall; external Shell32_dll;
 
 ////
 ////  EndAppBar
 ////
 
-function DoEnvironmentSubstA(var pszSrc: LPSTR; cchSrc: UINT): DWORD; stdcall; external Shell32_dll;
-function DoEnvironmentSubstW(var pszSrc: LPWSTR; cchSrc: UINT): DWORD; stdcall; external Shell32_dll;
+function DoEnvironmentSubstA(var pszSrc: LPSTR; cchSrc: UINT): DWORD;
+    stdcall; external Shell32_dll;
+function DoEnvironmentSubstW(var pszSrc: LPWSTR; cchSrc: UINT): DWORD;
+    stdcall; external Shell32_dll;
 
 function EIRESID(x: integer): integer;
 
-function ExtractIconExA(lpszFile: LPCSTR; nIconIndex: int32; out phiconLarge: PHICON; out phiconSmall: PHICON; nIcons: UINT32): UINT32;
+function ExtractIconExA(lpszFile: LPCSTR; nIconIndex: int32;
+    out phiconLarge: PHICON; out phiconSmall: PHICON; nIcons: UINT32): UINT32;
     stdcall; external Shell32_dll;
-function ExtractIconExW(lpszFile: LPCWSTR; nIconIndex: int32; out phiconLarge: PHICON; out phiconSmall: PHICON; nIcons: UINT32): UINT32;
+function ExtractIconExW(lpszFile: LPCWSTR; nIconIndex: int32;
+    out phiconLarge: PHICON; out phiconSmall: PHICON; nIcons: UINT32): UINT32;
     stdcall; external Shell32_dll;
 
 
@@ -188,26 +210,37 @@ const
 
     FOF_MULTIDESTFILES = $0001;
     FOF_CONFIRMMOUSE = $0002;
-    FOF_SILENT = $0004;  // don't display progress UI (confirm prompts may be displayed still)
-    FOF_RENAMEONCOLLISION = $0008;  // automatically rename the source files to avoid the collisions
-    FOF_NOCONFIRMATION = $0010;  // don't display confirmation UI, assume "yes" for cases that can be bypassed, "no" for those that can not
+    FOF_SILENT = $0004;
+    // don't display progress UI (confirm prompts may be displayed still)
+    FOF_RENAMEONCOLLISION = $0008;
+    // automatically rename the source files to avoid the collisions
+    FOF_NOCONFIRMATION = $0010;
+    // don't display confirmation UI, assume "yes" for cases that can be bypassed, "no" for those that can not
     FOF_WANTMAPPINGHANDLE = $0020;  // Fill in SHFILEOPSTRUCT.hNameMappings
     // Must be freed using SHFreeNameMappings
-    FOF_ALLOWUNDO = $0040;  // enable undo including Recycle behavior for IFileOperation::Delete()
-    FOF_FILESONLY = $0080;  // only operate on the files (non folders), both files and folders are assumed without this
+    FOF_ALLOWUNDO = $0040;
+    // enable undo including Recycle behavior for IFileOperation::Delete()
+    FOF_FILESONLY = $0080;
+    // only operate on the files (non folders), both files and folders are assumed without this
     FOF_SIMPLEPROGRESS = $0100;  // means don't show names of files
-    FOF_NOCONFIRMMKDIR = $0200;  // don't dispplay confirmatino UI before making any needed directories, assume "Yes" in these cases
-    FOF_NOERRORUI = $0400;  // don't put up error UI, other UI may be displayed, progress, confirmations
+    FOF_NOCONFIRMMKDIR = $0200;
+    // don't dispplay confirmatino UI before making any needed directories, assume "Yes" in these cases
+    FOF_NOERRORUI = $0400;
+    // don't put up error UI, other UI may be displayed, progress, confirmations
     FOF_NOCOPYSECURITYATTRIBS = $0800;  // dont copy file security attributes (ACLs)
-    FOF_NORECURSION = $1000;  // don't recurse into directories for operations that would recurse
-    FOF_NO_CONNECTED_ELEMENTS = $2000;  // don't operate on connected elements ("xxx_files" folders that go with .htm files)
+    FOF_NORECURSION = $1000;
+    // don't recurse into directories for operations that would recurse
+    FOF_NO_CONNECTED_ELEMENTS = $2000;
+    // don't operate on connected elements ("xxx_files" folders that go with .htm files)
     FOF_WANTNUKEWARNING = $4000;
     // during delete operation, warn if object is being permanently destroyed instead of recycling (partially overrides FOF_NOCONFIRMATION)
     {$IF  (NTDDI_VERSION >= NTDDI_WINXP)}
     FOF_NORECURSEREPARSE = $8000;
     // deprecated; the operations engine always does the right thing on FolderLink objects (symlinks, reparse points, folder shortcuts)
     {$ENDIF}// (NTDDI_VERSION >= NTDDI_WINXP)
-    FOF_NO_UI = (FOF_SILENT or FOF_NOCONFIRMATION or FOF_NOERRORUI or FOF_NOCONFIRMMKDIR); // don't display any UI at all
+    FOF_NO_UI = (FOF_SILENT or FOF_NOCONFIRMATION or FOF_NOERRORUI or
+        FOF_NOCONFIRMMKDIR);
+// don't display any UI at all
 
 type
     FILEOP_FLAGS = word;
@@ -259,8 +292,10 @@ type
     PSHFILEOPSTRUCTW = ^TSHFILEOPSTRUCTW;
 
 
-function SHFileOperationA(var lpFileOp: TSHFILEOPSTRUCTA): INT32; stdcall; external Shell32_DLL;
-function SHFileOperationW(var lpFileOp: TSHFILEOPSTRUCTW): INT32; stdcall; external Shell32_DLL;
+function SHFileOperationA(var lpFileOp: TSHFILEOPSTRUCTA): INT32;
+    stdcall; external Shell32_DLL;
+function SHFileOperationW(var lpFileOp: TSHFILEOPSTRUCTW): INT32;
+    stdcall; external Shell32_DLL;
 
 procedure SHFreeNameMappings(hNameMappings: HANDLE); stdcall; external Shell32_DLL;
 
@@ -329,11 +364,14 @@ const
     {$ENDIF}// (NTDDI_VERSION < NTDDI_VISTA)
     SEE_MASK_HOTKEY = $00000020;   // SHELLEXECUTEINFO.dwHotKey is valid
     SEE_MASK_NOCLOSEPROCESS = $00000040;   // SHELLEXECUTEINFO.hProcess
-    SEE_MASK_CONNECTNETDRV = $00000080;   // enables re-connecting disconnected network drives
+    SEE_MASK_CONNECTNETDRV = $00000080;
+    // enables re-connecting disconnected network drives
     SEE_MASK_NOASYNC = $00000100;
     // block on the call until the invoke has completed, use for callers that exit after calling ShellExecuteEx()
-    SEE_MASK_FLAG_DDEWAIT = SEE_MASK_NOASYNC; // Use SEE_MASK_NOASYNC instead of SEE_MASK_FLAG_DDEWAIT as it more accuratly describes the behavior
-    SEE_MASK_DOENVSUBST = $00000200;   // indicates that SHELLEXECUTEINFO.lpFile contains env vars that should be expanded
+    SEE_MASK_FLAG_DDEWAIT = SEE_MASK_NOASYNC;
+    // Use SEE_MASK_NOASYNC instead of SEE_MASK_FLAG_DDEWAIT as it more accuratly describes the behavior
+    SEE_MASK_DOENVSUBST = $00000200;
+    // indicates that SHELLEXECUTEINFO.lpFile contains env vars that should be expanded
     SEE_MASK_FLAG_NO_UI = $00000400;   // disable UI including error messages
     SEE_MASK_UNICODE = $00004000;
     SEE_MASK_NO_CONSOLE = $00008000;
@@ -369,7 +407,8 @@ type
         cbSize: DWORD;               // in, required, sizeof of this structure
         fMask: ULONG;                // in, SEE_MASK_XXX values
         hwnd: HWND;                  // in, optional
-        lpVerb: LPCSTR;            // in, optional when unspecified the default verb is choosen
+        lpVerb: LPCSTR;
+        // in, optional when unspecified the default verb is choosen
         lpFile: LPCSTR;            // in, either this value or lpIDList must be specified
         lpParameters: LPCSTR;      // in, optional
         lpDirectory: LPCSTR;       // in, optional
@@ -397,7 +436,8 @@ type
         cbSize: DWORD;               // in, required, sizeof of this structure
         fMask: ULONG;                // in, SEE_MASK_XXX values
         hwnd: HWND;                  // in, optional
-        lpVerb: LPCWSTR;            // in, optional when unspecified the default verb is choosen
+        lpVerb: LPCWSTR;
+        // in, optional when unspecified the default verb is choosen
         lpFile: LPCWSTR;            // in, either this value or lpIDList must be specified
         lpParameters: LPCWSTR;      // in, optional
         lpDirectory: LPCWSTR;       // in, optional
@@ -419,8 +459,10 @@ type
     PSHELLEXECUTEINFOW = ^TSHELLEXECUTEINFOW;
 
 
-function ShellExecuteExA(var pExecInfo: TSHELLEXECUTEINFOA): boolean; stdcall; external Shell32_DLL;
-function ShellExecuteExW(var pExecInfo: TSHELLEXECUTEINFOW): boolean; stdcall; external Shell32_DLL;
+function ShellExecuteExA(var pExecInfo: TSHELLEXECUTEINFOA): boolean;
+    stdcall; external Shell32_DLL;
+function ShellExecuteExW(var pExecInfo: TSHELLEXECUTEINFOW): boolean;
+    stdcall; external Shell32_DLL;
 
 type
     {$IF  (NTDDI_VERSION >= NTDDI_WIN2K)}
@@ -442,11 +484,13 @@ type
     end;
     PSHCREATEPROCESSINFOW = ^TSHCREATEPROCESSINFOW;
 
-function SHCreateProcessAsUserW(var pscpi: TSHCREATEPROCESSINFOW): boolean; stdcall; external Shell32_DLL;
+function SHCreateProcessAsUserW(var pscpi: TSHCREATEPROCESSINFOW): boolean;
+    stdcall; external Shell32_DLL;
     {$ENDIF}// (NTDDI_VERSION >= NTDDI_WIN2K)
 
     {$IF  (NTDDI_VERSION >= NTDDI_VISTA)}
-function SHEvaluateSystemCommandTemplate(pszCmdTemplate: PCWSTR; out ppszApplication: PWSTR; out ppszCommandLine: PWSTR;
+function SHEvaluateSystemCommandTemplate(pszCmdTemplate: PCWSTR;
+    out ppszApplication: PWSTR; out ppszCommandLine: PWSTR;
     out ppszParameters: PWSTR): HResult; stdcall; external;
 
 
@@ -458,13 +502,16 @@ type
         ASSOCCLASS_CLSID_KEY,       //  hkeyClass
         ASSOCCLASS_CLSID_STR,       //  pszClass (HKCR\CLSID\pszClass)
         ASSOCCLASS_APP_KEY,         //  hkeyClass
-        ASSOCCLASS_APP_STR,         //  pszClass (HKCR\Applications\PathFindFileName(pszClass))
+        ASSOCCLASS_APP_STR,
+        //  pszClass (HKCR\Applications\PathFindFileName(pszClass))
         ASSOCCLASS_SYSTEM_STR,      //  pszClass
         ASSOCCLASS_FOLDER,          //  none
         ASSOCCLASS_STAR,            //  none
         {$IF  (NTDDI_VERSION >= NTDDI_WIN8)}
-        ASSOCCLASS_FIXED_PROGID_STR,//  pszClass (HKCR\pszClass), do not apply mapping of pszClass based on user defaults
-        ASSOCCLASS_PROTOCOL_STR    //  pszClass is a protocol, apply mapping of pszClass based on user defaults
+        ASSOCCLASS_FIXED_PROGID_STR,
+        //  pszClass (HKCR\pszClass), do not apply mapping of pszClass based on user defaults
+        ASSOCCLASS_PROTOCOL_STR
+        //  pszClass is a protocol, apply mapping of pszClass based on user defaults
         {$ENDIF}
         );
 
@@ -478,7 +525,8 @@ type
 
 // the object returned from this API implements IQueryAssociations
 
-function AssocCreateForClasses(const rgClasses: PASSOCIATIONELEMENT; cClasses: ULONG; const riid: TGUID; out ppv): HResult;
+function AssocCreateForClasses(const rgClasses: PASSOCIATIONELEMENT;
+    cClasses: ULONG; const riid: TGUID; out ppv): HResult;
     stdcall; external Shell32_DLL;
 
     {$ENDIF}// (NTDDI_VERSION >= NTDDI_VISTA)
@@ -515,11 +563,15 @@ const
     SHERB_NOSOUND = $00000004;
 
 
-function SHQueryRecycleBinA(pszRootPath: LPCSTR; var pSHQueryRBInfo: TSHQUERYRBINFO): HResult; stdcall; external Shell32_DLL;
-function SHQueryRecycleBinW(pszRootPath: LPCWSTR; var pSHQueryRBInfo: TSHQUERYRBINFO): HResult; stdcall; external Shell32_DLL;
+function SHQueryRecycleBinA(pszRootPath: LPCSTR;
+    var pSHQueryRBInfo: TSHQUERYRBINFO): HResult; stdcall; external Shell32_DLL;
+function SHQueryRecycleBinW(pszRootPath: LPCWSTR;
+    var pSHQueryRBInfo: TSHQUERYRBINFO): HResult; stdcall; external Shell32_DLL;
 
-function SHEmptyRecycleBinA(hwnd: HWND; pszRootPath: LPCSTR; dwFlags: DWORD): HResult; stdcall; external Shell32_DLL;
-function SHEmptyRecycleBinW(hwnd: HWND; pszRootPath: LPCWSTR; dwFlags: DWORD): HResult; stdcall; external Shell32_DLL;
+function SHEmptyRecycleBinA(hwnd: HWND; pszRootPath: LPCSTR; dwFlags: DWORD): HResult;
+    stdcall; external Shell32_DLL;
+function SHEmptyRecycleBinW(hwnd: HWND; pszRootPath: LPCWSTR; dwFlags: DWORD): HResult;
+    stdcall; external Shell32_DLL;
 
 
     {$ENDIF}// (NTDDI_VERSION >= NTDDI_WIN2K)
@@ -535,9 +587,11 @@ type
     TQUERY_USER_NOTIFICATION_STATE = (
         QUNS_NOT_PRESENT = 1,
         // The user is not present.  Heuristic check for modes like: screen saver, locked machine, non-active FUS session
-        QUNS_BUSY = 2,    // The user is busy.  Heuristic check for modes like: full-screen app
+        QUNS_BUSY = 2,
+        // The user is busy.  Heuristic check for modes like: full-screen app
         QUNS_RUNNING_D3D_FULL_SCREEN = 3,    // full-screen (exlusive-mode) D3D app
-        QUNS_PRESENTATION_MODE = 4,    // Windows presentation mode (laptop feature) is turned on
+        QUNS_PRESENTATION_MODE = 4,
+        // Windows presentation mode (laptop feature) is turned on
         QUNS_ACCEPTS_NOTIFICATIONS = 5,    // notifications can be freely sent
         {$IF  (NTDDI_VERSION >= NTDDI_WIN7)}
         QUNS_QUIET_TIME = 6,    // We are in OOBE quiet period
@@ -547,12 +601,15 @@ type
         {$ENDIF}
         );
 
-function SHQueryUserNotificationState(out pquns: TQUERY_USER_NOTIFICATION_STATE): HResult; stdcall; external Shell32_DLL;
+function SHQueryUserNotificationState(
+    out pquns: TQUERY_USER_NOTIFICATION_STATE): HResult;
+    stdcall; external Shell32_DLL;
     {$ENDIF}// (NTDDI_VERSION >= NTDDI_VISTA)
 
     {$IF  (NTDDI_VERSION >= NTDDI_WIN7)}
 // This api retrieves an IPropertyStore that stores the window's properties.
-function SHGetPropertyStoreForWindow(hwnd: HWND; const riid: TGUID; out ppv): HResult; stdcall; external Shell32_DLL;
+function SHGetPropertyStoreForWindow(hwnd: HWND; const riid: TGUID; out ppv): HResult;
+    stdcall; external Shell32_DLL;
     {$ENDIF}
 
 
@@ -573,7 +630,8 @@ type
         dwStateMask: DWORD;
         szInfo: array [0..255] of char;
         {  uTimeout: UINT32; }
-        uVersion: UINT32;  // used with NIM_SETVERSION, values 0, 3 and 4, uTimeout (deprecated as of Windows Vista).
+        uVersion: UINT32;
+        // used with NIM_SETVERSION, values 0, 3 and 4, uTimeout (deprecated as of Windows Vista).
         szInfoTitle: array [0..63] of char;
         dwInfoFlags: DWORD;
         {$ENDIF}
@@ -710,13 +768,16 @@ type
     PNOTIFYICONIDENTIFIER = ^TNOTIFYICONIDENTIFIER;
 
 
-function Shell_NotifyIconA(dwMessage: DWORD; lpData: PNOTIFYICONDATAA): boolean; stdcall; external Shell32_DLL;
-function Shell_NotifyIconW(dwMessage: DWORD; lpData: PNOTIFYICONDATAW): boolean; stdcall; external Shell32_DLL;
+function Shell_NotifyIconA(dwMessage: DWORD; lpData: PNOTIFYICONDATAA): boolean;
+    stdcall; external Shell32_DLL;
+function Shell_NotifyIconW(dwMessage: DWORD; lpData: PNOTIFYICONDATAW): boolean;
+    stdcall; external Shell32_DLL;
 
 
 
     {$IF  (NTDDI_VERSION >= NTDDI_WIN7)}
-function Shell_NotifyIconGetRect(const identifier: TNOTIFYICONIDENTIFIER; out iconLocation: TRECT): HResult; stdcall; external Shell32_DLL;
+function Shell_NotifyIconGetRect(const identifier: TNOTIFYICONIDENTIFIER;
+    out iconLocation: TRECT): HResult; stdcall; external Shell32_DLL;
     {$ENDIF}// (NTDDI_VERSION >= NTDDI_WIN7)
 
 ////
@@ -757,7 +818,8 @@ type
         hIcon: HICON;                      // out: icon
         iIcon: int32;                      // out: icon index
         dwAttributes: DWORD;               // out: SFGAO_ flags
-        szDisplayName: array [0..MAX_PATH - 1] of WCHAR;    // out: display name (or path)
+        szDisplayName: array [0..MAX_PATH - 1] of WCHAR;
+        // out: display name (or path)
         szTypeName: array [0..79] of WCHAR;             // out: type name
     end;
     PSHFILEINFOW = ^TSHFILEINFOW;
@@ -790,9 +852,11 @@ const
     SHGFI_OVERLAYINDEX = $000000040;     // Get the index of the overlay
 // in the upper 8 bits of the iIcon
 
-function SHGetFileInfoA(pszPath: LPCSTR; dwFileAttributes: DWORD; var psfi: TSHFILEINFOA; cbFileInfo: UINT; uFlags: UINT): DWORD;
+function SHGetFileInfoA(pszPath: LPCSTR; dwFileAttributes: DWORD;
+    var psfi: TSHFILEINFOA; cbFileInfo: UINT; uFlags: UINT): DWORD;
     stdcall; external Shell32_DLL;
-function SHGetFileInfoW(pszPath: LPCWSTR; dwFileAttributes: DWORD; var psfi: TSHFILEINFOW; cbFileInfo: UINT; uFlags: UINT): DWORD;
+function SHGetFileInfoW(pszPath: LPCWSTR; dwFileAttributes: DWORD;
+    var psfi: TSHFILEINFOW; cbFileInfo: UINT; uFlags: UINT): DWORD;
     stdcall; external Shell32_DLL;
 
 
@@ -819,7 +883,8 @@ const
 //  Shell icons
 
 type
-    TSHSTOCKICONID = (SIID_DOCNOASSOC = 0,          // document (blank page), no associated program
+    TSHSTOCKICONID = (SIID_DOCNOASSOC = 0,
+        // document (blank page), no associated program
         SIID_DOCASSOC = 1,            // document with an associated program
         SIID_APPLICATION = 2,         // generic application with no custom icon
         SIID_FOLDER = 3,              // folder (closed)
@@ -920,22 +985,29 @@ type
 const
     SIID_INVALID = (Ord(SIID_MAX_ICONS) - 1);
 
-function SHGetStockIconInfo(siid: TSHSTOCKICONID; uFlags: UINT; var psii: TSHSTOCKICONINFO): HResult; stdcall; external Shell32_DLL;
+function SHGetStockIconInfo(siid: TSHSTOCKICONID; uFlags: UINT;
+    var psii: TSHSTOCKICONINFO): HResult; stdcall; external Shell32_DLL;
 
     {$ENDIF}// (NTDDI_VERSION >= NTDDI_VISTA)
 
 
     {$IF  (NTDDI_VERSION >= NTDDI_WIN2K)}
-function SHGetDiskFreeSpaceExA(pszDirectoryName: LPCSTR; out pulFreeBytesAvailableToCaller: ULARGE_INTEGER;
-    out pulTotalNumberOfBytes: ULARGE_INTEGER; out pulTotalNumberOfFreeBytes: ULARGE_INTEGER): boolean; stdcall; external Shell32_DLL;
-function SHGetDiskFreeSpaceExW(pszDirectoryName: LPCWSTR; out pulFreeBytesAvailableToCaller: ULARGE_INTEGER;
-    out pulTotalNumberOfBytes: ULARGE_INTEGER; out pulTotalNumberOfFreeBytes: ULARGE_INTEGER): boolean; stdcall; external Shell32_DLL;
+function SHGetDiskFreeSpaceExA(pszDirectoryName: LPCSTR;
+    out pulFreeBytesAvailableToCaller: ULARGE_INTEGER;
+    out pulTotalNumberOfBytes: ULARGE_INTEGER;
+    out pulTotalNumberOfFreeBytes: ULARGE_INTEGER): boolean; stdcall; external Shell32_DLL;
+function SHGetDiskFreeSpaceExW(pszDirectoryName: LPCWSTR;
+    out pulFreeBytesAvailableToCaller: ULARGE_INTEGER;
+    out pulTotalNumberOfBytes: ULARGE_INTEGER;
+    out pulTotalNumberOfFreeBytes: ULARGE_INTEGER): boolean; stdcall; external Shell32_DLL;
 
 
-function SHGetNewLinkInfoA(pszLinkTo: LPCSTR; pszDir: LPCSTR; out pszName: LPSTR; out pfMustCopy: boolean; uFlags: UINT): boolean;
+function SHGetNewLinkInfoA(pszLinkTo: LPCSTR; pszDir: LPCSTR;
+    out pszName: LPSTR; out pfMustCopy: boolean; uFlags: UINT): boolean;
     stdcall; external Shell32_DLL;
 
-function SHGetNewLinkInfoW(pszLinkTo: LPCWSTR; pszDir: LPCWSTR; out pszName: LPWSTR; out pfMustCopy: boolean; uFlags: UINT): boolean;
+function SHGetNewLinkInfoW(pszLinkTo: LPCWSTR; pszDir: LPCWSTR;
+    out pszName: LPWSTR; out pfMustCopy: boolean; uFlags: UINT): boolean;
     stdcall; external Shell32_DLL;
 
 
@@ -945,7 +1017,8 @@ const
     SHGNLI_NOUNIQUE = $000000004;     // don't do the unique name generation
     SHGNLI_NOLNK = $000000008;     // don't add ".lnk" extension
     {$IF (_WIN32_IE >= _WIN32_IE_IE60)}
-    SHGNLI_NOLOCNAME = $000000010;     // use non localized (parsing) name from the target
+    SHGNLI_NOLOCNAME = $000000010;
+    // use non localized (parsing) name from the target
     {$ENDIF}
     {$IF  (NTDDI_VERSION >= NTDDI_WIN7)}
     SHGNLI_USEURLEXT = $000000020;     // use ".url" extension instead of ".lnk"
@@ -956,9 +1029,11 @@ const
     {$IF  (NTDDI_VERSION >= NTDDI_WIN2K)}
 const
     PRINTACTION_OPEN = 0;     // pszBuf1:<PrinterName>
-    PRINTACTION_PROPERTIES = 1;      // pszBuf1:<PrinterName>, pszBuf2:optional <PageName>
+    PRINTACTION_PROPERTIES = 1;
+    // pszBuf1:<PrinterName>, pszBuf2:optional <PageName>
     PRINTACTION_NETINSTALL = 2;       // pszBuf1:<NetPrinterName>
-    PRINTACTION_NETINSTALLLINK = 3;       // pszBuf1:<NetPrinterName>, pszBuf2:<path to store link>
+    PRINTACTION_NETINSTALLLINK = 3;
+    // pszBuf1:<NetPrinterName>, pszBuf2:<path to store link>
     PRINTACTION_TESTPAGE = 4;       // pszBuf1:<PrinterName>
     PRINTACTION_OPENNETPRN = 5;       // pszBuf1:<NetPrinterName>
     PRINTACTION_DOCUMENTDEFAULTS = 6;     // pszBuf1:<PrinterName>
@@ -966,9 +1041,11 @@ const
 
 // deprecated, instead invoke verbs on printers/netprinters using IContextMenu or ShellExecute()
 
-function SHInvokePrinterCommandA(hwnd: HWND; uAction: UINT; lpBuf1: LPCSTR; lpBuf2: LPCSTR; fModal: boolean): boolean;
+function SHInvokePrinterCommandA(hwnd: HWND; uAction: UINT; lpBuf1: LPCSTR;
+    lpBuf2: LPCSTR; fModal: boolean): boolean;
     stdcall; external Shell32_DLL;
-function SHInvokePrinterCommandW(hwnd: HWND; uAction: UINT; lpBuf1: LPCWSTR; lpBuf2: LPCWSTR; fModal: boolean): boolean;
+function SHInvokePrinterCommandW(hwnd: HWND; uAction: UINT; lpBuf1: LPCWSTR;
+    lpBuf2: LPCWSTR; fModal: boolean): boolean;
     stdcall; external Shell32_DLL;
 
     {$ENDIF}// (NTDDI_VERSION >= NTDDI_WIN2K)
@@ -1036,7 +1113,8 @@ function SHLoadNonloadedIconOverlayIdentifiers(): HResult; stdcall; external She
 //     Both OFFLINE_STATUS_LOCAL and OFFLINE_STATUS_REMOTE may be returned,
 //     indicating "open in both places." This is common when the server is online.
 
-function SHIsFileAvailableOffline(pwszPath: PCWSTR; out pdwStatus: DWORD): HResult; stdcall; external Shell32_DLL;
+function SHIsFileAvailableOffline(pwszPath: PCWSTR; out pdwStatus: DWORD): HResult;
+    stdcall; external Shell32_DLL;
 
 const
     OFFLINE_STATUS_LOCAL = $0001; // If open, it's open locally
@@ -1050,14 +1128,16 @@ const
 {$IF  (NTDDI_VERSION >= NTDDI_WINXP)}
 //  sets the specified path to use the string resource
 //  as the UI instead of the file system name
-function SHSetLocalizedName(pszPath: PCWSTR; pszResModule: PCWSTR; idsRes: int32): HResult; stdcall; external Shell32_DLL;
+function SHSetLocalizedName(pszPath: PCWSTR; pszResModule: PCWSTR;
+    idsRes: int32): HResult; stdcall; external Shell32_DLL;
 {$ENDIF}// (NTDDI_VERSION >= NTDDI_WINXP)
 {$IF  (NTDDI_VERSION >= NTDDI_VISTA)}
 //  sets the specified path to use the string resource
 //  as the UI instead of the file system name
 function SHRemoveLocalizedName(pszPath: PCWSTR): HResult; stdcall; external Shell32_DLL;
 //  gets the string resource for the specified path
-function SHGetLocalizedName(pszPath: PCWSTR; out pszResModule: PWSTR; cch: UINT; out pidsRes: int32): HResult; stdcall; external Shell32_DLL;
+function SHGetLocalizedName(pszPath: PCWSTR; out pszResModule: PWSTR;
+    cch: UINT; out pidsRes: int32): HResult; stdcall; external Shell32_DLL;
 {$ENDIF}// (NTDDI_VERSION >= NTDDI_VISTA)
 
 
@@ -1082,9 +1162,11 @@ function SHGetLocalizedName(pszPath: PCWSTR; out pszResModule: PWSTR; cch: UINT;
 
 
 
-function ShellMessageBoxA(hAppInst: HINSTANCE; hWnd: HWND; lpcText: LPCSTR; lpcTitle: LPCSTR; fuStyle: UINT): int32;
+function ShellMessageBoxA(hAppInst: HINSTANCE; hWnd: HWND; lpcText: LPCSTR;
+    lpcTitle: LPCSTR; fuStyle: UINT): int32;
     cdecl; external Shell32_DLL;
-function ShellMessageBoxW(hAppInst: HINSTANCE; hWnd: HWND; lpcText: LPCWSTR; lpcTitle: LPCWSTR; fuStyle: UINT): int32;
+function ShellMessageBoxW(hAppInst: HINSTANCE; hWnd: HWND; lpcText: LPCWSTR;
+    lpcTitle: LPCWSTR; fuStyle: UINT): int32;
     cdecl; external Shell32_DLL;
 
 
@@ -1095,18 +1177,24 @@ function IsLFNDriveW(pszPath: LPCWSTR): boolean; stdcall; external Shell32_DLL;
 
 
 {$IF (_WIN32_IE >= $0600)}
-function SHEnumerateUnreadMailAccountsA(hKeyUser: HKEY; dwIndex: DWORD; out pszMailAddress: LPSTR; cchMailAddress: int32): HResult;
+function SHEnumerateUnreadMailAccountsA(hKeyUser: HKEY; dwIndex: DWORD;
+    out pszMailAddress: LPSTR; cchMailAddress: int32): HResult;
     stdcall; external Shell32_DLL;
-function SHEnumerateUnreadMailAccountsW(hKeyUser: HKEY; dwIndex: DWORD; out pszMailAddress: LPWSTR; cchMailAddress: int32): HResult;
+function SHEnumerateUnreadMailAccountsW(hKeyUser: HKEY; dwIndex: DWORD;
+    out pszMailAddress: LPWSTR; cchMailAddress: int32): HResult;
     stdcall; external Shell32_DLL;
 
-function SHGetUnreadMailCountA(hKeyUser: HKEY; pszMailAddress: LPCSTR; out pdwCount: DWORD; out pFileTime: TFILETIME;
-    out pszShellExecuteCommand: LPSTR; cchShellExecuteCommand: int32): HResult; stdcall; external Shell32_DLL;
-function SHGetUnreadMailCountW(hKeyUser: HKEY; pszMailAddress: LPCWSTR; out pdwCount: DWORD; out pFileTime: TFILETIME;
-    out pszShellExecuteCommand: LPWSTR; cchShellExecuteCommand: int32): HResult; stdcall; external Shell32_DLL;
+function SHGetUnreadMailCountA(hKeyUser: HKEY; pszMailAddress: LPCSTR;
+    out pdwCount: DWORD; out pFileTime: TFILETIME; out pszShellExecuteCommand: LPSTR;
+    cchShellExecuteCommand: int32): HResult; stdcall; external Shell32_DLL;
+function SHGetUnreadMailCountW(hKeyUser: HKEY; pszMailAddress: LPCWSTR;
+    out pdwCount: DWORD; out pFileTime: TFILETIME; out pszShellExecuteCommand: LPWSTR;
+    cchShellExecuteCommand: int32): HResult; stdcall; external Shell32_DLL;
 
-function SHSetUnreadMailCountA(pszMailAddress: LPCSTR; dwCount: DWORD; pszShellExecuteCommand: LPCSTR): HResult; stdcall; external Shell32_DLL;
-function SHSetUnreadMailCountW(pszMailAddress: LPCWSTR; dwCount: DWORD; pszShellExecuteCommand: LPCWSTR): HResult; stdcall; external Shell32_DLL;
+function SHSetUnreadMailCountA(pszMailAddress: LPCSTR; dwCount: DWORD;
+    pszShellExecuteCommand: LPCSTR): HResult; stdcall; external Shell32_DLL;
+function SHSetUnreadMailCountW(pszMailAddress: LPCWSTR; dwCount: DWORD;
+    pszShellExecuteCommand: LPCWSTR): HResult; stdcall; external Shell32_DLL;
 {$ENDIF}{  _WIN32_IE >= $0600     }
 
 
@@ -1117,7 +1205,8 @@ function SHTestTokenMembership(hToken: HANDLE; ulRID: ULONG): boolean; stdcall; 
 
 {$IF          _WIN32_IE >= $0600}
     {$IF  (NTDDI_VERSION >= NTDDI_WINXP)}
-function SHGetImageList(iImageList: int32; const riid: TGUID; out ppvObj): HResult; stdcall; external Shell32_DLL;
+function SHGetImageList(iImageList: int32; const riid: TGUID; out ppvObj): HResult;
+    stdcall; external Shell32_DLL;
     {$ENDIF}// (NTDDI_VERSION >= NTDDI_WINXP)
 
 const
@@ -1137,11 +1226,12 @@ const
 // Function call types for ntshrui folder sharing helpers
 type
     PFNCANSHAREFOLDERW = function(pszPath: PCWSTR): HResult; stdcall;
-    PFNSHOWSHAREFOLDERUIW = function(hwndParent: HWND; pszPath: PCWSTR): HResult; stdcall;
+    PFNSHOWSHAREFOLDERUIW = function(hwndParent: HWND;
+        pszPath: PCWSTR): HResult; stdcall;
 
 {$ENDIF}{  _WIN32_IE >= $0600     }
 
-{$ENDIF} { WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) }
+{$ENDIF}{ WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) }
 
 {$IFNDEF _WIN64}
 {$A4}
@@ -1200,7 +1290,8 @@ function NetAddr_DisplayErrorTip(hwnd: Hwnd): HResult;
 {$IF  (NTDDI_VERSION >= NTDDI_VISTA)}
 // Returns the type of media (CD, DVD, Blank, etc) that is in the drive.
 // dwMediaContent is set to a combination of ARCONTENT flags.
-function SHGetDriveMedia(pszDrive: PCWSTR; out pdwMediaContent: DWORD): HResult; stdcall; external;
+function SHGetDriveMedia(pszDrive: PCWSTR; out pdwMediaContent: DWORD): HResult;
+    stdcall; external;
 {$ENDIF}// (NTDDI_VERSION >= NTDDI_VISTA)
 
 // Windows Parental Controls (WPC) query apis
@@ -1245,10 +1336,9 @@ function NetAddr_DisplayErrorTip(hwnd: Hwnd): HResult;
 begin
     Result := SNDMSG(hwnd, NCM_DISPLAYERRORTIP, 0, 0);
 end;
+
 {$ENDIF}// (NTDDI_VERSION >= NTDDI_VISTA)
 
-{$ENDIF} { WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) }
+{$ENDIF}{ WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) }
 
 end.
-
-

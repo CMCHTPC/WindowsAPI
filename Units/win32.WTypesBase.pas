@@ -5,16 +5,18 @@ unit Win32.WTypesBase;
 interface
 
 uses
-  Classes, SysUtils;
+    Classes, SysUtils;
 
 type
 
-  pChar = ^Char;
-  pWChar = ^WChar;
-  LPSTR = ^Char;
-  LPWSTR = ^WChar;
+    PChar = ^char;
+    pWChar = ^WChar;
+    LPSTR = ^char;
+    LPWSTR = ^WChar;
 
-  PSID = pointer;
+    PSID = pointer;
+
+    PWSTR = ^WChar;
 
 implementation
 

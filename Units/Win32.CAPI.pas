@@ -47,7 +47,8 @@ type
     TJAVA_TRUST = record
         cbSize: DWORD;                   // Size of structure
         flag: DWORD;                     // Reserved
-        fAllActiveXPermissions: boolean;   // ActiveX explicitly asked for all (must have been signed)
+        fAllActiveXPermissions: boolean;
+        // ActiveX explicitly asked for all (must have been signed)
         fAllPermissions: boolean;          // Java permissions, explicit ask for all
         dwEncodingType: DWORD;           // Encoding type
         pbJavaPermissions: PBYTE;        // Encoded java permission blob
@@ -61,7 +62,7 @@ type
     PJAVA_TRUST = ^TJAVA_TRUST;
 
 
-{$ENDIF} // !defined(JAVA_TRUST_PROVIDER)
+{$ENDIF}// !defined(JAVA_TRUST_PROVIDER)
 
 {$ENDIF}(* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) *)
 
