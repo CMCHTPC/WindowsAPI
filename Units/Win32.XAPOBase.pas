@@ -91,7 +91,7 @@ const
 
 //--------------<D-A-T-A---T-Y-P-E-S>---------------------------------------//
 //pragma pack(push, 8) // set packing alignment to ensure consistency across arbitrary build environments, and ensure synchronization variables used by Interlocked functionality are correctly aligned
-{$Z8}
+{$A8}
 
 
 // primitive types
@@ -390,7 +390,7 @@ end;
   *)
 
 // pragma pack(pop) // revert packing alignment
-{$Z4}
+{$A4}
 
 implementation
 

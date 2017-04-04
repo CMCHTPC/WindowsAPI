@@ -98,7 +98,7 @@ type
     end;
 
 // All structures defined in this file use tight field packing
-{$Z1}
+{$A1}
 // pragma pack(push, 1)
 
 
@@ -936,7 +936,6 @@ type
 function XAudio2Create(out ppXAudio2: IXAudio2; Flags: UINT32 = 0; XAudio2Processor: TXAUDIO2_PROCESSOR = XAUDIO2_DEFAULT_PROCESSOR): HResult;
     stdcall; external XAudio2_DLL;
 // Undo the #pragma pack(push, 1) directive at the top of this file
-{$Z4}
 {$A4}
 
 {$ENDIF}

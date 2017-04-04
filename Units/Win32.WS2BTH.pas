@@ -54,7 +54,7 @@ uses
 {$IF  (NTDDI_VERSION >= NTDDI_WINXPSP2)}
 
 //include <pshpack1.h>
-{$Z1}
+{$A1}
 
 const
     BT_PORT_ANY = ULONG(-1);
@@ -389,7 +389,7 @@ type
     PBTHNS_RESTRICTIONBLOB = ^TBTHNS_RESTRICTIONBLOB;
 
 //include <poppack.h>
-{$Z4}
+{$A4}
 
 {$ENDIF}// (NTDDI_VERSION >= NTDDI_WINXPSP2)
 

@@ -168,7 +168,7 @@ const
 
 //--------------<D-A-T-A---T-Y-P-E-S>---------------------------------------//
 //pragma pack(push, 1) // set packing alignment to ensure consistency across arbitrary build environments
-{$Z1}
+{$A1}
 
 
 
@@ -375,7 +375,7 @@ procedure X3DAudioCalculate(const Instance: TX3DAUDIO_HANDLE; const pListener: T
 
 
 //pragma pack(pop) // revert packing alignment
-{$Z4}
+{$A4}
 
 {$endif}{ WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP or WINAPI_PARTITION_TV_APP or WINAPI_PARTITION_TV_TITLE) }
 

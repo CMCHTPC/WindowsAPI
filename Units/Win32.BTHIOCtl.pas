@@ -173,7 +173,7 @@ const
 
 
 //include <PSHPACK1.H>
-{$Z1}
+{$A1}
 type
     TBTH_DEVICE_INFO_LIST = record
         // [IN/OUT] minimum of 1 device required
@@ -430,7 +430,7 @@ type
 {$ENDIF}//NTDDI_WIN8
 
 //include <POPPACK.H>
-{$Z4}
+{$A4}
 
 {$ENDIF}// (NTDDI_VERSION >= NTDDI_VISTA)
 

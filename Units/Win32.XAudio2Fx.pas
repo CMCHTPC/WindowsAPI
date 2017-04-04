@@ -62,7 +62,7 @@ const
     IID_AudioReverb: TGUID = '{C2633B16-471B-4498-B8C5-4F0959E2EC09}';
 
 // All structures defined in this file should use tight packing
-{$Z1}
+{$A1}
 //pragma pack(push, 1)
 
 
@@ -377,7 +377,7 @@ const
 
 
 // Undo the #pragma pack(push, 1) at the top of this file
-{$Z4}
+{$A4}
 //pragma pack(pop)
 
 
