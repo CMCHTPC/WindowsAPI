@@ -15,6 +15,13 @@ type
     end;
     PPROPERTYKEY = ^TPROPERTYKEY;
 
+    PWSTR = PWCHAR; // ???
+    BSTR = PWCHAR; // ???
+
+    TFMTID = TGUID;
+
+    PCGUID  = ^TGUID;
+
 implementation
 
 end.

@@ -11,6 +11,7 @@ type
   TPROPVARIANT = record
 
   end;
+  PPROPVARIANT =^TPROPVARIANT;
 
 implementation
 

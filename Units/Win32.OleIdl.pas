@@ -5,7 +5,7 @@ unit Win32.OleIdl;
 interface
 
 uses
-    Classes, SysUtils;
+    Windows, Classes, SysUtils;
 
 const
     MK_ALT = $20;
@@ -19,6 +19,18 @@ const
     DROPEFFECT_LINK = 4;
 
     DROPEFFECT_SCROLL = $80000000;
+
+type
+    IOleWindow = interface(IUnknown)
+        ['{00000114-0000-0000-C000-000000000046}']
+    end;
+
+    TOleMenuGroupWidths = record
+        Width: array [0.. 5] of LONG;
+    end;
+    POLEMENUGROUPWIDTHS = ^TOleMenuGroupWidths;
+
+    HOLEMENU = HGLOBAL;
 
 implementation
 

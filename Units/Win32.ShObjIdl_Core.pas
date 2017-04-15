@@ -263,6 +263,7 @@ type
         function GetAttributes(sfgaoMask: TSFGAOF; out psfgaoAttribs: TSFGAOF): HResult; stdcall;
         function Compare(psi: IShellItem; hint: TSICHINTF; out piOrder: int32): HResult; stdcall;
     end;
+    PIShellItem = ^IShellItem;
 
     IShellItem2 = interface(IShellItem)
         ['{7e9fb0d3-919f-4307-ab2e-9b1860310c93}']
