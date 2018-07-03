@@ -343,4 +343,8 @@
 {$define _WIN32_IE := _WIN32_IE_IE100}
 {$define _WIN32_WINNT:=_WIN32_WINNT_WIN10}
 
+// find in  minwindef.h
+
+{$DEFINE _WIN32}
+
 

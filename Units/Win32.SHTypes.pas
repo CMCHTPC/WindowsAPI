@@ -37,6 +37,7 @@ interface
 
 uses
     Windows, Classes, SysUtils,
+    Win32.WTypesBase,
     Win32.WTypes;
 
 type
@@ -115,9 +116,8 @@ type
 
     // include <poppack.h>
 {$A4}
-TBYTE_BLOB = word; // Todo !!!
 
-    wirePIDL = ^TBYTE_BLOB;
+    wirePIDL = PBYTE_BLOB;
 
     LPITEMIDLIST = ^ITEMIDLIST;
 
