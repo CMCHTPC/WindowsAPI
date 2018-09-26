@@ -6,6 +6,7 @@ interface
 
 uses
     Classes, SysUtils,
+    ActiveX,
     Win32.WTypes;
 
 type
@@ -49,6 +50,22 @@ type
 
     IPropertyStore = interface(IUnknown)
         ['{886d8eeb-8cf2-4446-8d02-cdba1dbdcf99}']
+        function GetCount(
+           out  cProps:DWORD):HResult; stdcall;
+
+        function GetAt(
+              iProp:DWORD;
+             out  pkey:TPROPERTYKEY):HResult; stdcall;
+
+        function GetValue(
+            const  key:TPROPERTYKEY;
+             out  pv:TPROPVARIANT) :HResult; stdcall;
+
+        function SetValue(
+            const  key:TPROPERTYKEY;
+           const  propvar:TPROPVARIANT):HResult; stdcall;
+
+        function Commit( ) :HResult; stdcall;
     end;
 
 

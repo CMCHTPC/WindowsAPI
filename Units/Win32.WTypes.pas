@@ -552,7 +552,7 @@ type
     PROPID = ULONG;
 
 
-    TPROPERTYKEY = record
+    TPROPERTYKEY = packed record
         fmtid: TGUID;
         pid: DWORD;
     end;
