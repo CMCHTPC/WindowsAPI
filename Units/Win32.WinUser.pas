@@ -1,0 +1,8941 @@
+{***************************************************************************
+*                                                                           *
+* winuser.h -- USER procedure declarations, constant definitions and macros *
+*                                                                           *
+* Copyright (c) Microsoft Corporation. All rights reserved.                 *
+*                                                                           *
+***************************************************************************}
+unit Win32.WinUser;
+
+{ includes WinUser.h and tvout.h }
+
+{$mode delphi}
+{$MACRO ON}
+
+{$IFNDEF  WINVER}
+    {$define WINVER := $1000}{ version 5.0 }
+{$ENDIF}
+
+{$IFNDEF  _WIN32_WINNT}
+{$define _WIN32_WINNT := $0502}
+{$define _WIN32_WINDOWS := $0502}
+{$ENDIF}
+
+interface
+
+uses
+    Windows, Classes, SysUtils,
+    Win32.WinNT, Win32.WTypesBase;
+
+const
+    USER32_DLL = 'user32.dll';
+
+type
+    THWND = HWND;
+    THBITMAP = THANDLE;
+    THDWP = THANDLE;
+
+    THDC = HDC;
+    THKL = THANDLE;
+    PHKL = ^THKL;
+
+    THRGN = HRGN;
+
+    THACCEL = HACCEL;
+
+    THDESK = THANDLE;
+    THBRUSH = THANDLE;
+    THINSTANCE = THANDLE;
+    THICON = THANDLE;
+    THCURSOR = THANDLE;
+    THMENU = THANDLE;
+    THWINSTA = THANDLE;
+
+    PCGUID = ^TGUID;
+
+    PCOLORREF = ^TCOLORREF;
+
+    THHOOK = HHOOK;
+
+    PHICON = ^THICON;
+    PHWND = ^THWND;
+
+    THMONITOR = HMONITOR;
+    HWINEVENTHOOK = HANDLE;
+    THWINEVENTHOOK = HWINEVENTHOOK;
+
+    THMODULE = HMODULE;
+
+    TDPI_AWARENESS_CONTEXT = THANDLE;
+    TDPI_AWARENESS = DWORD; // see enum in Windef.h;
+    TDPI_HOSTING_BEHAVIOR = DWORD; // see enum in Windef.h;
+
+    MAKEINTATOM = PAnsiChar;
+
+    // see MultiMon.h
+    TDISPLAY_DEVICEA = record
+
+    end;
+
+    TDISPLAY_DEVICEW = record
+
+    end;
+
+
+    TDISPLAYCONFIG_PATH_INFO = record
+        // see WinGDI.h
+        (*
+          sourceInfo:TDISPLAYCONFIG_PATH_SOURCE_INFO;
+      targetInfo:TDISPLAYCONFIG_PATH_TARGET_INFO;
+                              flags:UINT32;
+        *)
+    end;
+    PDISPLAYCONFIG_PATH_INFO = ^TDISPLAYCONFIG_PATH_INFO;
+
+    TDISPLAYCONFIG_MODE_INFO = record
+        // see WinGDI.h
+        (*
+          infoType:TDISPLAYCONFIG_MODE_INFO_TYPE;
+                              id:UINT32;
+                                adapterId:LUID;
+    case Integer of
+     0:(      targetMode:TDISPLAYCONFIG_TARGET_MODE);
+     1:(      sourceMode:TDISPLAYCONFIG_SOURCE_MODE);
+     2:(       desktopImageInfo:TDISPLAYCONFIG_DESKTOP_IMAGE_INFO);
+     *)
+    end;
+    PDISPLAYCONFIG_MODE_INFO = ^TDISPLAYCONFIG_MODE_INFO;
+
+    TDISPLAYCONFIG_TOPOLOGY_ID = (
+        DISPLAYCONFIG_TOPOLOGY_INTERNAL = $00000001,
+        DISPLAYCONFIG_TOPOLOGY_CLONE = $00000002,
+        DISPLAYCONFIG_TOPOLOGY_EXTEND = $00000004,
+        DISPLAYCONFIG_TOPOLOGY_EXTERNAL = $00000008,
+        DISPLAYCONFIG_TOPOLOGY_FORCE_UINT32 = $FFFFFFFF
+        );
+
+    TDISPLAYCONFIG_DEVICE_INFO_HEADER = record
+        // see WinGDI.h
+        (*
+                _type:TDISPLAYCONFIG_DEVICE_INFO_TYPE;
+                              size:UINT32;
+                                adapterId:LUID;
+                              id:UINT32;
+        *)
+    end;
+    PDISPLAYCONFIG_DEVICE_INFO_HEADER = ^TDISPLAYCONFIG_DEVICE_INFO_HEADER;
+
+
+
+
+
+const
+
+    (*  Predefined Resource Types *)
+
+    RT_CURSOR = MAKEINTRESOURCE(1);
+    RT_BITMAP = MAKEINTRESOURCE(2);
+    RT_ICON = MAKEINTRESOURCE(3);
+    RT_MENU = MAKEINTRESOURCE(4);
+    RT_DIALOG = MAKEINTRESOURCE(5);
+    RT_STRING = MAKEINTRESOURCE(6);
+    RT_FONTDIR = MAKEINTRESOURCE(7);
+    RT_FONT = MAKEINTRESOURCE(8);
+    RT_ACCELERATOR = MAKEINTRESOURCE(9);
+    RT_RCDATA = MAKEINTRESOURCE(10);
+    RT_MESSAGETABLE = MAKEINTRESOURCE(11);
+
+    DIFFERENCE = 11;
+    RT_GROUP_CURSOR = MAKEINTRESOURCE(RT_CURSOR + DIFFERENCE);
+    RT_GROUP_ICON = MAKEINTRESOURCE(RT_ICON + DIFFERENCE);
+    RT_VERSION = MAKEINTRESOURCE(16);
+    RT_DLGINCLUDE = MAKEINTRESOURCE(17);
+{$IF(WINVER >= $0400)}
+    RT_PLUGPLAY = MAKEINTRESOURCE(19);
+    RT_VXD = MAKEINTRESOURCE(20);
+    RT_ANICURSOR = MAKEINTRESOURCE(21);
+    RT_ANIICON = MAKEINTRESOURCE(22);
+{$ENDIF}(* WINVER >= $0400 *)
+    RT_HTML = MAKEINTRESOURCE(23);
+{$IFdef RC_INVOKED}
+    RT_MANIFEST = 24;
+    CREATEPROCESS_MANIFEST_RESOURCE_ID = 1;
+    ISOLATIONAWARE_MANIFEST_RESOURCE_ID = 2;
+    ISOLATIONAWARE_NOSTATICIMPORT_MANIFEST_RESOURCE_ID = 3;
+    ISOLATIONPOLICY_MANIFEST_RESOURCE_ID = 4;
+    MINIMUM_RESERVED_MANIFEST_RESOURCE_ID = 1;  (* inclusive *)
+    MAXIMUM_RESERVED_MANIFEST_RESOURCE_ID = 16;  (* inclusive *)
+{$ELSE}(* RC_INVOKED *)
+    RT_MANIFEST = MAKEINTRESOURCE(24);
+    CREATEPROCESS_MANIFEST_RESOURCE_ID = MAKEINTRESOURCE(1);
+    ISOLATIONAWARE_MANIFEST_RESOURCE_ID = MAKEINTRESOURCE(2);
+    ISOLATIONAWARE_NOSTATICIMPORT_MANIFEST_RESOURCE_ID = MAKEINTRESOURCE(3);
+    ISOLATIONPOLICY_MANIFEST_RESOURCE_ID = MAKEINTRESOURCE(4);
+    MINIMUM_RESERVED_MANIFEST_RESOURCE_ID = MAKEINTRESOURCE(1 (*inclusive*));
+    MAXIMUM_RESERVED_MANIFEST_RESOURCE_ID = MAKEINTRESOURCE(16 (*inclusive*));
+{$ENDIF}(* RC_INVOKED *)
+
+    (* SPI_SETDESKWALLPAPER defined constants *)
+    SETWALLPAPER_DEFAULT = LPWSTR(-1);
+
+    { Scroll Bar Constants }
+    SB_HORZ = 0;
+    SB_VERT = 1;
+    SB_CTL = 2;
+    SB_BOTH = 3;
+
+    { Scroll Bar Commands }
+    SB_LINEUP = 0;
+    SB_LINELEFT = 0;
+    SB_LINEDOWN = 1;
+    SB_LINERIGHT = 1;
+    SB_PAGEUP = 2;
+    SB_PAGELEFT = 2;
+    SB_PAGEDOWN = 3;
+    SB_PAGERIGHT = 3;
+    SB_THUMBPOSITION = 4;
+    SB_THUMBTRACK = 5;
+    SB_TOP = 6;
+    SB_LEFT = 6;
+    SB_BOTTOM = 7;
+    SB_RIGHT = 7;
+    SB_ENDSCROLL = 8;
+
+
+    { ShowWindow() Commands }
+    SW_HIDE = 0;
+    SW_SHOWNORMAL = 1;
+    SW_NORMAL = 1;
+    SW_SHOWMINIMIZED = 2;
+    SW_SHOWMAXIMIZED = 3;
+    SW_MAXIMIZE = 3;
+    SW_SHOWNOACTIVATE = 4;
+    SW_SHOW = 5;
+    SW_MINIMIZE = 6;
+    SW_SHOWMINNOACTIVE = 7;
+    SW_SHOWNA = 8;
+    SW_RESTORE = 9;
+    SW_SHOWDEFAULT = 10;
+    SW_FORCEMINIMIZE = 11;
+    SW_MAX = 11;
+
+
+    { Old ShowWindow() Commands }
+    HIDE_WINDOW = 0;
+    SHOW_OPENWINDOW = 1;
+    SHOW_ICONWINDOW = 2;
+    SHOW_FULLSCREEN = 3;
+    SHOW_OPENNOACTIVATE = 4;
+
+    { Identifiers for the WM_SHOWWINDOW message }
+    SW_PARENTCLOSING = 1;
+    SW_OTHERZOOM = 2;
+    SW_PARENTOPENING = 3;
+    SW_OTHERUNZOOM = 4;
+
+{$IF (WINVER >= $0500)}
+    { AnimateWindow() Commands }
+    AW_HOR_POSITIVE = $00000001;
+    AW_HOR_NEGATIVE = $00000002;
+    AW_VER_POSITIVE = $00000004;
+    AW_VER_NEGATIVE = $00000008;
+    AW_CENTER = $00000010;
+    AW_HIDE = $00010000;
+    AW_ACTIVATE = $00020000;
+    AW_SLIDE = $00040000;
+    AW_BLEND = $00080000;
+{$ENDIF}{ WINVER >= $0500 }
+
+
+    { WM_KEYUP/DOWN/CHAR HIWORD(lParam) flags }
+    KF_EXTENDED = $0100;
+    KF_DLGMODE = $0800;
+    KF_MENUMODE = $1000;
+    KF_ALTDOWN = $2000;
+    KF_REPEAT = $4000;
+    KF_UP = $8000;
+
+{$IFNDEF  NOVIRTUALKEYCODES}
+    { Virtual Keys, Standard Set }
+    VK_LBUTTON = $01;
+    VK_RBUTTON = $02;
+    VK_CANCEL = $03;
+    VK_MBUTTON = $04;   { NOT contiguous with L & RBUTTON }
+
+{$IF (_WIN32_WINNT >= $0500)}
+    VK_XBUTTON1 = $05;  { NOT contiguous with L & RBUTTON }
+    VK_XBUTTON2 = $06;   { NOT contiguous with L & RBUTTON }
+{$ENDIF}{ _WIN32_WINNT >= $0500 }
+
+    { $07 : reserved }
+    VK_BACK = $08;
+    VK_TAB = $09;
+
+    { $0A - $0B : reserved }
+
+    VK_CLEAR = $0C;
+    VK_RETURN = $0D;
+
+    { $0E - $0F : unassigned }
+
+    VK_SHIFT = $10;
+    VK_CONTROL = $11;
+    VK_MENU = $12;
+    VK_PAUSE = $13;
+    VK_CAPITAL = $14;
+
+    VK_KANA = $15;
+    VK_HANGEUL = $15; { old name - should be here for compatibility }
+    VK_HANGUL = $15;
+
+    { $16 : unassigned }
+
+    VK_JUNJA = $17;
+    VK_FINAL = $18;
+    VK_HANJA = $19;
+    VK_KANJI = $19;
+
+    { $1A : unassigned }
+
+    VK_ESCAPE = $1B;
+
+    VK_CONVERT = $1C;
+    VK_NONCONVERT = $1D;
+    VK_ACCEPT = $1E;
+    VK_MODECHANGE = $1F;
+
+    VK_SPACE = $20;
+    VK_PRIOR = $21;
+    VK_NEXT = $22;
+    VK_END = $23;
+    VK_HOME = $24;
+    VK_LEFT = $25;
+    VK_UP = $26;
+    VK_RIGHT = $27;
+    VK_DOWN = $28;
+    VK_SELECT = $29;
+    VK_PRINT = $2A;
+    VK_EXECUTE = $2B;
+    VK_SNAPSHOT = $2C;
+    VK_INSERT = $2D;
+    VK_DELETE = $2E;
+    VK_HELP = $2F;
+
+{ VK_0 - VK_9 are the same as ASCII '0' - '9' ($30 - $39)
+ $3A - $40 : unassigned
+ VK_A - VK_Z are the same as ASCII 'A' - 'Z' ($41 - $5A) }
+
+    VK_LWIN = $5B;
+    VK_RWIN = $5C;
+    VK_APPS = $5D;
+
+    { $5E : reserved }
+
+    VK_SLEEP = $5F;
+
+    VK_NUMPAD0 = $60;
+    VK_NUMPAD1 = $61;
+    VK_NUMPAD2 = $62;
+    VK_NUMPAD3 = $63;
+    VK_NUMPAD4 = $64;
+    VK_NUMPAD5 = $65;
+    VK_NUMPAD6 = $66;
+    VK_NUMPAD7 = $67;
+    VK_NUMPAD8 = $68;
+    VK_NUMPAD9 = $69;
+    VK_MULTIPLY = $6A;
+    VK_ADD = $6B;
+    VK_SEPARATOR = $6C;
+    VK_SUBTRACT = $6D;
+    VK_DECIMAL = $6E;
+    VK_DIVIDE = $6F;
+    VK_F1 = $70;
+    VK_F2 = $71;
+    VK_F3 = $72;
+    VK_F4 = $73;
+    VK_F5 = $74;
+    VK_F6 = $75;
+    VK_F7 = $76;
+    VK_F8 = $77;
+    VK_F9 = $78;
+    VK_F10 = $79;
+    VK_F11 = $7A;
+    VK_F12 = $7B;
+    VK_F13 = $7C;
+    VK_F14 = $7D;
+    VK_F15 = $7E;
+    VK_F16 = $7F;
+    VK_F17 = $80;
+    VK_F18 = $81;
+    VK_F19 = $82;
+    VK_F20 = $83;
+    VK_F21 = $84;
+    VK_F22 = $85;
+    VK_F23 = $86;
+    VK_F24 = $87;
+
+{$IF (_WIN32_WINNT >= $0604)}
+    { $88 - $8F : UI navigation }
+    VK_NAVIGATION_VIEW = $88; // reserved
+    VK_NAVIGATION_MENU = $89; // reserved
+    VK_NAVIGATION_UP = $8A; // reserved
+    VK_NAVIGATION_DOWN = $8B; // reserved
+    VK_NAVIGATION_LEFT = $8C; // reserved
+    VK_NAVIGATION_RIGHT = $8D; // reserved
+    VK_NAVIGATION_ACCEPT = $8E; // reserved
+    VK_NAVIGATION_CANCEL = $8F; // reserved
+{$ENDIF}{ _WIN32_WINNT >= $0604 }
+
+    VK_NUMLOCK = $90;
+    VK_SCROLL = $91;
+
+    { NEC PC-9800 kbd definitions }
+    VK_OEM_NEC_EQUAL = $92;   // '=' key on numpad
+
+    { Fujitsu/OASYS kbd definitions }
+    VK_OEM_FJ_JISHO = $92;   // 'Dictionary' key
+    VK_OEM_FJ_MASSHOU = $93;   // 'Unregister word' key
+    VK_OEM_FJ_TOUROKU = $94;   // 'Register word' key
+    VK_OEM_FJ_LOYA = $95;   // 'Left OYAYUBI' key
+    VK_OEM_FJ_ROYA = $96;   // 'Right OYAYUBI' key
+
+    { $97 - $9F : unassigned }
+
+{ VK_L* & VK_R* - left and right Alt, Ctrl and Shift virtual keys.
+  Used only as parameters to GetAsyncKeyState() and GetKeyState().
+  No other API or message will distinguish left and right keys in this way. }
+    VK_LSHIFT = $A0;
+    VK_RSHIFT = $A1;
+    VK_LCONTROL = $A2;
+    VK_RCONTROL = $A3;
+    VK_LMENU = $A4;
+    VK_RMENU = $A5;
+
+{$IF (_WIN32_WINNT >= $0500)}
+    VK_BROWSER_BACK = $A6;
+    VK_BROWSER_FORWARD = $A7;
+    VK_BROWSER_REFRESH = $A8;
+    VK_BROWSER_STOP = $A9;
+    VK_BROWSER_SEARCH = $AA;
+    VK_BROWSER_FAVORITES = $AB;
+    VK_BROWSER_HOME = $AC;
+
+    VK_VOLUME_MUTE = $AD;
+    VK_VOLUME_DOWN = $AE;
+    VK_VOLUME_UP = $AF;
+    VK_MEDIA_NEXT_TRACK = $B0;
+    VK_MEDIA_PREV_TRACK = $B1;
+    VK_MEDIA_STOP = $B2;
+    VK_MEDIA_PLAY_PAUSE = $B3;
+    VK_LAUNCH_MAIL = $B4;
+    VK_LAUNCH_MEDIA_SELECT = $B5;
+    VK_LAUNCH_APP1 = $B6;
+    VK_LAUNCH_APP2 = $B7;
+{$ENDIF}{ _WIN32_WINNT >= $0500 }
+
+    { $B8 - $B9 : reserved }
+    VK_OEM_1 = $BA;   // ';:' for US
+    VK_OEM_PLUS = $BB;  // '+' any country
+    VK_OEM_COMMA = $BC;   // ',' any country
+    VK_OEM_MINUS = $BD;   // '-' any country
+    VK_OEM_PERIOD = $BE;   // '.' any country
+    VK_OEM_2 = $BF;   // '/?' for US
+    VK_OEM_3 = $C0;   // '`~' for US
+
+    { $C1 - $C2 : reserved }
+
+{$IF (_WIN32_WINNT >= $0604)}
+    { $C3 - $DA : Gamepad input }
+    VK_GAMEPAD_A = $C3; // reserved
+    VK_GAMEPAD_B = $C4; // reserved
+    VK_GAMEPAD_X = $C5; // reserved
+    VK_GAMEPAD_Y = $C6; // reserved
+    VK_GAMEPAD_RIGHT_SHOULDER = $C7; // reserved
+    VK_GAMEPAD_LEFT_SHOULDER = $C8; // reserved
+    VK_GAMEPAD_LEFT_TRIGGER = $C9; // reserved
+    VK_GAMEPAD_RIGHT_TRIGGER = $CA; // reserved
+    VK_GAMEPAD_DPAD_UP = $CB; // reserved
+    VK_GAMEPAD_DPAD_DOWN = $CC; // reserved
+    VK_GAMEPAD_DPAD_LEFT = $CD; // reserved
+    VK_GAMEPAD_DPAD_RIGHT = $CE; // reserved
+    VK_GAMEPAD_MENU = $CF; // reserved
+    VK_GAMEPAD_VIEW = $D0; // reserved
+    VK_GAMEPAD_LEFT_THUMBSTICK_BUTTON = $D1; // reserved
+    VK_GAMEPAD_RIGHT_THUMBSTICK_BUTTON = $D2; // reserved
+    VK_GAMEPAD_LEFT_THUMBSTICK_UP = $D3; // reserved
+    VK_GAMEPAD_LEFT_THUMBSTICK_DOWN = $D4; // reserved
+    VK_GAMEPAD_LEFT_THUMBSTICK_RIGHT = $D5; // reserved
+    VK_GAMEPAD_LEFT_THUMBSTICK_LEFT = $D6; // reserved
+    VK_GAMEPAD_RIGHT_THUMBSTICK_UP = $D7; // reserved
+    VK_GAMEPAD_RIGHT_THUMBSTICK_DOWN = $D8; // reserved
+    VK_GAMEPAD_RIGHT_THUMBSTICK_RIGHT = $D9; // reserved
+    VK_GAMEPAD_RIGHT_THUMBSTICK_LEFT = $DA; // reserved
+ {$ENDIF}{ _WIN32_WINNT >= $0604 }
+
+    VK_OEM_4 = $DB;  //  '[{' for US
+    VK_OEM_5 = $DC;  //  '\|' for US
+    VK_OEM_6 = $DD; //  ']}' for US
+    VK_OEM_7 = $DE; //  ''"' for US
+    VK_OEM_8 = $DF;
+
+    { $E0 : reserved }
+
+    { Various extended or enhanced keyboards }
+    VK_OEM_AX = $E1;  //  'AX' key on Japanese AX kbd
+    VK_OEM_102 = $E2;  //  "<>" or "\|" on RT 102-key kbd.
+    VK_ICO_HELP = $E3;  //  Help key on ICO
+    VK_ICO_00 = $E4;  //  00 key on ICO
+
+{$IF (WINVER >= $0400)}
+    VK_PROCESSKEY = $E5;
+{$ENDIF}{ WINVER >= $0400 }
+
+    VK_ICO_CLEAR = $E6;
+
+{$IF (_WIN32_WINNT >= $0500)}
+    VK_PACKET = $E7;
+{$ENDIF}{ _WIN32_WINNT >= $0500 }
+
+    { $E8 : unassigned }
+
+    { Nokia/Ericsson definitions }
+    VK_OEM_RESET = $E9;
+    VK_OEM_JUMP = $EA;
+    VK_OEM_PA1 = $EB;
+    VK_OEM_PA2 = $EC;
+    VK_OEM_PA3 = $ED;
+    VK_OEM_WSCTRL = $EE;
+    VK_OEM_CUSEL = $EF;
+    VK_OEM_ATTN = $F0;
+    VK_OEM_FINISH = $F1;
+    VK_OEM_COPY = $F2;
+    VK_OEM_AUTO = $F3;
+    VK_OEM_ENLW = $F4;
+    VK_OEM_BACKTAB = $F5;
+
+    VK_ATTN = $F6;
+    VK_CRSEL = $F7;
+    VK_EXSEL = $F8;
+    VK_EREOF = $F9;
+    VK_PLAY = $FA;
+    VK_ZOOM = $FB;
+    VK_NONAME = $FC;
+    VK_PA1 = $FD;
+    VK_OEM_CLEAR = $FE;
+
+    { $FF : reserved }
+
+
+{$ENDIF}{ !NOVIRTUALKEYCODES }
+    { SetWindowsHook() codes }
+    WH_MIN = (-1);
+    WH_MSGFILTER = (-1);
+    WH_JOURNALRECORD = 0;
+    WH_JOURNALPLAYBACK = 1;
+    WH_KEYBOARD = 2;
+    WH_GETMESSAGE = 3;
+    WH_CALLWNDPROC = 4;
+    WH_CBT = 5;
+    WH_SYSMSGFILTER = 6;
+    WH_MOUSE = 7;
+{$IFDEF WIN32}
+    WH_HARDWARE = 8;
+{$ENDIF}
+    WH_DEBUG = 9;
+    WH_SHELL = 10;
+    WH_FOREGROUNDIDLE = 11;
+{$IF (WINVER >= $0400)}
+    WH_CALLWNDPROCRET = 12;
+{$ENDIF}{ WINVER >= $0400 }
+ {$IF (_WIN32_WINNT >= $0400)}
+    WH_KEYBOARD_LL = 13;
+    WH_MOUSE_LL = 14;
+{$ENDIF}// (_WIN32_WINNT >= $0400)
+
+{$IF (WINVER >= $0400)}
+{$IF  (_WIN32_WINNT >= $0400)}
+    WH_MAX = 14;
+{$ELSE}
+    WH_MAX = 12;
+{$ENDIF}// (_WIN32_WINNT >= $0400)
+{$ELSE}
+    WH_MAX = 11;
+{$ENDIF}
+
+    WH_MINHOOK = WH_MIN;
+    WH_MAXHOOK = WH_MAX;
+
+    { Hook Codes }
+    HC_ACTION = 0;
+    HC_GETNEXT = 1;
+    HC_SKIP = 2;
+    HC_NOREMOVE = 3;
+    HC_NOREM = HC_NOREMOVE;
+    HC_SYSMODALON = 4;
+    HC_SYSMODALOFF = 5;
+
+    { CBT Hook Codes }
+    HCBT_MOVESIZE = 0;
+    HCBT_MINMAX = 1;
+    HCBT_QS = 2;
+    HCBT_CREATEWND = 3;
+    HCBT_DESTROYWND = 4;
+    HCBT_ACTIVATE = 5;
+    HCBT_CLICKSKIPPED = 6;
+    HCBT_KEYSKIPPED = 7;
+    HCBT_SYSCOMMAND = 8;
+    HCBT_SETFOCUS = 9;
+
+
+{$IF(_WIN32_WINNT >= $0501)}
+    (* codes passed in WPARAM for WM_WTSSESSION_CHANGE *)
+    WTS_CONSOLE_CONNECT = $1;
+    WTS_CONSOLE_DISCONNECT = $2;
+    WTS_REMOTE_CONNECT = $3;
+    WTS_REMOTE_DISCONNECT = $4;
+    WTS_SESSION_LOGON = $5;
+    WTS_SESSION_LOGOFF = $6;
+    WTS_SESSION_LOCK = $7;
+    WTS_SESSION_UNLOCK = $8;
+    WTS_SESSION_REMOTE_CONTROL = $9;
+    WTS_SESSION_CREATE = $a;
+    WTS_SESSION_TERMINATE = $b;
+{$ENDIF}(* _WIN32_WINNT >= =$0501 *)
+
+
+    (* WH_MSGFILTER Filter Proc Codes *)
+    MSGF_DIALOGBOX = 0;
+    MSGF_MESSAGEBOX = 1;
+    MSGF_MENU = 2;
+    MSGF_SCROLLBAR = 5;
+    MSGF_NEXTWINDOW = 6;
+    MSGF_MAX = 8;                     // unused
+    MSGF_USER = 4096;
+
+    (* Shell support *)
+    HSHELL_WINDOWCREATED = 1;
+    HSHELL_WINDOWDESTROYED = 2;
+    HSHELL_ACTIVATESHELLWINDOW = 3;
+
+{$IF(WINVER >= $0400)}
+    HSHELL_WINDOWACTIVATED = 4;
+    HSHELL_GETMINRECT = 5;
+    HSHELL_REDRAW = 6;
+    HSHELL_TASKMAN = 7;
+    HSHELL_LANGUAGE = 8;
+    HSHELL_SYSMENU = 9;
+    HSHELL_ENDTASK = 10;
+{$ENDIF}(* WINVER >= $0400 *)
+{$IF(_WIN32_WINNT >= $0500)}
+    HSHELL_ACCESSIBILITYSTATE = 11;
+    HSHELL_APPCOMMAND = 12;
+{$ENDIF}(* _WIN32_WINNT >= =$0500 *)
+
+{$IF(_WIN32_WINNT >= $0501)}
+    HSHELL_WINDOWREPLACED = 13;
+    HSHELL_WINDOWREPLACING = 14;
+{$ENDIF}(* _WIN32_WINNT >= $0501 *)
+
+
+{$IF(_WIN32_WINNT >= $0602)}
+    HSHELL_MONITORCHANGED = 16;
+{$IF (NTDDI_VERSION >= NTDDI_WIN10_RS3)}
+{$ENDIF}// NTDDI_VERSION >= NTDDI_WIN10_RS3
+
+{$ENDIF}(* _WIN32_WINNT >= $0602 *)
+
+    HSHELL_HIGHBIT = $8000;
+    HSHELL_FLASH = (HSHELL_REDRAW or HSHELL_HIGHBIT);
+    HSHELL_RUDEAPPACTIVATED = (HSHELL_WINDOWACTIVATED or HSHELL_HIGHBIT);
+
+{$IF(_WIN32_WINNT >= $0500)}
+    (* cmd for HSHELL_APPCOMMAND and WM_APPCOMMAND *)
+    APPCOMMAND_BROWSER_BACKWARD = 1;
+    APPCOMMAND_BROWSER_FORWARD = 2;
+    APPCOMMAND_BROWSER_REFRESH = 3;
+    APPCOMMAND_BROWSER_STOP = 4;
+    APPCOMMAND_BROWSER_SEARCH = 5;
+    APPCOMMAND_BROWSER_FAVORITES = 6;
+    APPCOMMAND_BROWSER_HOME = 7;
+    APPCOMMAND_VOLUME_MUTE = 8;
+    APPCOMMAND_VOLUME_DOWN = 9;
+    APPCOMMAND_VOLUME_UP = 10;
+    APPCOMMAND_MEDIA_NEXTTRACK = 11;
+    APPCOMMAND_MEDIA_PREVIOUSTRACK = 12;
+    APPCOMMAND_MEDIA_STOP = 13;
+    APPCOMMAND_MEDIA_PLAY_PAUSE = 14;
+    APPCOMMAND_LAUNCH_MAIL = 15;
+    APPCOMMAND_LAUNCH_MEDIA_SELECT = 16;
+    APPCOMMAND_LAUNCH_APP1 = 17;
+    APPCOMMAND_LAUNCH_APP2 = 18;
+    APPCOMMAND_BASS_DOWN = 19;
+    APPCOMMAND_BASS_BOOST = 20;
+    APPCOMMAND_BASS_UP = 21;
+    APPCOMMAND_TREBLE_DOWN = 22;
+    APPCOMMAND_TREBLE_UP = 23;
+{$IF(_WIN32_WINNT >= $0501)}
+    APPCOMMAND_MICROPHONE_VOLUME_MUTE = 24;
+    APPCOMMAND_MICROPHONE_VOLUME_DOWN = 25;
+    APPCOMMAND_MICROPHONE_VOLUME_UP = 26;
+    APPCOMMAND_HELP = 27;
+    APPCOMMAND_FIND = 28;
+    APPCOMMAND_NEW = 29;
+    APPCOMMAND_OPEN = 30;
+    APPCOMMAND_CLOSE = 31;
+    APPCOMMAND_SAVE = 32;
+    APPCOMMAND_PRINT = 33;
+    APPCOMMAND_UNDO = 34;
+    APPCOMMAND_REDO = 35;
+    APPCOMMAND_COPY = 36;
+    APPCOMMAND_CUT = 37;
+    APPCOMMAND_PASTE = 38;
+    APPCOMMAND_REPLY_TO_MAIL = 39;
+    APPCOMMAND_FORWARD_MAIL = 40;
+    APPCOMMAND_SEND_MAIL = 41;
+    APPCOMMAND_SPELL_CHECK = 42;
+    APPCOMMAND_DICTATE_OR_COMMAND_CONTROL_TOGGLE = 43;
+    APPCOMMAND_MIC_ON_OFF_TOGGLE = 44;
+    APPCOMMAND_CORRECTION_LIST = 45;
+    APPCOMMAND_MEDIA_PLAY = 46;
+    APPCOMMAND_MEDIA_PAUSE = 47;
+    APPCOMMAND_MEDIA_RECORD = 48;
+    APPCOMMAND_MEDIA_FAST_FORWARD = 49;
+    APPCOMMAND_MEDIA_REWIND = 50;
+    APPCOMMAND_MEDIA_CHANNEL_UP = 51;
+    APPCOMMAND_MEDIA_CHANNEL_DOWN = 52;
+{$ENDIF}(* _WIN32_WINNT >= =$0501 *)
+{$IF(_WIN32_WINNT >= $0600)}
+    APPCOMMAND_DELETE = 53;
+    APPCOMMAND_DWM_FLIP3D = 54;
+{$ENDIF}(* _WIN32_WINNT >= $0600 *)
+
+    FAPPCOMMAND_MOUSE = $8000;
+    FAPPCOMMAND_KEY = 0;
+    FAPPCOMMAND_OEM = $1000;
+    FAPPCOMMAND_MASK = $F000;
+
+{$ENDIF}(* _WIN32_WINNT >= $0500 *)
+{$IF (_WIN32_WINNT >= $0400)}
+    (* Low level hook flags *)
+    LLKHF_EXTENDED = (KF_EXTENDED shr 8); (* $00000001 *)
+    LLKHF_INJECTED = $00000010;
+    LLKHF_ALTDOWN = (KF_ALTDOWN shr 8); (* $00000020 *)
+    LLKHF_UP = (KF_UP shr 8);      (* $00000080 *)
+    LLKHF_LOWER_IL_INJECTED = $00000002;
+    LLMHF_INJECTED = $00000001;
+    LLMHF_LOWER_IL_INJECTED = $00000002;
+{$ENDIF}// (_WIN32_WINNT >= =$0400)
+
+    (* Keyboard Layout API *)
+    HKL_PREV = 0;
+    HKL_NEXT = 1;
+
+    KLF_ACTIVATE = $00000001;
+    KLF_SUBSTITUTE_OK = $00000002;
+    KLF_REORDER = $00000008;
+{$IF(WINVER >= $0400)}
+    KLF_REPLACELANG = $00000010;
+    KLF_NOTELLSHELL = $00000080;
+{$ENDIF}(* WINVER >= $0400 *)
+    KLF_SETFORPROCESS = $00000100;
+{$IF(_WIN32_WINNT >= $0500)}
+    KLF_SHIFTLOCK = $00010000;
+    KLF_RESET = $40000000;
+{$ENDIF}(* _WIN32_WINNT >= $0500 *)
+
+
+{$IF(WINVER >= $0500)}
+    (* Bits in wParam of WM_INPUTLANGCHANGEREQUEST message *)
+    INPUTLANGCHANGE_SYSCHARSET = $0001;
+    INPUTLANGCHANGE_FORWARD = $0002;
+    INPUTLANGCHANGE_BACKWARD = $0004;
+{$ENDIF}(* WINVER >= $0500 *)
+
+    (* Size of KeyboardLayoutName (number of characters), including nul terminator *)
+    KL_NAMELENGTH = 9;
+    {$IF(WINVER >= $0500)}
+
+    (* Values for resolution parameter of GetMouseMovePointsEx *)
+    GMMP_USE_DISPLAY_POINTS = 1;
+    GMMP_USE_HIGH_RESOLUTION_POINTS = 2;
+{$ENDIF}(* WINVER >= $0500 *)
+
+    (* Desktop-specific access flags *)
+    DESKTOP_READOBJECTS = $0001;
+    DESKTOP_CREATEWINDOW = $0002;
+    DESKTOP_CREATEMENU = $0004;
+    DESKTOP_HOOKCONTROL = $0008;
+    DESKTOP_JOURNALRECORD = $0010;
+    DESKTOP_JOURNALPLAYBACK = $0020;
+    DESKTOP_ENUMERATE = $0040;
+    DESKTOP_WRITEOBJECTS = $0080;
+    DESKTOP_SWITCHDESKTOP = $0100;
+
+    (* Desktop-specific control flags *)
+    DF_ALLOWOTHERACCOUNTHOOK = $0001;
+
+    (* Windowstation-specific access flags *)
+    WINSTA_ENUMDESKTOPS = $0001;
+    WINSTA_READATTRIBUTES = $0002;
+    WINSTA_ACCESSCLIPBOARD = $0004;
+    WINSTA_CREATEDESKTOP = $0008;
+    WINSTA_WRITEATTRIBUTES = $0010;
+    WINSTA_ACCESSGLOBALATOMS = $0020;
+    WINSTA_EXITWINDOWS = $0040;
+    WINSTA_ENUMERATE = $0100;
+    WINSTA_READSCREEN = $0200;
+
+    WINSTA_ALL_ACCESS = (WINSTA_ENUMDESKTOPS or WINSTA_READATTRIBUTES or WINSTA_ACCESSCLIPBOARD or WINSTA_CREATEDESKTOP or
+        WINSTA_WRITEATTRIBUTES or WINSTA_ACCESSGLOBALATOMS or WINSTA_EXITWINDOWS or WINSTA_ENUMERATE or WINSTA_READSCREEN);
+
+    (* Windowstation creation flags. *)
+    CWF_CREATE_ONLY = $00000001;
+
+    (* Windowstation-specific attribute flags *)
+    WSF_VISIBLE = $0001;
+
+    UOI_FLAGS = 1;
+    UOI_NAME = 2;
+    UOI_TYPE = 3;
+    UOI_USER_SID = 4;
+{$IF(WINVER >= $0600)}
+    UOI_HEAPSIZE = 5;
+    UOI_IO = 6;
+{$ENDIF}(* WINVER >= $0600 *)
+    UOI_TIMERPROC_EXCEPTION_SUPPRESSION = 7;
+
+    (* Window field offsets for GetWindowLong() *)
+    GWL_WNDPROC = (-4);
+    GWL_HINSTANCE = (-6);
+    GWL_HWNDPARENT = (-8);
+    GWL_STYLE = (-16);
+    GWL_EXSTYLE = (-20);
+    GWL_USERDATA = (-21);
+    GWL_ID = (-12);
+
+    GWLP_WNDPROC = (-4);
+    GWLP_HINSTANCE = (-6);
+    GWLP_HWNDPARENT = (-8);
+    GWLP_USERDATA = (-21);
+    GWLP_ID = (-12);
+
+    (* Class field offsets for GetClassLong() *)
+    GCL_MENUNAME = (-8);
+    GCL_HBRBACKGROUND = (-10);
+    GCL_HCURSOR = (-12);
+    GCL_HICON = (-14);
+    GCL_HMODULE = (-16);
+    GCL_CBWNDEXTRA = (-18);
+    GCL_CBCLSEXTRA = (-20);
+    GCL_WNDPROC = (-24);
+    GCL_STYLE = (-26);
+    GCW_ATOM = (-32);
+
+{$IF(WINVER >= $0400)}
+    GCL_HICONSM = (-34);
+{$ENDIF}(* WINVER >= $0400 *)
+
+    GCLP_MENUNAME = (-8);
+    GCLP_HBRBACKGROUND = (-10);
+    GCLP_HCURSOR = (-12);
+    GCLP_HICON = (-14);
+    GCLP_HMODULE = (-16);
+    GCLP_WNDPROC = (-24);
+    GCLP_HICONSM = (-34);
+
+    (* Window Messages *)
+
+    WM_NULL = $0000;
+    WM_CREATE = $0001;
+    WM_DESTROY = $0002;
+    WM_MOVE = $0003;
+    WM_SIZE = $0005;
+
+    WM_ACTIVATE = $0006;
+    (* WM_ACTIVATE state values *)
+    WA_INACTIVE = 0;
+    WA_ACTIVE = 1;
+    WA_CLICKACTIVE = 2;
+
+    WM_SETFOCUS = $0007;
+    WM_KILLFOCUS = $0008;
+    WM_ENABLE = $000A;
+    WM_SETREDRAW = $000B;
+    WM_SETTEXT = $000C;
+    WM_GETTEXT = $000D;
+    WM_GETTEXTLENGTH = $000E;
+    WM_PAINT = $000F;
+    WM_CLOSE = $0010;
+{$ifndef _WIN32_WCE}
+    WM_QUERYENDSESSION = $0011;
+    WM_QUERYOPEN = $0013;
+    WM_ENDSESSION = $0016;
+{$ENDIF}
+    WM_QUIT = $0012;
+    WM_ERASEBKGND = $0014;
+    WM_SYSCOLORCHANGE = $0015;
+    WM_SHOWWINDOW = $0018;
+    WM_WININICHANGE = $001A;
+{$IF(WINVER >= $0400)}
+    WM_SETTINGCHANGE = WM_WININICHANGE;
+{$ENDIF}(* WINVER >= $0400 *)
+
+    WM_DEVMODECHANGE = $001B;
+    WM_ACTIVATEAPP = $001C;
+    WM_FONTCHANGE = $001D;
+    WM_TIMECHANGE = $001E;
+    WM_CANCELMODE = $001F;
+    WM_SETCURSOR = $0020;
+    WM_MOUSEACTIVATE = $0021;
+    WM_CHILDACTIVATE = $0022;
+    WM_QUEUESYNC = $0023;
+
+    WM_GETMINMAXINFO = $0024;
+
+    WM_PAINTICON = $0026;
+    WM_ICONERASEBKGND = $0027;
+    WM_NEXTDLGCTL = $0028;
+    WM_SPOOLERSTATUS = $002A;
+    WM_DRAWITEM = $002B;
+    WM_MEASUREITEM = $002C;
+    WM_DELETEITEM = $002D;
+    WM_VKEYTOITEM = $002E;
+    WM_CHARTOITEM = $002F;
+    WM_SETFONT = $0030;
+    WM_GETFONT = $0031;
+    WM_SETHOTKEY = $0032;
+    WM_GETHOTKEY = $0033;
+    WM_QUERYDRAGICON = $0037;
+    WM_COMPAREITEM = $0039;
+{$IF(WINVER >= $0500)}
+{$ifndef _WIN32_WCE}
+    WM_GETOBJECT = $003D;
+{$ENDIF}
+{$ENDIF}(* WINVER >= $0500 *)
+    WM_COMPACTING = $0041;
+    WM_COMMNOTIFY = $0044;  (* no longer suported *)
+    WM_WINDOWPOSCHANGING = $0046;
+    WM_WINDOWPOSCHANGED = $0047;
+
+    WM_POWER = $0048;
+    (* wParam for WM_POWER window message and DRV_POWER driver notification *)
+    PWR_OK = 1;
+    PWR_FAIL = (-1);
+    PWR_SUSPENDREQUEST = 1;
+    PWR_SUSPENDRESUME = 2;
+    PWR_CRITICALRESUME = 3;
+
+    WM_COPYDATA = $004A;
+    WM_CANCELJOURNAL = $004B;
+
+{$IF(WINVER >= $0400)}
+    WM_NOTIFY = $004E;
+    WM_INPUTLANGCHANGEREQUEST = $0050;
+    WM_INPUTLANGCHANGE = $0051;
+    WM_TCARD = $0052;
+    WM_HELP = $0053;
+    WM_USERCHANGED = $0054;
+    WM_NOTIFYFORMAT = $0055;
+
+    NFR_ANSI = 1;
+    NFR_UNICODE = 2;
+    NF_QUERY = 3;
+    NF_REQUERY = 4;
+
+    WM_CONTEXTMENU = $007B;
+    WM_STYLECHANGING = $007C;
+    WM_STYLECHANGED = $007D;
+    WM_DISPLAYCHANGE = $007E;
+    WM_GETICON = $007F;
+    WM_SETICON = $0080;
+{$ENDIF}(* WINVER >= $0400 *)
+    WM_NCCREATE = $0081;
+    WM_NCDESTROY = $0082;
+    WM_NCCALCSIZE = $0083;
+    WM_NCHITTEST = $0084;
+    WM_NCPAINT = $0085;
+    WM_NCACTIVATE = $0086;
+    WM_GETDLGCODE = $0087;
+{$ifndef _WIN32_WCE}
+    WM_SYNCPAINT = $0088;
+{$ENDIF}
+    WM_NCMOUSEMOVE = $00A0;
+    WM_NCLBUTTONDOWN = $00A1;
+    WM_NCLBUTTONUP = $00A2;
+    WM_NCLBUTTONDBLCLK = $00A3;
+    WM_NCRBUTTONDOWN = $00A4;
+    WM_NCRBUTTONUP = $00A5;
+    WM_NCRBUTTONDBLCLK = $00A6;
+    WM_NCMBUTTONDOWN = $00A7;
+    WM_NCMBUTTONUP = $00A8;
+    WM_NCMBUTTONDBLCLK = $00A9;
+
+{$IF(_WIN32_WINNT >= $0500)}
+    WM_NCXBUTTONDOWN = $00AB;
+    WM_NCXBUTTONUP = $00AC;
+    WM_NCXBUTTONDBLCLK = $00AD;
+{$ENDIF}(* _WIN32_WINNT >= $0500 *)
+
+{$IF(_WIN32_WINNT >= $0501)}
+    WM_INPUT_DEVICE_CHANGE = $00FE;
+{$ENDIF}(* _WIN32_WINNT >= $0501 *)
+
+{$IF(_WIN32_WINNT >= $0501)}
+    WM_INPUT = $00FF;
+{$ENDIF}(* _WIN32_WINNT >= $0501 *)
+
+    WM_KEYFIRST = $0100;
+    WM_KEYDOWN = $0100;
+    WM_KEYUP = $0101;
+    WM_CHAR = $0102;
+    WM_DEADCHAR = $0103;
+    WM_SYSKEYDOWN = $0104;
+    WM_SYSKEYUP = $0105;
+    WM_SYSCHAR = $0106;
+    WM_SYSDEADCHAR = $0107;
+{$IF(_WIN32_WINNT >= $0501)}
+    WM_UNICHAR = $0109;
+    WM_KEYLAST = $0109;
+    UNICODE_NOCHAR = $FFFF;
+{$ELSE}
+    WM_KEYLAST = $0108;
+{$ENDIF}(* _WIN32_WINNT >= $0501 *)
+
+ {$IF(WINVER >= $0400)}
+    WM_IME_STARTCOMPOSITION = $010D;
+    WM_IME_ENDCOMPOSITION = $010E;
+    WM_IME_COMPOSITION = $010F;
+    WM_IME_KEYLAST = $010F;
+{$ENDIF}(* WINVER >= $0400 *)
+
+    WM_INITDIALOG = $0110;
+    WM_COMMAND = $0111;
+    WM_SYSCOMMAND = $0112;
+    WM_TIMER = $0113;
+    WM_HSCROLL = $0114;
+    WM_VSCROLL = $0115;
+    WM_INITMENU = $0116;
+    WM_INITMENUPOPUP = $0117;
+{$IF(WINVER >= $0601)}
+    WM_GESTURE = $0119;
+    WM_GESTURENOTIFY = $011A;
+{$ENDIF}(* WINVER >= $0601 *)
+
+    WM_MENUSELECT = $011F;
+    WM_MENUCHAR = $0120;
+    WM_ENTERIDLE = $0121;
+{$IF(WINVER >= $0500)}
+{$ifndef _WIN32_WCE}
+    WM_MENURBUTTONUP = $0122;
+    WM_MENUDRAG = $0123;
+    WM_MENUGETOBJECT = $0124;
+    WM_UNINITMENUPOPUP = $0125;
+    WM_MENUCOMMAND = $0126;
+
+{$ifndef _WIN32_WCE}
+{$IF(_WIN32_WINNT >= $0500)}
+    WM_CHANGEUISTATE = $0127;
+    WM_UPDATEUISTATE = $0128;
+    WM_QUERYUISTATE = $0129;
+
+    (* LOWORD(wParam) values in WM_*UISTATE* *)
+    UIS_SET = 1;
+    UIS_CLEAR = 2;
+    UIS_INITIALIZE = 3;
+
+    (* HIWORD(wParam) values in WM_*UISTATE* *)
+    UISF_HIDEFOCUS = $1;
+    UISF_HIDEACCEL = $2;
+{$IF(_WIN32_WINNT >= $0501)}
+    UISF_ACTIVE = $4;
+{$ENDIF}(* _WIN32_WINNT >= $0501 *)
+{$ENDIF}(* _WIN32_WINNT >= $0500 *)
+{$ENDIF}
+
+{$ENDIF}
+{$ENDIF}(* WINVER >= $0500 *)
+
+    WM_CTLCOLORMSGBOX = $0132;
+    WM_CTLCOLOREDIT = $0133;
+    WM_CTLCOLORLISTBOX = $0134;
+    WM_CTLCOLORBTN = $0135;
+    WM_CTLCOLORDLG = $0136;
+    WM_CTLCOLORSCROLLBAR = $0137;
+    WM_CTLCOLORSTATIC = $0138;
+    MN_GETHMENU = $01E1;
+
+    WM_MOUSEFIRST = $0200;
+    WM_MOUSEMOVE = $0200;
+    WM_LBUTTONDOWN = $0201;
+    WM_LBUTTONUP = $0202;
+    WM_LBUTTONDBLCLK = $0203;
+    WM_RBUTTONDOWN = $0204;
+    WM_RBUTTONUP = $0205;
+    WM_RBUTTONDBLCLK = $0206;
+    WM_MBUTTONDOWN = $0207;
+    WM_MBUTTONUP = $0208;
+    WM_MBUTTONDBLCLK = $0209;
+{$IF (_WIN32_WINNT >= $0400) OR (_WIN32_WINDOWS > $0400)}
+    WM_MOUSEWHEEL = $020A;
+{$ENDIF}
+{$IF (_WIN32_WINNT >= $0500)}
+    WM_XBUTTONDOWN = $020B;
+    WM_XBUTTONUP = $020C;
+    WM_XBUTTONDBLCLK = $020D;
+{$ENDIF}
+{$IF (_WIN32_WINNT >= $0600)}
+    WM_MOUSEHWHEEL = $020E;
+{$ENDIF}
+
+{$IF (_WIN32_WINNT >= $0600)}
+    WM_MOUSELAST = $020E;
+{$elif (_WIN32_WINNT >= $0500)}
+    WM_MOUSELAST = $020D;
+{$elif (_WIN32_WINNT >= $0400) OR (_WIN32_WINDOWS > $0400)}
+    WM_MOUSELAST = $020A;
+{$ELSE}
+    WM_MOUSELAST = $0209;
+{$ENDIF}(* (_WIN32_WINNT >= =$0600) *)
+
+{$IF(_WIN32_WINNT >= $0400)}
+    (* Value for rolling one detent *)
+    WHEEL_DELTA = 120;
+    (* Setting to scroll one page for SPI_GET/SETWHEELSCROLLLINES *)
+    WHEEL_PAGESCROLL = $ffffffff; // UINT_MAX
+ {$ENDIF}(* _WIN32_WINNT >= $0400 *)
+
+ {$IF(_WIN32_WINNT >= $0500)}
+    (* XButton values are WORD flags *)
+    XBUTTON1 = $0001;
+    XBUTTON2 = $0002;
+    (* Were there to be an XBUTTON3, its value would be =$0004 *)
+ {$ENDIF}(* _WIN32_WINNT >= $0500 *)
+
+    WM_PARENTNOTIFY = $0210;
+    WM_ENTERMENULOOP = $0211;
+    WM_EXITMENULOOP = $0212;
+
+{$IF(WINVER >= $0400)}
+    WM_NEXTMENU = $0213;
+    WM_SIZING = $0214;
+    WM_CAPTURECHANGED = $0215;
+    WM_MOVING = $0216;
+{$ENDIF}(* WINVER >= $0400 *)
+
+
+{$IF(WINVER >= $0400)}
+    WM_POWERBROADCAST = $0218;
+
+    PBT_APMQUERYSUSPEND = $0000;
+    PBT_APMQUERYSTANDBY = $0001;
+
+    PBT_APMQUERYSUSPENDFAILED = $0002;
+    PBT_APMQUERYSTANDBYFAILED = $0003;
+
+    PBT_APMSUSPEND = $0004;
+    PBT_APMSTANDBY = $0005;
+
+    PBT_APMRESUMECRITICAL = $0006;
+    PBT_APMRESUMESUSPEND = $0007;
+    PBT_APMRESUMESTANDBY = $0008;
+
+    PBTF_APMRESUMEFROMFAILURE = $00000001;
+
+    PBT_APMBATTERYLOW = $0009;
+    PBT_APMPOWERSTATUSCHANGE = $000A;
+
+    PBT_APMOEMEVENT = $000B;
+
+
+    PBT_APMRESUMEAUTOMATIC = $0012;
+{$IF (_WIN32_WINNT >= $0502)}
+    PBT_POWERSETTINGCHANGE = $8013;
+{$ENDIF}// (_WIN32_WINNT >= $0502)
+{$ENDIF}(* WINVER >= $0400 *)
+
+{$IF(WINVER >= $0400)}
+    WM_DEVICECHANGE = $0219;
+{$ENDIF}(* WINVER >= $0400 *)
+
+    WM_MDICREATE = $0220;
+    WM_MDIDESTROY = $0221;
+    WM_MDIACTIVATE = $0222;
+    WM_MDIRESTORE = $0223;
+    WM_MDINEXT = $0224;
+    WM_MDIMAXIMIZE = $0225;
+    WM_MDITILE = $0226;
+    WM_MDICASCADE = $0227;
+    WM_MDIICONARRANGE = $0228;
+    WM_MDIGETACTIVE = $0229;
+
+    WM_MDISETMENU = $0230;
+    WM_ENTERSIZEMOVE = $0231;
+    WM_EXITSIZEMOVE = $0232;
+    WM_DROPFILES = $0233;
+    WM_MDIREFRESHMENU = $0234;
+
+{$IF(WINVER >= $0602)}
+    WM_POINTERDEVICECHANGE = $238;
+    WM_POINTERDEVICEINRANGE = $239;
+    WM_POINTERDEVICEOUTOFRANGE = $23A;
+{$ENDIF}(* WINVER >= $0602 *)
+
+{$IF(WINVER >= $0601)}
+    WM_TOUCH = $0240;
+{$ENDIF}(* WINVER >= $0601 *)
+
+{$IF(WINVER >= $0602)}
+    WM_NCPOINTERUPDATE = $0241;
+    WM_NCPOINTERDOWN = $0242;
+    WM_NCPOINTERUP = $0243;
+    WM_POINTERUPDATE = $0245;
+    WM_POINTERDOWN = $0246;
+    WM_POINTERUP = $0247;
+    WM_POINTERENTER = $0249;
+    WM_POINTERLEAVE = $024A;
+    WM_POINTERACTIVATE = $024B;
+    WM_POINTERCAPTURECHANGED = $024C;
+    WM_TOUCHHITTESTING = $024D;
+    WM_POINTERWHEEL = $024E;
+    WM_POINTERHWHEEL = $024F;
+    DM_POINTERHITTEST = $0250;
+    WM_POINTERROUTEDTO = $0251;
+    WM_POINTERROUTEDAWAY = $0252;
+    WM_POINTERROUTEDRELEASED = $0253;
+{$ENDIF}(* WINVER >= $0602 *)
+
+{$IF(WINVER >= $0400)}
+    WM_IME_SETCONTEXT = $0281;
+    WM_IME_NOTIFY = $0282;
+    WM_IME_CONTROL = $0283;
+    WM_IME_COMPOSITIONFULL = $0284;
+    WM_IME_SELECT = $0285;
+    WM_IME_CHAR = $0286;
+{$ENDIF}(* WINVER >= $0400 *)
+{$IF(WINVER >= $0500)}
+    WM_IME_REQUEST = $0288;
+{$ENDIF}(* WINVER >= $0500 *)
+{$IF(WINVER >= $0400)}
+    WM_IME_KEYDOWN = $0290;
+    WM_IME_KEYUP = $0291;
+{$ENDIF}(* WINVER >= $0400 *)
+
+{$IF((_WIN32_WINNT >= $0400) OR (WINVER >= $0500))}
+    WM_MOUSEHOVER = $02A1;
+    WM_MOUSELEAVE = $02A3;
+{$ENDIF}
+{$IF(WINVER >= $0500)}
+    WM_NCMOUSEHOVER = $02A0;
+    WM_NCMOUSELEAVE = $02A2;
+{$ENDIF}(* WINVER >= $0500 *)
+
+{$IF(_WIN32_WINNT >= $0501)}
+    WM_WTSSESSION_CHANGE = $02B1;
+    WM_TABLET_FIRST = $02c0;
+    WM_TABLET_LAST = $02df;
+{$ENDIF}(* _WIN32_WINNT >= $0501 *)
+
+{$IF(WINVER >= $0601)}
+    WM_DPICHANGED = $02E0;
+{$ENDIF}(* WINVER >= $0601 *)
+{$IF(WINVER >= $0605)}
+    WM_DPICHANGED_BEFOREPARENT = $02E2;
+    WM_DPICHANGED_AFTERPARENT = $02E3;
+    WM_GETDPISCALEDSIZE = $02E4;
+{$ENDIF}(* WINVER >= $0605 *)
+
+    WM_CUT = $0300;
+    WM_COPY = $0301;
+    WM_PASTE = $0302;
+    WM_CLEAR = $0303;
+    WM_UNDO = $0304;
+    WM_RENDERFORMAT = $0305;
+    WM_RENDERALLFORMATS = $0306;
+    WM_DESTROYCLIPBOARD = $0307;
+    WM_DRAWCLIPBOARD = $0308;
+    WM_PAINTCLIPBOARD = $0309;
+    WM_VSCROLLCLIPBOARD = $030A;
+    WM_SIZECLIPBOARD = $030B;
+    WM_ASKCBFORMATNAME = $030C;
+    WM_CHANGECBCHAIN = $030D;
+    WM_HSCROLLCLIPBOARD = $030E;
+    WM_QUERYNEWPALETTE = $030F;
+    WM_PALETTEISCHANGING = $0310;
+    WM_PALETTECHANGED = $0311;
+    WM_HOTKEY = $0312;
+
+{$IF(WINVER >= $0400)}
+    WM_PRINT = $0317;
+    WM_PRINTCLIENT = $0318;
+{$ENDIF}(* WINVER >= $0400 *)
+
+{$IF(_WIN32_WINNT >= $0500)}
+    WM_APPCOMMAND = $0319;
+{$ENDIF}(* _WIN32_WINNT >= $0500 *)
+
+{$IF(_WIN32_WINNT >= $0501)}
+    WM_THEMECHANGED = $031A;
+{$ENDIF}(* _WIN32_WINNT >= $0501 *)
+
+{$IF(_WIN32_WINNT >= $0501)}
+    WM_CLIPBOARDUPDATE = $031D;
+{$ENDIF}(* _WIN32_WINNT >= $0501 *)
+
+{$IF(_WIN32_WINNT >= $0600)}
+    WM_DWMCOMPOSITIONCHANGED = $031E;
+    WM_DWMNCRENDERINGCHANGED = $031F;
+    WM_DWMCOLORIZATIONCOLORCHANGED = $0320;
+    WM_DWMWINDOWMAXIMIZEDCHANGE = $0321;
+{$ENDIF}(* _WIN32_WINNT >= $0600 *)
+
+{$IF(_WIN32_WINNT >= $0601)}
+    WM_DWMSENDICONICTHUMBNAIL = $0323;
+    WM_DWMSENDICONICLIVEPREVIEWBITMAP = $0326;
+{$ENDIF}(* _WIN32_WINNT >= $0601 *)
+
+{$IF(WINVER >= $0600)}
+    WM_GETTITLEBARINFOEX = $033F;
+{$ENDIF}(* WINVER >= $0600 *)
+
+{$IF(WINVER >= $0400)}
+{$ENDIF}(* WINVER >= $0400 *)
+
+     {$IF(WINVER >= $0400)}
+    WM_HANDHELDFIRST = $0358;
+    WM_HANDHELDLAST = $035F;
+
+    WM_AFXFIRST = $0360;
+    WM_AFXLAST = $037F;
+{$ENDIF}(* WINVER >= $0400 *)
+
+    WM_PENWINFIRST = $0380;
+    WM_PENWINLAST = $038F;
+
+{$IF(WINVER >= $0400)}
+    WM_APP = $8000;
+{$ENDIF}(* WINVER >= $0400 *)
+
+(*
+ * NOTE: All Message Numbers below =$0400 are RESERVED.
+ *
+ * Private Window Messages Start Here:
+ *)
+    WM_USER = $0400;
+
+    (* WM_NCHITTEST and MOUSEHOOKSTRUCT Mouse Position Codes *)
+    HTERROR = (-2);
+    HTTRANSPARENT = (-1);
+    HTNOWHERE = 0;
+    HTCLIENT = 1;
+    HTCAPTION = 2;
+    HTSYSMENU = 3;
+    HTGROWBOX = 4;
+    HTSIZE = HTGROWBOX;
+    HTMENU = 5;
+    HTHSCROLL = 6;
+    HTVSCROLL = 7;
+    HTMINBUTTON = 8;
+    HTMAXBUTTON = 9;
+    HTLEFT = 10;
+    HTRIGHT = 11;
+    HTTOP = 12;
+    HTTOPLEFT = 13;
+    HTTOPRIGHT = 14;
+    HTBOTTOM = 15;
+    HTBOTTOMLEFT = 16;
+    HTBOTTOMRIGHT = 17;
+    HTBORDER = 18;
+    HTREDUCE = HTMINBUTTON;
+    HTZOOM = HTMAXBUTTON;
+    HTSIZEFIRST = HTLEFT;
+    HTSIZELAST = HTBOTTOMRIGHT;
+{$IF(WINVER >= $0400)}
+    HTOBJECT = 19;
+    HTCLOSE = 20;
+    HTHELP = 21;
+{$ENDIF}(* WINVER >= $0400 *)
+
+
+    (* SendMessageTimeout values *)
+    SMTO_NORMAL = $0000;
+    SMTO_BLOCK = $0001;
+    SMTO_ABORTIFHUNG = $0002;
+{$IF(WINVER >= $0500)}
+    SMTO_NOTIMEOUTIFNOTHUNG = $0008;
+{$ENDIF}(* WINVER >= $0500 *)
+{$IF(WINVER >= $0600)}
+    SMTO_ERRORONEXIT = $0020;
+{$ENDIF}(* WINVER >= $0600 *)
+{$IF(WINVER >= $0602)}
+{$ENDIF}(* WINVER >= $0602 *)
+
+    (* WM_MOUSEACTIVATE Return Codes *)
+    MA_ACTIVATE = 1;
+    MA_ACTIVATEANDEAT = 2;
+    MA_NOACTIVATE = 3;
+    MA_NOACTIVATEANDEAT = 4;
+
+    (* WM_SETICON / WM_GETICON Type Codes *)
+    ICON_SMALL = 0;
+    ICON_BIG = 1;
+{$IF(_WIN32_WINNT >= $0501)}
+    ICON_SMALL2 = 2;
+{$ENDIF}(* _WIN32_WINNT >= $0501 *)
+
+{$IF(WINVER >= $0400)}
+
+    (*  wParam for WM_SIZING message  *)
+    WMSZ_LEFT = 1;
+    WMSZ_RIGHT = 2;
+    WMSZ_TOP = 3;
+    WMSZ_TOPLEFT = 4;
+    WMSZ_TOPRIGHT = 5;
+    WMSZ_BOTTOM = 6;
+    WMSZ_BOTTOMLEFT = 7;
+    WMSZ_BOTTOMRIGHT = 8;
+{$ENDIF}(* WINVER >= $0400 *)
+
+    (* WM_SIZE message wParam values *)
+    SIZE_RESTORED = 0;
+    SIZE_MINIMIZED = 1;
+    SIZE_MAXIMIZED = 2;
+    SIZE_MAXSHOW = 3;
+    SIZE_MAXHIDE = 4;
+
+    (* Obsolete constant names *)
+    SIZENORMAL = SIZE_RESTORED;
+    SIZEICONIC = SIZE_MINIMIZED;
+    SIZEFULLSCREEN = SIZE_MAXIMIZED;
+    SIZEZOOMSHOW = SIZE_MAXSHOW;
+    SIZEZOOMHIDE = SIZE_MAXHIDE;
+
+    (* WM_NCCALCSIZE "window valid rect" return values *)
+    WVR_ALIGNTOP = $0010;
+    WVR_ALIGNLEFT = $0020;
+    WVR_ALIGNBOTTOM = $0040;
+    WVR_ALIGNRIGHT = $0080;
+    WVR_HREDRAW = $0100;
+    WVR_VREDRAW = $0200;
+    WVR_REDRAW = (WVR_HREDRAW or WVR_VREDRAW);
+    WVR_VALIDRECTS = $0400;
+
+    (* Key State Masks for Mouse Messages *)
+    MK_LBUTTON = $0001;
+    MK_RBUTTON = $0002;
+    MK_SHIFT = $0004;
+    MK_CONTROL = $0008;
+    MK_MBUTTON = $0010;
+{$IF(_WIN32_WINNT >= $0500)}
+    MK_XBUTTON1 = $0020;
+    MK_XBUTTON2 = $0040;
+{$ENDIF}(* _WIN32_WINNT >= $0500 *)
+
+{$IF(_WIN32_WINNT >= $0400)}
+    TME_HOVER = $00000001;
+    TME_LEAVE = $00000002;
+{$IF(WINVER >= $0500)}
+    TME_NONCLIENT = $00000010;
+{$ENDIF}(* WINVER >= $0500 *)
+    TME_QUERY = $40000000;
+    TME_CANCEL = $80000000;
+    HOVER_DEFAULT = $FFFFFFFF;
+{$ENDIF}(* _WIN32_WINNT >= $0400 *)
+
+    (* Window Styles *)
+    WS_OVERLAPPED = $00000000;
+    WS_POPUP = $80000000;
+    WS_CHILD = $40000000;
+    WS_MINIMIZE = $20000000;
+    WS_VISIBLE = $10000000;
+    WS_DISABLED = $08000000;
+    WS_CLIPSIBLINGS = $04000000;
+    WS_CLIPCHILDREN = $02000000;
+    WS_MAXIMIZE = $01000000;
+    WS_CAPTION = $00C00000;     (* WS_BORDER | WS_DLGFRAME  *)
+    WS_BORDER = $00800000;
+    WS_DLGFRAME = $00400000;
+    WS_VSCROLL = $00200000;
+    WS_HSCROLL = $00100000;
+    WS_SYSMENU = $00080000;
+    WS_THICKFRAME = $00040000;
+    WS_GROUP = $00020000;
+    WS_TABSTOP = $00010000;
+
+    WS_MINIMIZEBOX = $00020000;
+    WS_MAXIMIZEBOX = $00010000;
+
+    WS_TILED = WS_OVERLAPPED;
+    WS_ICONIC = WS_MINIMIZE;
+    WS_SIZEBOX = WS_THICKFRAME;
+    WS_TILEDWINDOW = WS_OVERLAPPEDWINDOW;
+
+    (* Common Window Styles *)
+    WS_OVERLAPPEDWINDOW = (WS_OVERLAPPED or WS_CAPTION or WS_SYSMENU or WS_THICKFRAME or WS_MINIMIZEBOX or WS_MAXIMIZEBOX);
+    WS_POPUPWINDOW = (WS_POPUP or WS_BORDER or WS_SYSMENU);
+    WS_CHILDWINDOW = (WS_CHILD);
+
+    (* Extended Window Styles *)
+    WS_EX_DLGMODALFRAME = $00000001;
+    WS_EX_NOPARENTNOTIFY = $00000004;
+    WS_EX_TOPMOST = $00000008;
+    WS_EX_ACCEPTFILES = $00000010;
+    WS_EX_TRANSPARENT = $00000020;
+{$IF(WINVER >= $0400)}
+    WS_EX_MDICHILD = $00000040;
+    WS_EX_TOOLWINDOW = $00000080;
+    WS_EX_WINDOWEDGE = $00000100;
+    WS_EX_CLIENTEDGE = $00000200;
+    WS_EX_CONTEXTHELP = $00000400;
+
+{$ENDIF}(* WINVER >= $0400 *)
+{$IF(WINVER >= $0400)}
+    WS_EX_RIGHT = $00001000;
+    WS_EX_LEFT = $00000000;
+    WS_EX_RTLREADING = $00002000;
+    WS_EX_LTRREADING = $00000000;
+    WS_EX_LEFTSCROLLBAR = $00004000;
+    WS_EX_RIGHTSCROLLBAR = $00000000;
+
+    WS_EX_CONTROLPARENT = $00010000;
+    WS_EX_STATICEDGE = $00020000;
+    WS_EX_APPWINDOW = $00040000;
+
+    WS_EX_OVERLAPPEDWINDOW = (WS_EX_WINDOWEDGE or WS_EX_CLIENTEDGE);
+    WS_EX_PALETTEWINDOW = (WS_EX_WINDOWEDGE or WS_EX_TOOLWINDOW or WS_EX_TOPMOST);
+ {$ENDIF}(* WINVER >= $0400 *)
+
+{$IF(_WIN32_WINNT >= $0500)}
+    WS_EX_LAYERED = $00080000;
+ {$ENDIF}(* _WIN32_WINNT >= $0500 *)
+
+ {$IF(WINVER >= $0500)}
+    WS_EX_NOINHERITLAYOUT = $00100000; // Disable inheritence of mirroring by children
+{$ENDIF}(* WINVER >= $0500 *)
+
+{$IF(WINVER >= $0602)}
+    WS_EX_NOREDIRECTIONBITMAP = $00200000;
+{$ENDIF}(* WINVER >= $0602 *)
+
+{$IF(WINVER >= $0500)}
+    WS_EX_LAYOUTRTL = $00400000; // Right to left mirroring
+{$ENDIF}(* WINVER >= $0500 *)
+
+{$IF(_WIN32_WINNT >= $0501)}
+    WS_EX_COMPOSITED = $02000000;
+{$ENDIF}(* _WIN32_WINNT >= $0501 *)
+{$IF(_WIN32_WINNT >= $0500)}
+    WS_EX_NOACTIVATE = $08000000;
+{$ENDIF}(* _WIN32_WINNT >= $0500 *)
+
+
+    (* Class styles *)
+    CS_VREDRAW = $0001;
+    CS_HREDRAW = $0002;
+    CS_DBLCLKS = $0008;
+    CS_OWNDC = $0020;
+    CS_CLASSDC = $0040;
+    CS_PARENTDC = $0080;
+    CS_NOCLOSE = $0200;
+    CS_SAVEBITS = $0800;
+    CS_BYTEALIGNCLIENT = $1000;
+    CS_BYTEALIGNWINDOW = $2000;
+    CS_GLOBALCLASS = $4000;
+    CS_IME = $00010000;
+{$IF(_WIN32_WINNT >= $0501)}
+    CS_DROPSHADOW = $00020000;
+{$ENDIF}(* _WIN32_WINNT >= $0501 *)
+
+
+{$IF(WINVER >= $0400)}
+    (* WM_PRINT flags *)
+    PRF_CHECKVISIBLE = $00000001;
+    PRF_NONCLIENT = $00000002;
+    PRF_CLIENT = $00000004;
+    PRF_ERASEBKGND = $00000008;
+    PRF_CHILDREN = $00000010;
+    PRF_OWNED = $00000020;
+
+    (* 3D border styles *)
+    BDR_RAISEDOUTER = $0001;
+    BDR_SUNKENOUTER = $0002;
+    BDR_RAISEDINNER = $0004;
+    BDR_SUNKENINNER = $0008;
+
+    BDR_OUTER = (BDR_RAISEDOUTER or BDR_SUNKENOUTER);
+    BDR_INNER = (BDR_RAISEDINNER or BDR_SUNKENINNER);
+    BDR_RAISED = (BDR_RAISEDOUTER or BDR_RAISEDINNER);
+    BDR_SUNKEN = (BDR_SUNKENOUTER or BDR_SUNKENINNER);
+
+    EDGE_RAISED = (BDR_RAISEDOUTER or BDR_RAISEDINNER);
+    EDGE_SUNKEN = (BDR_SUNKENOUTER or BDR_SUNKENINNER);
+    EDGE_ETCHED = (BDR_SUNKENOUTER or BDR_RAISEDINNER);
+    EDGE_BUMP = (BDR_RAISEDOUTER or BDR_SUNKENINNER);
+
+    (* Border flags *)
+    BF_LEFT = $0001;
+    BF_TOP = $0002;
+    BF_RIGHT = $0004;
+    BF_BOTTOM = $0008;
+
+    BF_TOPLEFT = (BF_TOP or BF_LEFT);
+    BF_TOPRIGHT = (BF_TOP or BF_RIGHT);
+    BF_BOTTOMLEFT = (BF_BOTTOM or BF_LEFT);
+    BF_BOTTOMRIGHT = (BF_BOTTOM or BF_RIGHT);
+    BF_RECT = (BF_LEFT or BF_TOP or BF_RIGHT or BF_BOTTOM);
+
+    BF_DIAGONAL = $0010;
+
+    // For diagonal lines, the BF_RECT flags specify the end point of the
+    // vector bounded by the rectangle parameter.
+    BF_DIAGONAL_ENDTOPRIGHT = (BF_DIAGONAL or BF_TOP or BF_RIGHT);
+    BF_DIAGONAL_ENDTOPLEFT = (BF_DIAGONAL or BF_TOP or BF_LEFT);
+    BF_DIAGONAL_ENDBOTTOMLEFT = (BF_DIAGONAL or BF_BOTTOM or BF_LEFT);
+    BF_DIAGONAL_ENDBOTTOMRIGHT = (BF_DIAGONAL or BF_BOTTOM or BF_RIGHT);
+
+    BF_MIDDLE = $0800; (* Fill in the middle *)
+    BF_SOFT = $1000; (* For softer buttons *)
+    BF_ADJUST = $2000; (* Calculate the space left over *)
+    BF_FLAT = $4000; (* For flat rather than 3D borders *)
+    BF_MONO = $8000; (* For monochrome borders *)
+
+    (* flags for DrawFrameControl *)
+
+    DFC_CAPTION = 1;
+    DFC_MENU = 2;
+    DFC_SCROLL = 3;
+    DFC_BUTTON = 4;
+{$IF(WINVER >= $0500)}
+    DFC_POPUPMENU = 5;
+{$ENDIF}(* WINVER >= $0500 *)
+
+    DFCS_CAPTIONCLOSE = $0000;
+    DFCS_CAPTIONMIN = $0001;
+    DFCS_CAPTIONMAX = $0002;
+    DFCS_CAPTIONRESTORE = $0003;
+    DFCS_CAPTIONHELP = $0004;
+
+    DFCS_MENUARROW = $0000;
+    DFCS_MENUCHECK = $0001;
+    DFCS_MENUBULLET = $0002;
+    DFCS_MENUARROWRIGHT = $0004;
+    DFCS_SCROLLUP = $0000;
+    DFCS_SCROLLDOWN = $0001;
+    DFCS_SCROLLLEFT = $0002;
+    DFCS_SCROLLRIGHT = $0003;
+    DFCS_SCROLLCOMBOBOX = $0005;
+    DFCS_SCROLLSIZEGRIP = $0008;
+    DFCS_SCROLLSIZEGRIPRIGHT = $0010;
+
+    DFCS_BUTTONCHECK = $0000;
+    DFCS_BUTTONRADIOIMAGE = $0001;
+    DFCS_BUTTONRADIOMASK = $0002;
+    DFCS_BUTTONRADIO = $0004;
+    DFCS_BUTTON3STATE = $0008;
+    DFCS_BUTTONPUSH = $0010;
+
+    DFCS_INACTIVE = $0100;
+    DFCS_PUSHED = $0200;
+    DFCS_CHECKED = $0400;
+
+{$IF(WINVER >= $0500)}
+    DFCS_TRANSPARENT = $0800;
+    DFCS_HOT = $1000;
+{$ENDIF}(* WINVER >= $0500 *)
+
+    DFCS_ADJUSTRECT = $2000;
+    DFCS_FLAT = $4000;
+    DFCS_MONO = $8000;
+
+    (* flags for DrawCaption *)
+    DC_ACTIVE = $0001;
+    DC_SMALLCAP = $0002;
+    DC_ICON = $0004;
+    DC_TEXT = $0008;
+    DC_INBUTTON = $0010;
+{$IF(WINVER >= $0500)}
+    DC_GRADIENT = $0020;
+{$ENDIF}(* WINVER >= $0500 *)
+{$IF(_WIN32_WINNT >= $0501)}
+    DC_BUTTONS = $1000;
+{$ENDIF}(* _WIN32_WINNT >= $0501 *)
+    IDANI_OPEN = 1;
+    IDANI_CAPTION = 3;
+ {$ENDIF}(* WINVER >= $0400 *)
+
+    (* Predefined Clipboard Formats *)
+    CF_TEXT = 1;
+    CF_BITMAP = 2;
+    CF_METAFILEPICT = 3;
+    CF_SYLK = 4;
+    CF_DIF = 5;
+    CF_TIFF = 6;
+    CF_OEMTEXT = 7;
+    CF_DIB = 8;
+    CF_PALETTE = 9;
+    CF_PENDATA = 10;
+    CF_RIFF = 11;
+    CF_WAVE = 12;
+    CF_UNICODETEXT = 13;
+    CF_ENHMETAFILE = 14;
+{$IF(WINVER >= $0400)}
+    CF_HDROP = 15;
+    CF_LOCALE = 16;
+{$ENDIF}(* WINVER >= $0400 *)
+{$IF(WINVER >= $0500)}
+    CF_DIBV5 = 17;
+{$ENDIF}(* WINVER >= $0500 *)
+
+{$IF(WINVER >= $0500)}
+    CF_MAX = 18;
+{$elseif(WINVER >= $0400)}
+    CF_MAX = 17;
+{$ELSE}
+    CF_MAX = 15;
+{$ENDIF}
+
+    CF_OWNERDISPLAY = $0080;
+    CF_DSPTEXT = $0081;
+    CF_DSPBITMAP = $0082;
+    CF_DSPMETAFILEPICT = $0083;
+    CF_DSPENHMETAFILE = $008E;
+
+    (* "Private" formats don't get GlobalFree()'d *)
+    CF_PRIVATEFIRST = $0200;
+    CF_PRIVATELAST = $02FF;
+
+    (* "GDIOBJ" formats do get DeleteObject()'d *)
+    CF_GDIOBJFIRST = $0300;
+    CF_GDIOBJLAST = $03FF;
+
+    (* Defines for the fVirt field of the Accelerator table structure. *)
+    FVIRTKEY = $01;         (* Assumed to be == TRUE *)
+    FNOINVERT = $02;
+    FSHIFT = $04;
+    FCONTROL = $08;
+    FALT = $10;
+
+    WPF_SETMINPOSITION = $0001;
+    WPF_RESTORETOMAXIMIZED = $0002;
+{$IF(_WIN32_WINNT >= $0500)}
+    WPF_ASYNCWINDOWPLACEMENT = $0004;
+{$ENDIF}(* _WIN32_WINNT >= $0500 *)
+
+
+    (* Owner draw control types *)
+    ODT_MENU = 1;
+    ODT_LISTBOX = 2;
+    ODT_COMBOBOX = 3;
+    ODT_BUTTON = 4;
+{$IF(WINVER >= $0400)}
+    ODT_STATIC = 5;
+{$ENDIF}(* WINVER >= $0400 *)
+
+    (* Owner draw actions *)
+    ODA_DRAWENTIRE = $0001;
+    ODA_SELECT = $0002;
+    ODA_FOCUS = $0004;
+
+    (* Owner draw state *)
+    ODS_SELECTED = $0001;
+    ODS_GRAYED = $0002;
+    ODS_DISABLED = $0004;
+    ODS_CHECKED = $0008;
+    ODS_FOCUS = $0010;
+{$IF(WINVER >= $0400)}
+    ODS_DEFAULT = $0020;
+    ODS_COMBOBOXEDIT = $1000;
+{$ENDIF}(* WINVER >= $0400 *)
+{$IF(WINVER >= $0500)}
+    ODS_HOTLIGHT = $0040;
+    ODS_INACTIVE = $0080;
+{$IF(_WIN32_WINNT >= $0500)}
+    ODS_NOACCEL = $0100;
+    ODS_NOFOCUSRECT = $0200;
+{$ENDIF}(* _WIN32_WINNT >= $0500 *)
+{$ENDIF}(* WINVER >= $0500 *)
+
+    (* PeekMessage() Options *)
+    PM_NOREMOVE = $0000;
+    PM_REMOVE = $0001;
+    PM_NOYIELD = $0002;
+
+
+{$IF(WINVER >= $0500)}
+    PM_QS_INPUT = (QS_INPUT shl 16);
+    PM_QS_POSTMESSAGE = ((QS_POSTMESSAGE or QS_HOTKEY or QS_TIMER) shl 16);
+    PM_QS_PAINT = (QS_PAINT shl 16);
+    PM_QS_SENDMESSAGE = (QS_SENDMESSAGE shl 16);
+{$ENDIF}(* WINVER >= $0500 *)
+
+    MOD_ALT = $0001;
+    MOD_CONTROL = $0002;
+    MOD_SHIFT = $0004;
+    MOD_WIN = $0008;
+{$IF(WINVER >= $0601)}
+    MOD_NOREPEAT = $4000;
+{$ENDIF}(* WINVER >= $0601 *)
+
+    IDHOT_SNAPWINDOW = (-1);    (* SHIFT-PRINTSCRN  *)
+    IDHOT_SNAPDESKTOP = (-2);    (* PRINTSCRN        *)
+
+ {$IF(_WIN32_WINNT >= $0400)}
+    ENDSESSION_CLOSEAPP = $00000001;
+{$ENDIF}(* _WIN32_WINNT >= $0400 *)
+{$IF(_WIN32_WINNT >= $0400)}
+    ENDSESSION_CRITICAL = $40000000;
+{$ENDIF}(* _WIN32_WINNT >= $0400 *)
+{$IF(_WIN32_WINNT >= $0400)}
+    ENDSESSION_LOGOFF = $80000000;
+{$ENDIF}(* _WIN32_WINNT >= $0400 *)
+
+    EWX_LOGOFF = $00000000;
+    EWX_SHUTDOWN = $00000001;
+    EWX_REBOOT = $00000002;
+    EWX_FORCE = $00000004;
+    EWX_POWEROFF = $00000008;
+{$IF(_WIN32_WINNT >= $0500)}
+    EWX_FORCEIFHUNG = $00000010;
+{$ENDIF}(* _WIN32_WINNT >= $0500 *)
+    EWX_QUICKRESOLVE = $00000020;
+{$IF(_WIN32_WINNT >= $0600)}
+    EWX_RESTARTAPPS = $00000040;
+{$ENDIF}(* _WIN32_WINNT >= $0600 *)
+    EWX_HYBRID_SHUTDOWN = $00400000;
+    EWX_BOOTOPTIONS = $01000000;
+
+    //Broadcast Special Message Recipient list
+    BSM_ALLCOMPONENTS = $00000000;
+    BSM_VXDS = $00000001;
+    BSM_NETDRIVER = $00000002;
+    BSM_INSTALLABLEDRIVERS = $00000004;
+    BSM_APPLICATIONS = $00000008;
+    BSM_ALLDESKTOPS = $00000010;
+
+    //Broadcast Special Message Flags
+    BSF_QUERY = $00000001;
+    BSF_IGNORECURRENTTASK = $00000002;
+    BSF_FLUSHDISK = $00000004;
+    BSF_NOHANG = $00000008;
+    BSF_POSTMESSAGE = $00000010;
+    BSF_FORCEIFHUNG = $00000020;
+    BSF_NOTIMEOUTIFNOTHUNG = $00000040;
+{$IF(_WIN32_WINNT >= $0500)}
+    BSF_ALLOWSFW = $00000080;
+    BSF_SENDNOTIFYMESSAGE = $00000100;
+{$ENDIF}(* _WIN32_WINNT >= $0500 *)
+{$IF(_WIN32_WINNT >= $0501)}
+    BSF_RETURNHDESK = $00000200;
+    BSF_LUID = $00000400;
+{$ENDIF}(* _WIN32_WINNT >= $0501 *)
+
+    BROADCAST_QUERY_DENY = $424D5144;  // Return this value to deny a query.
+
+{$IF(WINVER >= $0500)}
+    DEVICE_NOTIFY_WINDOW_HANDLE = $00000000;
+    DEVICE_NOTIFY_SERVICE_HANDLE = $00000001;
+{$IF(_WIN32_WINNT >= $0501)}
+    DEVICE_NOTIFY_ALL_INTERFACE_CLASSES = $00000004;
+{$ENDIF}(* _WIN32_WINNT >= $0501 *)
+{$ENDIF}(* WINVER >= $0500 *)
+
+    (* Special HWND value for use with PostMessage() and SendMessage() *)
+    HWND_BROADCAST: THWND = $ffff;
+
+{$IF(WINVER >= $0500)}
+    HWND_MESSAGE: THWND = -3;
+{$ENDIF}(* WINVER >= $0500 *)
+
+
+{$IF(WINVER >= $0500)}
+    (* InSendMessageEx return value *)
+    ISMEX_NOSEND = $00000000;
+    ISMEX_SEND = $00000001;
+    ISMEX_NOTIFY = $00000002;
+    ISMEX_CALLBACK = $00000004;
+    ISMEX_REPLIED = $00000008;
+{$ENDIF}(* WINVER >= $0500 *)
+
+    CW_USEDEFAULT = $80000000;
+
+    (* Special value for CreateWindow, et al. *)
+    HWND_DESKTOP: THWND = 0;
+
+{$IF(_WIN32_WINNT >= $0500)}
+
+     {$IF(_WIN32_WINNT >= $0501)}
+    PW_CLIENTONLY = $00000001;
+
+{$IF(_WIN32_WINNT >= $0603)}
+    PW_RENDERFULLCONTENT = $00000002;
+{$ENDIF}(* _WIN32_WINNT >= $0603 *)
+{$ENDIF}(* _WIN32_WINNT >= $0501 *)
+    LWA_COLORKEY = $00000001;
+    LWA_ALPHA = $00000002;
+
+
+    ULW_COLORKEY = $00000001;
+    ULW_ALPHA = $00000002;
+    ULW_OPAQUE = $00000004;
+
+    ULW_EX_NORESIZE = $00000008;
+{$ENDIF}(* _WIN32_WINNT >= $0500 *)
+
+{$IF(WINVER >= $0500)}
+    FLASHW_STOP = 0;
+    FLASHW_CAPTION = $00000001;
+    FLASHW_TRAY = $00000002;
+    FLASHW_ALL = (FLASHW_CAPTION or FLASHW_TRAY);
+    FLASHW_TIMER = $00000004;
+    FLASHW_TIMERNOFG = $0000000C;
+{$ENDIF}(* WINVER >= $0500 *)
+
+     {$IF(_WIN32_WINNT >= $0601)}
+    WDA_NONE = $00000000;
+    WDA_MONITOR = $00000001;
+  {$ENDIF}(* _WIN32_WINNT >= $0601 *)
+
+    (* SetWindowPos Flags *)
+    SWP_NOSIZE = $0001;
+    SWP_NOMOVE = $0002;
+    SWP_NOZORDER = $0004;
+    SWP_NOREDRAW = $0008;
+    SWP_NOACTIVATE = $0010;
+    SWP_FRAMECHANGED = $0020;  (* The frame changed: send WM_NCCALCSIZE *)
+    SWP_SHOWWINDOW = $0040;
+    SWP_HIDEWINDOW = $0080;
+    SWP_NOCOPYBITS = $0100;
+    SWP_NOOWNERZORDER = $0200;  (* Don't do owner Z ordering *)
+    SWP_NOSENDCHANGING = $0400;  (* Don't send WM_WINDOWPOSCHANGING *)
+
+    SWP_DRAWFRAME = SWP_FRAMECHANGED;
+    SWP_NOREPOSITION = SWP_NOOWNERZORDER;
+
+  {$IF(WINVER >= $0400)}
+    SWP_DEFERERASE = $2000;
+    SWP_ASYNCWINDOWPOS = $4000;
+  {$ENDIF}(* WINVER >= $0400 *)
+
+
+    HWND_TOP: THWND = 0;
+    HWND_BOTTOM: THWND = 1;
+    HWND_TOPMOST: THWND = -1;
+    HWND_NOTOPMOST: THWND = -2;
+
+    (* Window extra byted needed for private dialog classes. *)
+{$ifndef _MAC}
+    DLGWINDOWEXTRA = 30;
+{$ELSE}
+    DLGWINDOWEXTRA = 48;
+{$ENDIF}
+
+    KEYEVENTF_EXTENDEDKEY = $0001;
+    KEYEVENTF_KEYUP = $0002;
+{$IF(_WIN32_WINNT >= $0500)}
+    KEYEVENTF_UNICODE = $0004;
+    KEYEVENTF_SCANCODE = $0008;
+{$ENDIF}(* _WIN32_WINNT >= $0500 *)
+
+    MOUSEEVENTF_MOVE = $0001; (* mouse move *)
+    MOUSEEVENTF_LEFTDOWN = $0002; (* left button down *)
+    MOUSEEVENTF_LEFTUP = $0004; (* left button up *)
+    MOUSEEVENTF_RIGHTDOWN = $0008; (* right button down *)
+    MOUSEEVENTF_RIGHTUP = $0010; (* right button up *)
+    MOUSEEVENTF_MIDDLEDOWN = $0020; (* middle button down *)
+    MOUSEEVENTF_MIDDLEUP = $0040; (* middle button up *)
+    MOUSEEVENTF_XDOWN = $0080; (* x button down *)
+    MOUSEEVENTF_XUP = $0100; (* x button down *)
+    MOUSEEVENTF_WHEEL = $0800; (* wheel button rolled *)
+{$IF (_WIN32_WINNT >= $0600)}
+    MOUSEEVENTF_HWHEEL = $01000; (* hwheel button rolled *)
+{$ENDIF}
+{$IF(WINVER >= $0600)}
+    MOUSEEVENTF_MOVE_NOCOALESCE = $2000; (* do not coalesce mouse moves *)
+{$ENDIF}(* WINVER >= $0600 *)
+    MOUSEEVENTF_VIRTUALDESK = $4000; (* map to entire virtual desktop *)
+    MOUSEEVENTF_ABSOLUTE = $8000; (* absolute move *)
+
+    INPUT_MOUSE = 0;
+    INPUT_KEYBOARD = 1;
+    INPUT_HARDWARE = 2;
+
+    (* Touch input flag values (TOUCHINPUT.dwFlags) *)
+    TOUCHEVENTF_MOVE = $0001;
+    TOUCHEVENTF_DOWN = $0002;
+    TOUCHEVENTF_UP = $0004;
+    TOUCHEVENTF_INRANGE = $0008;
+    TOUCHEVENTF_PRIMARY = $0010;
+    TOUCHEVENTF_NOCOALESCE = $0020;
+    TOUCHEVENTF_PEN = $0040;
+    TOUCHEVENTF_PALM = $0080;
+
+    (* Touch input mask values (TOUCHINPUT.dwMask) *)
+    TOUCHINPUTMASKF_TIMEFROMSYSTEM = $0001;  // the dwTime field contains a system generated value
+    TOUCHINPUTMASKF_EXTRAINFO = $0002; // the dwExtraInfo field is valid
+    TOUCHINPUTMASKF_CONTACTAREA = $0004;  // the cxContact and cyContact fields are valid
+
+
+    (* RegisterTouchWindow flag values *)
+    TWF_FINETOUCH = $00000001;
+    TWF_WANTPALM = $00000002;
+
+    POINTER_FLAG_NONE = $00000000; // Default
+    POINTER_FLAG_NEW = $00000001; // New pointer
+    POINTER_FLAG_INRANGE = $00000002; // Pointer has not departed
+    POINTER_FLAG_INCONTACT = $00000004; // Pointer is in contact
+    POINTER_FLAG_FIRSTBUTTON = $00000010; // Primary action
+    POINTER_FLAG_SECONDBUTTON = $00000020; // Secondary action
+    POINTER_FLAG_THIRDBUTTON = $00000040; // Third button
+    POINTER_FLAG_FOURTHBUTTON = $00000080; // Fourth button
+    POINTER_FLAG_FIFTHBUTTON = $00000100; // Fifth button
+    POINTER_FLAG_PRIMARY = $00002000; // Pointer is primary
+    POINTER_FLAG_CONFIDENCE = $00004000; // Pointer is considered unlikely to be accidental
+    POINTER_FLAG_CANCELED = $00008000; // Pointer is departing in an abnormal manner
+    POINTER_FLAG_DOWN = $00010000; // Pointer transitioned to down state (made contact)
+    POINTER_FLAG_UPDATE = $00020000; // Pointer update
+    POINTER_FLAG_UP = $00040000; // Pointer transitioned from down state (broke contact)
+    POINTER_FLAG_WHEEL = $00080000; // Vertical wheel
+    POINTER_FLAG_HWHEEL = $00100000; // Horizontal wheel
+    POINTER_FLAG_CAPTURECHANGED = $00200000; // Lost capture
+    POINTER_FLAG_HASTRANSFORM = $00400000; // Input has a transform associated with it
+
+    (* Pointer info key states defintions. *)
+    POINTER_MOD_SHIFT = $0004;    // Shift key is held down.
+    POINTER_MOD_CTRL = $0008;    // Ctrl key is held down.
+
+    TOUCH_FLAG_NONE = $00000000; // Default
+
+    TOUCH_MASK_NONE = $00000000; // Default - none of the optional fields are valid
+    TOUCH_MASK_CONTACTAREA = $00000001; // The rcContact field is valid
+    TOUCH_MASK_ORIENTATION = $00000002; // The orientation field is valid
+    TOUCH_MASK_PRESSURE = $00000004; // The pressure field is valid
+
+    PEN_FLAG_NONE = $00000000; // Default
+    PEN_FLAG_BARREL = $00000001; // The barrel button is pressed
+    PEN_FLAG_INVERTED = $00000002; // The pen is inverted
+    PEN_FLAG_ERASER = $00000004; // The eraser button is pressed
+
+    PEN_MASK_NONE = $00000000; // Default - none of the optional fields are valid
+    PEN_MASK_PRESSURE = $00000001; // The pressure field is valid
+    PEN_MASK_ROTATION = $00000002; // The rotation field is valid
+    PEN_MASK_TILT_X = $00000004; // The tiltX field is valid
+    PEN_MASK_TILT_Y = $00000008; // The tiltY field is valid
+
+    (* Flags that appear in pointer input message parameters *)
+    POINTER_MESSAGE_FLAG_NEW = $00000001; // New pointer
+    POINTER_MESSAGE_FLAG_INRANGE = $00000002; // Pointer has not departed
+    POINTER_MESSAGE_FLAG_INCONTACT = $00000004; // Pointer is in contact
+    POINTER_MESSAGE_FLAG_FIRSTBUTTON = $00000010; // Primary action
+    POINTER_MESSAGE_FLAG_SECONDBUTTON = $00000020; // Secondary action
+    POINTER_MESSAGE_FLAG_THIRDBUTTON = $00000040; // Third button
+    POINTER_MESSAGE_FLAG_FOURTHBUTTON = $00000080; // Fourth button
+    POINTER_MESSAGE_FLAG_FIFTHBUTTON = $00000100; // Fifth button
+    POINTER_MESSAGE_FLAG_PRIMARY = $00002000; // Pointer is primary
+    POINTER_MESSAGE_FLAG_CONFIDENCE = $00004000; // Pointer is considered unlikely to be accidental
+    POINTER_MESSAGE_FLAG_CANCELED = $00008000; // Pointer is departing in an abnormal manner
+
+    (* WM_POINTERACTIVATE return codes *)
+    PA_ACTIVATE = MA_ACTIVATE;
+    PA_NOACTIVATE = MA_NOACTIVATE;
+
+
+    MAX_TOUCH_COUNT = 256;
+
+    TOUCH_FEEDBACK_DEFAULT = $1;
+    TOUCH_FEEDBACK_INDIRECT = $2;
+    TOUCH_FEEDBACK_NONE = $3;
+
+    TOUCH_HIT_TESTING_DEFAULT = $0;
+    TOUCH_HIT_TESTING_CLIENT = $1;
+    TOUCH_HIT_TESTING_NONE = $2;
+
+    TOUCH_HIT_TESTING_PROXIMITY_CLOSEST = $0;
+    TOUCH_HIT_TESTING_PROXIMITY_FARTHEST = $FFF;
+
+    GWFS_INCLUDE_ANCESTORS = $00000001;
+
+    MAPVK_VK_TO_VSC = (0);
+    MAPVK_VSC_TO_VK = (1);
+    MAPVK_VK_TO_CHAR = (2);
+    MAPVK_VSC_TO_VK_EX = (3);
+
+{$IF(WINVER >= $0600)}
+    MAPVK_VK_TO_VSC_EX = (4);
+{$ENDIF}(* WINVER >= $0600 *)
+
+    MWMO_WAITALL = $0001;
+    MWMO_ALERTABLE = $0002;
+    MWMO_INPUTAVAILABLE = $0004;
+
+    (* Queue status flags for GetQueueStatus() and MsgWaitForMultipleObjects() *)
+    QS_KEY = $0001;
+    QS_MOUSEMOVE = $0002;
+    QS_MOUSEBUTTON = $0004;
+    QS_POSTMESSAGE = $0008;
+    QS_TIMER = $0010;
+    QS_PAINT = $0020;
+    QS_SENDMESSAGE = $0040;
+    QS_HOTKEY = $0080;
+    QS_ALLPOSTMESSAGE = $0100;
+
+{$IF(_WIN32_WINNT >= $0501)}
+    QS_RAWINPUT = $0400;
+{$ENDIF}(* _WIN32_WINNT >= $0501 *)
+
+{$IF(_WIN32_WINNT >= $0602)}
+    QS_TOUCH = $0800;
+    QS_POINTER = $1000;
+
+{$ENDIF}(* _WIN32_WINNT >= $0602 *)
+
+    QS_MOUSE = (QS_MOUSEMOVE or QS_MOUSEBUTTON);
+
+{$IF (_WIN32_WINNT >= $602)}
+    QS_INPUT = (QS_MOUSE or QS_KEY or QS_RAWINPUT or QS_TOUCH or QS_POINTER);
+
+{$ELSE}
+{$IF (_WIN32_WINNT >= $0501)}
+    QS_INPUT = (QS_MOUSE or QS_KEY or QS_RAWINPUT);
+{$ELSE}
+    QS_INPUT = (QS_MOUSE or QS_KEY);
+{$ENDIF}// (_WIN32_WINNT >= $0501)
+{$ENDIF}
+
+    QS_ALLEVENTS = (QS_INPUT or QS_POSTMESSAGE or QS_TIMER or QS_PAINT or QS_HOTKEY);
+    QS_ALLINPUT = (QS_INPUT or QS_POSTMESSAGE or QS_TIMER or QS_PAINT or QS_HOTKEY or QS_SENDMESSAGE);
+
+    USER_TIMER_MAXIMUM = $7FFFFFFF;
+    USER_TIMER_MINIMUM = $0000000A;
+
+  {$IF(WINVER >= $0601)}
+
+    TIMERV_DEFAULT_COALESCING = (0);
+    TIMERV_NO_COALESCING = $FFFFFFFF;
+
+    TIMERV_COALESCING_MIN = (1);
+    TIMERV_COALESCING_MAX = $7FFFFFF5;
+{$ENDIF}(* WINVER >= $0601 *)
+
+
+    (* GetSystemMetrics() codes *)
+
+    SM_CXSCREEN = 0;
+    SM_CYSCREEN = 1;
+    SM_CXVSCROLL = 2;
+    SM_CYHSCROLL = 3;
+    SM_CYCAPTION = 4;
+    SM_CXBORDER = 5;
+    SM_CYBORDER = 6;
+    SM_CXDLGFRAME = 7;
+    SM_CYDLGFRAME = 8;
+    SM_CYVTHUMB = 9;
+    SM_CXHTHUMB = 10;
+    SM_CXICON = 11;
+    SM_CYICON = 12;
+    SM_CXCURSOR = 13;
+    SM_CYCURSOR = 14;
+    SM_CYMENU = 15;
+    SM_CXFULLSCREEN = 16;
+    SM_CYFULLSCREEN = 17;
+    SM_CYKANJIWINDOW = 18;
+    SM_MOUSEPRESENT = 19;
+    SM_CYVSCROLL = 20;
+    SM_CXHSCROLL = 21;
+    SM_DEBUG = 22;
+    SM_SWAPBUTTON = 23;
+    SM_RESERVED1 = 24;
+    SM_RESERVED2 = 25;
+    SM_RESERVED3 = 26;
+    SM_RESERVED4 = 27;
+    SM_CXMIN = 28;
+    SM_CYMIN = 29;
+    SM_CXSIZE = 30;
+    SM_CYSIZE = 31;
+    SM_CXFRAME = 32;
+    SM_CYFRAME = 33;
+    SM_CXMINTRACK = 34;
+    SM_CYMINTRACK = 35;
+    SM_CXDOUBLECLK = 36;
+    SM_CYDOUBLECLK = 37;
+    SM_CXICONSPACING = 38;
+    SM_CYICONSPACING = 39;
+    SM_MENUDROPALIGNMENT = 40;
+    SM_PENWINDOWS = 41;
+    SM_DBCSENABLED = 42;
+    SM_CMOUSEBUTTONS = 43;
+
+{$IF(WINVER >= $0400)}
+    SM_CXFIXEDFRAME = SM_CXDLGFRAME; (* ;win40 name change *)
+    SM_CYFIXEDFRAME = SM_CYDLGFRAME; (* ;win40 name change *)
+    SM_CXSIZEFRAME = SM_CXFRAME;    (* ;win40 name change *)
+    SM_CYSIZEFRAME = SM_CYFRAME;    (* ;win40 name change *)
+
+    SM_SECURE = 44;
+    SM_CXEDGE = 45;
+    SM_CYEDGE = 46;
+    SM_CXMINSPACING = 47;
+    SM_CYMINSPACING = 48;
+    SM_CXSMICON = 49;
+    SM_CYSMICON = 50;
+    SM_CYSMCAPTION = 51;
+    SM_CXSMSIZE = 52;
+    SM_CYSMSIZE = 53;
+    SM_CXMENUSIZE = 54;
+    SM_CYMENUSIZE = 55;
+    SM_ARRANGE = 56;
+    SM_CXMINIMIZED = 57;
+    SM_CYMINIMIZED = 58;
+    SM_CXMAXTRACK = 59;
+    SM_CYMAXTRACK = 60;
+    SM_CXMAXIMIZED = 61;
+    SM_CYMAXIMIZED = 62;
+    SM_NETWORK = 63;
+    SM_CLEANBOOT = 67;
+    SM_CXDRAG = 68;
+    SM_CYDRAG = 69;
+{$ENDIF}(* WINVER >= $0400 *)
+    SM_SHOWSOUNDS = 70;
+{$IF(WINVER >= $0400)}
+    SM_CXMENUCHECK = 71;   (* Use instead of GetMenuCheckMarkDimensions()! *)
+    SM_CYMENUCHECK = 72;
+    SM_SLOWMACHINE = 73;
+    SM_MIDEASTENABLED = 74;
+{$ENDIF}(* WINVER >= $0400 *)
+
+ {$IF (WINVER >= $0500) OR (_WIN32_WINNT >= $0400)}
+    SM_MOUSEWHEELPRESENT = 75;
+{$ENDIF}
+{$IF(WINVER >= $0500)}
+    SM_XVIRTUALSCREEN = 76;
+    SM_YVIRTUALSCREEN = 77;
+    SM_CXVIRTUALSCREEN = 78;
+    SM_CYVIRTUALSCREEN = 79;
+    SM_CMONITORS = 80;
+    SM_SAMEDISPLAYFORMAT = 81;
+{$ENDIF}(* WINVER >= $0500 *)
+{$IF(_WIN32_WINNT >= $0500)}
+    SM_IMMENABLED = 82;
+{$ENDIF}(* _WIN32_WINNT >= $0500 *)
+{$IF(_WIN32_WINNT >= $0501)}
+    SM_CXFOCUSBORDER = 83;
+    SM_CYFOCUSBORDER = 84;
+{$ENDIF}(* _WIN32_WINNT >= $0501 *)
+
+{$IF(_WIN32_WINNT >= $0501)}
+    SM_TABLETPC = 86;
+    SM_MEDIACENTER = 87;
+    SM_STARTER = 88;
+    SM_SERVERR2 = 89;
+{$ENDIF}(* _WIN32_WINNT >= $0501 *)
+
+
+  {$IF(_WIN32_WINNT >= $0600)}
+    SM_MOUSEHORIZONTALWHEELPRESENT = 91;
+    SM_CXPADDEDBORDER = 92;
+{$ENDIF}(* _WIN32_WINNT >= $0600 *)
+
+{$IF(WINVER >= $0601)}
+    SM_DIGITIZER = 94;
+    SM_MAXIMUMTOUCHES = 95;
+{$ENDIF}(* WINVER >= $0601 *)
+
+{$IF (WINVER < $0500) AND (_WIN32_WINNT < $0400))}
+    SM_CMETRICS = 76;
+{$elseif WINVER = $500}
+    SM_CMETRICS = 83;
+{$elseif  WINVER = $501}
+    SM_CMETRICS = 91;
+{$elseif  WINVER = $600}
+    SM_CMETRICS = 93;
+{$ELSE}
+    SM_CMETRICS = 97;
+{$ENDIF}
+
+{$IF(WINVER >= $0500)}
+    SM_REMOTESESSION = $1000;
+{$IF(_WIN32_WINNT >= $0501)}
+    SM_SHUTTINGDOWN = $2000;
+{$ENDIF}(* _WIN32_WINNT >= $0501 *)
+
+{$IF(WINVER >= $0501)}
+    SM_REMOTECONTROL = $2001;
+{$ENDIF}(* WINVER >= $0501 *)
+
+{$IF(WINVER >= $0501)}
+    SM_CARETBLINKINGENABLED = $2002;
+{$ENDIF}(* WINVER >= $0501 *)
+
+{$IF(WINVER >= $0602)}
+    SM_CONVERTIBLESLATEMODE = $2003;
+    SM_SYSTEMDOCKED = $2004;
+{$ENDIF}(* WINVER >= $0602 *)
+
+{$ENDIF}(* WINVER >= $0500 *)
+
+
+ {$IF(_WIN32_WINNT >= $0501)}
+    PMB_ACTIVE = $00000001;
+{$ENDIF}(* _WIN32_WINNT >= $0501 *)
+
+  {$IF(WINVER >= $0400)}
+    (* return codes for WM_MENUCHAR *)
+    MNC_IGNORE = 0;
+    MNC_CLOSE = 1;
+    MNC_EXECUTE = 2;
+    MNC_SELECT = 3;
+  {$ENDIF}(* WINVER >= $0400 *)
+
+  {$IF(WINVER >= $0500)}
+
+    MNS_NOCHECK = $80000000;
+    MNS_MODELESS = $40000000;
+    MNS_DRAGDROP = $20000000;
+    MNS_AUTODISMISS = $10000000;
+    MNS_NOTIFYBYPOS = $08000000;
+    MNS_CHECKORBMP = $04000000;
+
+    MIM_MAXHEIGHT = $00000001;
+    MIM_BACKGROUND = $00000002;
+    MIM_HELPID = $00000004;
+    MIM_MENUDATA = $00000008;
+    MIM_STYLE = $00000010;
+    MIM_APPLYTOSUBMENUS = $80000000;
+
+    (* WM_MENUDRAG return values. *)
+    MND_CONTINUE = 0;
+    MND_ENDMENU = 1;
+
+    (* MENUGETOBJECTINFO dwFlags values *)
+    MNGOF_TOPGAP = $00000001;
+    MNGOF_BOTTOMGAP = $00000002;
+
+    (* WM_MENUGETOBJECT return values *)
+    MNGO_NOINTERFACE = $00000000;
+    MNGO_NOERROR = $00000001;
+{$ENDIF}(* WINVER >= $0500 *)
+
+   {$IF(WINVER >= $0400)}
+    MIIM_STATE = $00000001;
+    MIIM_ID = $00000002;
+    MIIM_SUBMENU = $00000004;
+    MIIM_CHECKMARKS = $00000008;
+    MIIM_TYPE = $00000010;
+    MIIM_DATA = $00000020;
+{$ENDIF}(* WINVER >= $0400 *)
+
+
+{$IF(WINVER >= $0500)}
+    MIIM_STRING = $00000040;
+    MIIM_BITMAP = $00000080;
+    MIIM_FTYPE = $00000100;
+
+    HBMMENU_CALLBACK: THBITMAP = (-1);
+    HBMMENU_SYSTEM: THBITMAP = (1);
+    HBMMENU_MBAR_RESTORE: THBITMAP = (2);
+    HBMMENU_MBAR_MINIMIZE: THBITMAP = (3);
+    HBMMENU_MBAR_CLOSE: THBITMAP = (5);
+    HBMMENU_MBAR_CLOSE_D: THBITMAP = (6);
+    HBMMENU_MBAR_MINIMIZE_D: THBITMAP = (7);
+    HBMMENU_POPUP_CLOSE: THBITMAP = (8);
+    HBMMENU_POPUP_RESTORE: THBITMAP = (9);
+    HBMMENU_POPUP_MAXIMIZE: THBITMAP = (10);
+    HBMMENU_POPUP_MINIMIZE: THBITMAP = (11);
+{$ENDIF}(* WINVER >= $0500 *)
+
+
+
+
+    {$IF(WINVER >= $0400)}
+    (* Monolithic state-drawing routine *)
+    (* Image type *)
+    DST_COMPLEX = $0000;
+    DST_TEXT = $0001;
+    DST_PREFIXTEXT = $0002;
+    DST_ICON = $0003;
+    DST_BITMAP = $0004;
+
+    (* State type *)
+    DSS_NORMAL = $0000;
+    DSS_UNION = $0010; (* Gray string appearance *)
+    DSS_DISABLED = $0020;
+    DSS_MONO = $0080;
+{$IF(_WIN32_WINNT >= $0500)}
+    DSS_HIDEPREFIX = $0200;
+    DSS_PREFIXONLY = $0400;
+{$ENDIF}(* _WIN32_WINNT >= $0500 *)
+    DSS_RIGHT = $8000;
+  {$ENDIF}(* WINVER >= $0400 *)
+
+  {$IF(_WIN32_WINNT >= $0500)}
+    ASFW_ANY = DWORD(-1);
+    LSFW_LOCK = 1;
+    LSFW_UNLOCK = 2;
+ {$ENDIF}(* _WIN32_WINNT >= $0500 *)
+
+
+    (* GetDCEx() flags *)
+    DCX_WINDOW = $00000001;
+    DCX_CACHE = $00000002;
+    DCX_NORESETATTRS = $00000004;
+    DCX_CLIPCHILDREN = $00000008;
+    DCX_CLIPSIBLINGS = $00000010;
+    DCX_PARENTCLIP = $00000020;
+    DCX_EXCLUDERGN = $00000040;
+    DCX_INTERSECTRGN = $00000080;
+    DCX_EXCLUDEUPDATE = $00000100;
+    DCX_INTERSECTUPDATE = $00000200;
+    DCX_LOCKWINDOWUPDATE = $00000400;
+
+    DCX_VALIDATE = $00200000;
+
+    (* RedrawWindow() flags *)
+    RDW_INVALIDATE = $0001;
+    RDW_INTERNALPAINT = $0002;
+    RDW_ERASE = $0004;
+
+    RDW_VALIDATE = $0008;
+    RDW_NOINTERNALPAINT = $0010;
+    RDW_NOERASE = $0020;
+
+    RDW_NOCHILDREN = $0040;
+    RDW_ALLCHILDREN = $0080;
+
+    RDW_UPDATENOW = $0100;
+    RDW_ERASENOW = $0200;
+
+    RDW_FRAME = $0400;
+    RDW_NOFRAME = $0800;
+
+
+    SW_SCROLLCHILDREN = $0001;  (* Scroll children within *lprcScroll. *)
+    SW_INVALIDATE = $0002;  (* Invalidate after scrolling *)
+    SW_ERASE = $0004; (* If SW_INVALIDATE, don't send WM_ERASEBACKGROUND *)
+{$IF(WINVER >= $0500)}
+    SW_SMOOTHSCROLL = $0010;  (* Use smooth scrolling *)
+{$ENDIF}(* WINVER >= $0500 *)
+
+    (* EnableScrollBar() flags *)
+    ESB_ENABLE_BOTH = $0000;
+    ESB_DISABLE_BOTH = $0003;
+
+    ESB_DISABLE_LEFT = $0001;
+    ESB_DISABLE_RIGHT = $0002;
+
+    ESB_DISABLE_UP = $0001;
+    ESB_DISABLE_DOWN = $0002;
+
+    ESB_DISABLE_LTUP = ESB_DISABLE_LEFT;
+    ESB_DISABLE_RTDN = ESB_DISABLE_RIGHT;
+
+
+{$IF(WINVER >= $0400)}
+    HELPINFO_WINDOW = $0001;
+    HELPINFO_MENUITEM = $0002;
+{$ENDIF}(* WINVER >= $0400 *)
+
+    (* MessageBox() Flags *)
+    MB_OK = $00000000;
+    MB_OKCANCEL = $00000001;
+    MB_ABORTRETRYIGNORE = $00000002;
+    MB_YESNOCANCEL = $00000003;
+    MB_YESNO = $00000004;
+    MB_RETRYCANCEL = $00000005;
+{$IF(WINVER >= $0500)}
+    MB_CANCELTRYCONTINUE = $00000006;
+{$ENDIF}(* WINVER >= $0500 *)
+
+
+    MB_ICONHAND = $00000010;
+    MB_ICONQUESTION = $00000020;
+    MB_ICONEXCLAMATION = $00000030;
+    MB_ICONASTERISK = $00000040;
+
+{$IF(WINVER >= $0400)}
+    MB_USERICON = $00000080;
+    MB_ICONWARNING = MB_ICONEXCLAMATION;
+    MB_ICONERROR = MB_ICONHAND;
+{$ENDIF}(* WINVER >= $0400 *)
+
+    MB_ICONINFORMATION = MB_ICONASTERISK;
+    MB_ICONSTOP = MB_ICONHAND;
+
+    MB_DEFBUTTON1 = $00000000;
+    MB_DEFBUTTON2 = $00000100;
+    MB_DEFBUTTON3 = $00000200;
+{$IF(WINVER >= $0400)}
+    MB_DEFBUTTON4 = $00000300;
+{$ENDIF}(* WINVER >= $0400 *)
+
+    MB_APPLMODAL = $00000000;
+    MB_SYSTEMMODAL = $00001000;
+    MB_TASKMODAL = $00002000;
+{$IF(WINVER >= $0400)}
+    MB_HELP = $00004000; // Help Button
+{$ENDIF}(* WINVER >= $0400 *)
+
+    MB_NOFOCUS = $00008000;
+    MB_SETFOREGROUND = $00010000;
+    MB_DEFAULT_DESKTOP_ONLY = $00020000;
+
+{$IF(WINVER >= $0400)}
+    MB_TOPMOST = $00040000;
+    MB_RIGHT = $00080000;
+    MB_RTLREADING = $00100000;
+
+{$ENDIF}(* WINVER >= $0400 *)
+
+{$IFdef _WIN32_WINNT}
+{$IF (_WIN32_WINNT >= $0400)}
+    MB_SERVICE_NOTIFICATION = $00200000;
+{$ELSE}
+    MB_SERVICE_NOTIFICATION = $00040000;
+{$ENDIF}
+    MB_SERVICE_NOTIFICATION_NT3X = $00040000;
+{$ENDIF}
+
+    MB_TYPEMASK = $0000000F;
+    MB_ICONMASK = $000000F0;
+    MB_DEFMASK = $00000F00;
+    MB_MODEMASK = $00003000;
+    MB_MISCMASK = $0000C000;
+
+    (* Color Types *)
+    CTLCOLOR_MSGBOX = 0;
+    CTLCOLOR_EDIT = 1;
+    CTLCOLOR_LISTBOX = 2;
+    CTLCOLOR_BTN = 3;
+    CTLCOLOR_DLG = 4;
+    CTLCOLOR_SCROLLBAR = 5;
+    CTLCOLOR_STATIC = 6;
+    CTLCOLOR_MAX = 7;
+
+    COLOR_SCROLLBAR = 0;
+    COLOR_BACKGROUND = 1;
+    COLOR_ACTIVECAPTION = 2;
+    COLOR_INACTIVECAPTION = 3;
+    COLOR_MENU = 4;
+    COLOR_WINDOW = 5;
+    COLOR_WINDOWFRAME = 6;
+    COLOR_MENUTEXT = 7;
+    COLOR_WINDOWTEXT = 8;
+    COLOR_CAPTIONTEXT = 9;
+    COLOR_ACTIVEBORDER = 10;
+    COLOR_INACTIVEBORDER = 11;
+    COLOR_APPWORKSPACE = 12;
+    COLOR_HIGHLIGHT = 13;
+    COLOR_HIGHLIGHTTEXT = 14;
+    COLOR_BTNFACE = 15;
+    COLOR_BTNSHADOW = 16;
+    COLOR_GRAYTEXT = 17;
+    COLOR_BTNTEXT = 18;
+    COLOR_INACTIVECAPTIONTEXT = 19;
+    COLOR_BTNHIGHLIGHT = 20;
+
+{$IF(WINVER >= $0400)}
+    COLOR_3DDKSHADOW = 21;
+    COLOR_3DLIGHT = 22;
+    COLOR_INFOTEXT = 23;
+    COLOR_INFOBK = 24;
+{$ENDIF}(* WINVER >= $0400 *)
+
+{$IF(WINVER >= $0500)}
+    COLOR_HOTLIGHT = 26;
+    COLOR_GRADIENTACTIVECAPTION = 27;
+    COLOR_GRADIENTINACTIVECAPTION = 28;
+{$IF(WINVER >= $0501)}
+    COLOR_MENUHILIGHT = 29;
+    COLOR_MENUBAR = 30;
+{$ENDIF}(* WINVER >= $0501 *)
+{$ENDIF}(* WINVER >= $0500 *)
+
+{$IF(WINVER >= $0400)}
+    COLOR_DESKTOP = COLOR_BACKGROUND;
+    COLOR_3DFACE = COLOR_BTNFACE;
+    COLOR_3DSHADOW = COLOR_BTNSHADOW;
+    COLOR_3DHIGHLIGHT = COLOR_BTNHIGHLIGHT;
+    COLOR_3DHILIGHT = COLOR_BTNHIGHLIGHT;
+    COLOR_BTNHILIGHT = COLOR_BTNHIGHLIGHT;
+{$ENDIF}(* WINVER >= $0400 *)
+
+    (* GetWindow() Constants *)
+    GW_HWNDFIRST = 0;
+    GW_HWNDLAST = 1;
+    GW_HWNDNEXT = 2;
+    GW_HWNDPREV = 3;
+    GW_OWNER = 4;
+    GW_CHILD = 5;
+{$IF(WINVER <= $0400)}
+    GW_MAX = 5;
+{$ELSE}
+    GW_ENABLEDPOPUP = 6;
+    GW_MAX = 6;
+{$ENDIF}
+
+    (* ;win40  -- A lot of MF_* flags have been renamed as MFT_* and MFS_* flags *)
+(*
+ * Menu flags for Add/Check/EnableMenuItem()
+ *)
+    MF_INSERT = $00000000;
+    MF_CHANGE = $00000080;
+    MF_APPEND = $00000100;
+    MF_DELETE = $00000200;
+    MF_REMOVE = $00001000;
+
+    MF_BYCOMMAND = $00000000;
+    MF_BYPOSITION = $00000400;
+
+    MF_SEPARATOR = $00000800;
+
+    MF_ENABLED = $00000000;
+    MF_GRAYED = $00000001;
+    MF_DISABLED = $00000002;
+
+    MF_UNCHECKED = $00000000;
+    MF_CHECKED = $00000008;
+    MF_USECHECKBITMAPS = $00000200;
+
+    MF_STRING = $00000000;
+    MF_BITMAP = $00000004;
+    MF_OWNERDRAW = $00000100;
+
+    MF_POPUP = $00000010;
+    MF_MENUBARBREAK = $00000020;
+    MF_MENUBREAK = $00000040;
+
+    MF_UNHILITE = $00000000;
+    MF_HILITE = $00000080;
+
+{$IF(WINVER >= $0400)}
+    MF_DEFAULT = $00001000;
+{$ENDIF}(* WINVER >= $0400 *)
+    MF_SYSMENU = $00002000;
+    MF_HELP = $00004000;
+{$IF(WINVER >= $0400)}
+    MF_RIGHTJUSTIFY = $00004000;
+{$ENDIF}(* WINVER >= $0400 *)
+
+    MF_MOUSESELECT = $00008000;
+{$IF(WINVER >= $0400)}
+    MF_END = $00000080;  (* Obsolete -- only used by old RES files *)
+{$ENDIF}(* WINVER >= $0400 *)
+
+
+{$IF(WINVER >= $0400)}
+    MFT_STRING = MF_STRING;
+    MFT_BITMAP = MF_BITMAP;
+    MFT_MENUBARBREAK = MF_MENUBARBREAK;
+    MFT_MENUBREAK = MF_MENUBREAK;
+    MFT_OWNERDRAW = MF_OWNERDRAW;
+    MFT_RADIOCHECK = $00000200;
+    MFT_SEPARATOR = MF_SEPARATOR;
+    MFT_RIGHTORDER = $00002000;
+    MFT_RIGHTJUSTIFY = MF_RIGHTJUSTIFY;
+
+    (* Menu flags for Add/Check/EnableMenuItem() *)
+    MFS_GRAYED = $00000003;
+    MFS_DISABLED = MFS_GRAYED;
+    MFS_CHECKED = MF_CHECKED;
+    MFS_HILITE = MF_HILITE;
+    MFS_ENABLED = MF_ENABLED;
+    MFS_UNCHECKED = MF_UNCHECKED;
+    MFS_UNHILITE = MF_UNHILITE;
+    MFS_DEFAULT = MF_DEFAULT;
+{$ENDIF}(* WINVER >= $0400 *)
+
+
+    (* System Menu Command Values *)
+    SC_SIZE = $F000;
+    SC_MOVE = $F010;
+    SC_MINIMIZE = $F020;
+    SC_MAXIMIZE = $F030;
+    SC_NEXTWINDOW = $F040;
+    SC_PREVWINDOW = $F050;
+    SC_CLOSE = $F060;
+    SC_VSCROLL = $F070;
+    SC_HSCROLL = $F080;
+    SC_MOUSEMENU = $F090;
+    SC_KEYMENU = $F100;
+    SC_ARRANGE = $F110;
+    SC_RESTORE = $F120;
+    SC_TASKLIST = $F130;
+    SC_SCREENSAVE = $F140;
+    SC_HOTKEY = $F150;
+{$IF(WINVER >= $0400)}
+    SC_DEFAULT = $F160;
+    SC_MONITORPOWER = $F170;
+    SC_CONTEXTHELP = $F180;
+    SC_SEPARATOR = $F00F;
+{$ENDIF}(* WINVER >= $0400 *)
+
+{$IF(WINVER >= $0600)}
+    SCF_ISSECURE = $00000001;
+{$ENDIF}(* WINVER >= $0600 *)
+
+    (* Obsolete names *)
+    SC_ICON = SC_MINIMIZE;
+    SC_ZOOM = SC_MAXIMIZE;
+
+    (* Standard Cursor IDs *)
+    IDC_ARROW = MAKEINTRESOURCE(32512);
+    IDC_IBEAM = MAKEINTRESOURCE(32513);
+    IDC_WAIT = MAKEINTRESOURCE(32514);
+    IDC_CROSS = MAKEINTRESOURCE(32515);
+    IDC_UPARROW = MAKEINTRESOURCE(32516);
+    IDC_SIZE = MAKEINTRESOURCE(32640); (* OBSOLETE: use IDC_SIZEALL *)
+    IDC_ICON = MAKEINTRESOURCE(32641); (* OBSOLETE: use IDC_ARROW *)
+    IDC_SIZENWSE = MAKEINTRESOURCE(32642);
+    IDC_SIZENESW = MAKEINTRESOURCE(32643);
+    IDC_SIZEWE = MAKEINTRESOURCE(32644);
+    IDC_SIZENS = MAKEINTRESOURCE(32645);
+    IDC_SIZEALL = MAKEINTRESOURCE(32646);
+    IDC_NO = MAKEINTRESOURCE(32648);(*not in win3.1 *)
+{$IF(WINVER >= $0500)}
+    IDC_HAND = MAKEINTRESOURCE(32649);
+{$ENDIF}(* WINVER >= $0500 *)
+    IDC_APPSTARTING = MAKEINTRESOURCE(32650); (*not in win3.1 *)
+{$IF(WINVER >= $0400)}
+    IDC_HELP = MAKEINTRESOURCE(32651);
+{$ENDIF}(* WINVER >= $0400 *)
+
+{$IF(WINVER >= $0606)}
+    IDC_PIN = MAKEINTRESOURCE(32671);
+    IDC_PERSON = MAKEINTRESOURCE(32672);
+{$ENDIF}(* WINVER >= $0606 *)
+
+
+    IMAGE_BITMAP = 0;
+    IMAGE_ICON = 1;
+    IMAGE_CURSOR = 2;
+
+{$IF(WINVER >= $0400)}
+    IMAGE_ENHMETAFILE = 3;
+
+    LR_DEFAULTCOLOR = $00000000;
+    LR_MONOCHROME = $00000001;
+    LR_COLOR = $00000002;
+    LR_COPYRETURNORG = $00000004;
+    LR_COPYDELETEORG = $00000008;
+    LR_LOADFROMFILE = $00000010;
+    LR_LOADTRANSPARENT = $00000020;
+    LR_DEFAULTSIZE = $00000040;
+    LR_VGACOLOR = $00000080;
+    LR_LOADMAP3DCOLORS = $00001000;
+    LR_CREATEDIBSECTION = $00002000;
+    LR_COPYFROMRESOURCE = $00004000;
+    LR_SHARED = $00008000;
+
+    DI_MASK = $0001;
+    DI_IMAGE = $0002;
+    DI_NORMAL = $0003;
+    DI_COMPAT = $0004;
+    DI_DEFAULTSIZE = $0008;
+{$IF(_WIN32_WINNT >= $0501)}
+    DI_NOMIRROR = $0010;
+{$ENDIF}(* _WIN32_WINNT >= $0501 *)
+{$ENDIF}(* WINVER >= $0400 *)
+
+ {$IF(WINVER >= $0400)}
+    RES_ICON = 1;
+    RES_CURSOR = 2;
+{$ENDIF}(* WINVER >= $0400 *)
+
+    (* OEM Resource Ordinal Numbers *)
+    OBM_CLOSE = 32754;
+    OBM_UPARROW = 32753;
+    OBM_DNARROW = 32752;
+    OBM_RGARROW = 32751;
+    OBM_LFARROW = 32750;
+    OBM_REDUCE = 32749;
+    OBM_ZOOM = 32748;
+    OBM_RESTORE = 32747;
+    OBM_REDUCED = 32746;
+    OBM_ZOOMD = 32745;
+    OBM_RESTORED = 32744;
+    OBM_UPARROWD = 32743;
+    OBM_DNARROWD = 32742;
+    OBM_RGARROWD = 32741;
+    OBM_LFARROWD = 32740;
+    OBM_MNARROW = 32739;
+    OBM_COMBO = 32738;
+    OBM_UPARROWI = 32737;
+    OBM_DNARROWI = 32736;
+    OBM_RGARROWI = 32735;
+    OBM_LFARROWI = 32734;
+
+    OBM_OLD_CLOSE = 32767;
+    OBM_SIZE = 32766;
+    OBM_OLD_UPARROW = 32765;
+    OBM_OLD_DNARROW = 32764;
+    OBM_OLD_RGARROW = 32763;
+    OBM_OLD_LFARROW = 32762;
+    OBM_BTSIZE = 32761;
+    OBM_CHECK = 32760;
+    OBM_CHECKBOXES = 32759;
+    OBM_BTNCORNERS = 32758;
+    OBM_OLD_REDUCE = 32757;
+    OBM_OLD_ZOOM = 32756;
+    OBM_OLD_RESTORE = 32755;
+
+
+    OCR_NORMAL = 32512;
+    OCR_IBEAM = 32513;
+    OCR_WAIT = 32514;
+    OCR_CROSS = 32515;
+    OCR_UP = 32516;
+    OCR_SIZE = 32640;  (* OBSOLETE: use OCR_SIZEALL *)
+    OCR_ICON = 32641;   (* OBSOLETE: use OCR_NORMAL *)
+    OCR_SIZENWSE = 32642;
+    OCR_SIZENESW = 32643;
+    OCR_SIZEWE = 32644;
+    OCR_SIZENS = 32645;
+    OCR_SIZEALL = 32646;
+    OCR_ICOCUR = 32647;  (* OBSOLETE: use OIC_WINLOGO *)
+    OCR_NO = 32648;
+{$IF(WINVER >= $0500)}
+    OCR_HAND = 32649;
+{$ENDIF}(* WINVER >= $0500 *)
+{$IF(WINVER >= $0400)}
+    OCR_APPSTARTING = 32650;
+{$ENDIF}(* WINVER >= $0400 *)
+
+
+    OIC_SAMPLE = 32512;
+    OIC_HAND = 32513;
+    OIC_QUES = 32514;
+    OIC_BANG = 32515;
+    OIC_NOTE = 32516;
+{$IF(WINVER >= $0400)}
+    OIC_WINLOGO = 32517;
+    OIC_WARNING = OIC_BANG;
+    OIC_ERROR = OIC_HAND;
+    OIC_INFORMATION = OIC_NOTE;
+{$ENDIF}(* WINVER >= $0400 *)
+{$IF(WINVER >= $0600)}
+    OIC_SHIELD = 32518;
+{$ENDIF}(* WINVER >= $0600 *)
+
+
+    ORD_LANGDRIVER = 1;
+    (* The ordinal number for the entry point of                           ** language drivers.                                *)
+
+    (* Standard Icon IDs *)
+{$ifdef RC_INVOKED}
+    IDI_APPLICATION = 32512;
+    IDI_HAND = 32513;
+    IDI_QUESTION = 32514;
+    IDI_EXCLAMATION = 32515;
+    IDI_ASTERISK = 32516;
+{$IF(WINVER >= $0400)}
+    IDI_WINLOGO = 32517;
+{$ENDIF}(* WINVER >= $0400 *)
+{$IF(WINVER >= $0600)}
+    IDI_SHIELD = 32518;
+{$ENDIF}(* WINVER >= $0600 *)
+{$ELSE}
+    IDI_APPLICATION = MAKEINTRESOURCE(32512);
+    IDI_HAND = MAKEINTRESOURCE(32513);
+    IDI_QUESTION = MAKEINTRESOURCE(32514);
+    IDI_EXCLAMATION = MAKEINTRESOURCE(32515);
+    IDI_ASTERISK = MAKEINTRESOURCE(32516);
+    {$IF(WINVER >= $0400)}
+    IDI_WINLOGO = MAKEINTRESOURCE(32517);
+    {$ENDIF}(* WINVER >= $0400 *)
+    {$IF(WINVER >= $0600)}
+    IDI_SHIELD = MAKEINTRESOURCE(32518);
+    {$ENDIF}(* WINVER >= $0600 *)
+{$ENDIF}(* RC_INVOKED *)
+
+
+    (* Dialog Box Command IDs *)
+    idOk = 1;
+    idCancel = 2;
+    idAbort = 3;
+    idRetry = 4;
+    idIgnore = 5;
+    idYes = 6;
+    idNo = 7;
+{$IF(WINVER >= $0400)}
+    IDCLOSE = 8;
+    IDHELP = 9;
+{$ENDIF}(* WINVER >= $0400 *)
+
+{$IF(WINVER >= $0500)}
+    IDTRYAGAIN = 10;
+    IDCONTINUE = 11;
+{$ENDIF}(* WINVER >= $0500 *)
+
+{$IF(WINVER >= $0501)}
+    IDTIMEOUT = 32000;
+{$ENDIF}(* WINVER >= $0501 *)
+
+    (* Edit Control Styles *)
+    ES_LEFT = $0000;
+    ES_CENTER = $0001;
+    ES_RIGHT = $0002;
+    ES_MULTILINE = $0004;
+    ES_UPPERCASE = $0008;
+    ES_LOWERCASE = $0010;
+    ES_PASSWORD = $0020;
+    ES_AUTOVSCROLL = $0040;
+    ES_AUTOHSCROLL = $0080;
+    ES_NOHIDESEL = $0100;
+    ES_OEMCONVERT = $0400;
+    ES_READONLY = $0800;
+    ES_WANTRETURN = $1000;
+{$IF(WINVER >= $0400)}
+    ES_NUMBER = $2000;
+{$ENDIF}(* WINVER >= $0400 *)
+
+    (* Control Manager Structures and Definitions*)
+
+    (* Edit Control Notification Codes *)
+    EN_SETFOCUS = $0100;
+    EN_KILLFOCUS = $0200;
+    EN_CHANGE = $0300;
+    EN_UPDATE = $0400;
+    EN_ERRSPACE = $0500;
+    EN_MAXTEXT = $0501;
+    EN_HSCROLL = $0601;
+    EN_VSCROLL = $0602;
+
+{$IF(_WIN32_WINNT >= $0500)}
+    EN_ALIGN_LTR_EC = $0700;
+    EN_ALIGN_RTL_EC = $0701;
+{$ENDIF}(* _WIN32_WINNT >= $0500 *)
+
+{$IF(WINVER >= $0604)}
+    EN_BEFORE_PASTE = $0800;
+    EN_AFTER_PASTE = $0801;
+{$ENDIF}(* WINVER >= $0604 *)
+
+{$IF(WINVER >= $0400)}
+    (* Edit control EM_SETMARGIN parameters *)
+    EC_LEFTMARGIN = $0001;
+    EC_RIGHTMARGIN = $0002;
+    EC_USEFONTINFO = $ffff;
+{$ENDIF}(* WINVER >= $0400 *)
+
+{$IF(WINVER >= $0500)}
+    (* wParam of EM_GET/SETIMESTATUS  *)
+    EMSIS_COMPOSITIONSTRING = $0001;
+
+    (* lParam for EMSIS_COMPOSITIONSTRING  *)
+    EIMES_GETCOMPSTRATONCE = $0001;
+    EIMES_CANCELCOMPSTRINFOCUS = $0002;
+    EIMES_COMPLETECOMPSTRKILLFOCUS = $0004;
+{$ENDIF}(* WINVER >= $0500 *)
+
+    (* Edit Control Messages *)
+    EM_GETSEL = $00B0;
+    EM_SETSEL = $00B1;
+    EM_GETRECT = $00B2;
+    EM_SETRECT = $00B3;
+    EM_SETRECTNP = $00B4;
+    EM_SCROLL = $00B5;
+    EM_LINESCROLL = $00B6;
+    EM_SCROLLCARET = $00B7;
+    EM_GETMODIFY = $00B8;
+    EM_SETMODIFY = $00B9;
+    EM_GETLINECOUNT = $00BA;
+    EM_LINEINDEX = $00BB;
+    EM_SETHANDLE = $00BC;
+    EM_GETHANDLE = $00BD;
+    EM_GETTHUMB = $00BE;
+    EM_LINELENGTH = $00C1;
+    EM_REPLACESEL = $00C2;
+    EM_GETLINE = $00C4;
+    EM_LIMITTEXT = $00C5;
+    EM_CANUNDO = $00C6;
+    EM_UNDO = $00C7;
+    EM_FMTLINES = $00C8;
+    EM_LINEFROMCHAR = $00C9;
+    EM_SETTABSTOPS = $00CB;
+    EM_SETPASSWORDCHAR = $00CC;
+    EM_EMPTYUNDOBUFFER = $00CD;
+    EM_GETFIRSTVISIBLELINE = $00CE;
+    EM_SETREADONLY = $00CF;
+    EM_SETWORDBREAKPROC = $00D0;
+    EM_GETWORDBREAKPROC = $00D1;
+    EM_GETPASSWORDCHAR = $00D2;
+{$IF(WINVER >= $0400)}
+    EM_SETMARGINS = $00D3;
+    EM_GETMARGINS = $00D4;
+    EM_SETLIMITTEXT = EM_LIMITTEXT;   (* ;win40 Name change *)
+    EM_GETLIMITTEXT = $00D5;
+    EM_POSFROMCHAR = $00D6;
+    EM_CHARFROMPOS = $00D7;
+{$ENDIF}(* WINVER >= $0400 *)
+
+{$IF(WINVER >= $0500)}
+    EM_SETIMESTATUS = $00D8;
+    EM_GETIMESTATUS = $00D9;
+{$ENDIF}(* WINVER >= $0500 *)
+
+{$IF(WINVER >= $0604)}
+    EM_ENABLEFEATURE = $00DA;
+{$ENDIF}(* WINVER >= $0604 *)
+
+
+    (* EDITWORDBREAKPROC code values *)
+    WB_LEFT = 0;
+    WB_RIGHT = 1;
+    WB_ISDELIMITER = 2;
+
+
+    (* Button Control Styles *)
+    BS_PUSHBUTTON = $00000000;
+    BS_DEFPUSHBUTTON = $00000001;
+    BS_CHECKBOX = $00000002;
+    BS_AUTOCHECKBOX = $00000003;
+    BS_RADIOBUTTON = $00000004;
+    BS_3STATE = $00000005;
+    BS_AUTO3STATE = $00000006;
+    BS_GROUPBOX = $00000007;
+    BS_USERBUTTON = $00000008;
+    BS_AUTORADIOBUTTON = $00000009;
+    BS_PUSHBOX = $0000000A;
+    BS_OWNERDRAW = $0000000B;
+    BS_TYPEMASK = $0000000F;
+    BS_LEFTTEXT = $00000020;
+{$IF(WINVER >= $0400)}
+    BS_TEXT = $00000000;
+    BS_ICON = $00000040;
+    BS_BITMAP = $00000080;
+    BS_LEFT = $00000100;
+    BS_RIGHT = $00000200;
+    BS_CENTER = $00000300;
+    BS_TOP = $00000400;
+    BS_BOTTOM = $00000800;
+    BS_VCENTER = $00000C00;
+    BS_PUSHLIKE = $00001000;
+    BS_MULTILINE = $00002000;
+    BS_NOTIFY = $00004000;
+    BS_FLAT = $00008000;
+    BS_RIGHTBUTTON = BS_LEFTTEXT;
+{$ENDIF}(* WINVER >= $0400 *)
+
+    (* User Button Notification Codes *)
+    BN_CLICKED = 0;
+    BN_PAINT = 1;
+    BN_HILITE = 2;
+    BN_UNHILITE = 3;
+    BN_DISABLE = 4;
+    BN_DOUBLECLICKED = 5;
+{$IF(WINVER >= $0400)}
+    BN_PUSHED = BN_HILITE;
+    BN_UNPUSHED = BN_UNHILITE;
+    BN_DBLCLK = BN_DOUBLECLICKED;
+    BN_SETFOCUS = 6;
+    BN_KILLFOCUS = 7;
+{$ENDIF}(* WINVER >= $0400 *)
+
+    (* Button Control Messages *)
+    BM_GETCHECK = $00F0;
+    BM_SETCHECK = $00F1;
+    BM_GETSTATE = $00F2;
+    BM_SETSTATE = $00F3;
+    BM_SETSTYLE = $00F4;
+{$IF(WINVER >= $0400)}
+    BM_CLICK = $00F5;
+    BM_GETIMAGE = $00F6;
+    BM_SETIMAGE = $00F7;
+{$ENDIF}(* WINVER >= $0400 *)
+{$IF(WINVER >= $0600)}
+    BM_SETDONTCLICK = $00F8;
+{$ENDIF}(* WINVER >= $0600 *)
+
+{$IF(WINVER >= $0400)}
+    BST_UNCHECKED = $0000;
+    BST_CHECKED = $0001;
+    BST_INDETERMINATE = $0002;
+    BST_PUSHED = $0004;
+    BST_FOCUS = $0008;
+{$ENDIF}(* WINVER >= $0400 *)
+
+    (* Static Control Constants *)
+    SS_LEFT = $00000000;
+    SS_CENTER = $00000001;
+    SS_RIGHT = $00000002;
+    SS_ICON = $00000003;
+    SS_BLACKRECT = $00000004;
+    SS_GRAYRECT = $00000005;
+    SS_WHITERECT = $00000006;
+    SS_BLACKFRAME = $00000007;
+    SS_GRAYFRAME = $00000008;
+    SS_WHITEFRAME = $00000009;
+    SS_USERITEM = $0000000A;
+    SS_SIMPLE = $0000000B;
+    SS_LEFTNOWORDWRAP = $0000000C;
+{$IF(WINVER >= $0400)}
+    SS_OWNERDRAW = $0000000D;
+    SS_BITMAP = $0000000E;
+    SS_ENHMETAFILE = $0000000F;
+    SS_ETCHEDHORZ = $00000010;
+    SS_ETCHEDVERT = $00000011;
+    SS_ETCHEDFRAME = $00000012;
+    SS_TYPEMASK = $0000001F;
+{$ENDIF}(* WINVER >= $0400 *)
+{$IF(WINVER >= $0501)}
+    SS_REALSIZECONTROL = $00000040;
+{$ENDIF}(* WINVER >= $0501 *)
+    SS_NOPREFIX = $00000080; (* Don't do "&" character translation *)
+{$IF(WINVER >= $0400)}
+    SS_NOTIFY = $00000100;
+    SS_CENTERIMAGE = $00000200;
+    SS_RIGHTJUST = $00000400;
+    SS_REALSIZEIMAGE = $00000800;
+    SS_SUNKEN = $00001000;
+    SS_EDITCONTROL = $00002000;
+    SS_ENDELLIPSIS = $00004000;
+    SS_PATHELLIPSIS = $00008000;
+    SS_WORDELLIPSIS = $0000C000;
+    SS_ELLIPSISMASK = $0000C000;
+{$ENDIF}(* WINVER >= $0400 *)
+
+    (* Static Control Mesages *)
+    STM_SETICON = $0170;
+    STM_GETICON = $0171;
+{$IF(WINVER >= $0400)}
+    STM_SETIMAGE = $0172;
+    STM_GETIMAGE = $0173;
+    STN_CLICKED = 0;
+    STN_DBLCLK = 1;
+    STN_ENABLE = 2;
+    STN_DISABLE = 3;
+{$ENDIF}(* WINVER >= $0400 *)
+    STM_MSGMAX = $0174;
+
+
+
+    (* Dialog Styles *)
+    DS_ABSALIGN = $01;
+    DS_SYSMODAL = $02;
+    DS_LOCALEDIT = $20;   (* Edit items get Local storage. *)
+    DS_SETFONT = $40;   (* User specified font for Dlg controls *)
+    DS_MODALFRAME = $80;   (* Can be combined with WS_CAPTION  *)
+    DS_NOIDLEMSG = $100;  (* WM_ENTERIDLE message will not be sent *)
+    DS_SETFOREGROUND = $200;  (* not in win3.1 *)
+
+
+ {$IF(WINVER >= $0400)}
+    DS_3DLOOK = $0004;
+    DS_FIXEDSYS = $0008;
+    DS_NOFAILCREATE = $0010;
+    DS_CONTROL = $0400;
+    DS_CENTER = $0800;
+    DS_CENTERMOUSE = $1000;
+    DS_CONTEXTHELP = $2000;
+
+    DS_SHELLFONT = (DS_SETFONT or DS_FIXEDSYS);
+ {$ENDIF}(* WINVER >= $0400 *)
+
+ {$IF defined(_WIN32_WCE) AND (_WIN32_WCE >= $0500)}
+    DS_USEPIXELS = $8000;
+ {$ENDIF}
+
+
+    DM_GETDEFID = (WM_USER + 0);
+    DM_SETDEFID = (WM_USER + 1);
+
+ {$IF(WINVER >= $0400)}
+    DM_REPOSITION = (WM_USER + 2);
+ {$ENDIF}(* WINVER >= $0400 *)
+    (* Returned in HIWORD() of DM_GETDEFID result if msg is supported *)
+    DC_HASDEFID = $534B;
+
+    (* Dialog Codes *)
+    DLGC_WANTARROWS = $0001;     (* Control wants arrow keys         *)
+    DLGC_WANTTAB = $0002;     (* Control wants tab keys           *)
+    DLGC_WANTALLKEYS = $0004;     (* Control wants all keys           *)
+    DLGC_WANTMESSAGE = $0004;     (* Pass message to control          *)
+    DLGC_HASSETSEL = $0008;     (* Understands EM_SETSEL message    *)
+    DLGC_DEFPUSHBUTTON = $0010;     (* Default pushbutton               *)
+    DLGC_UNDEFPUSHBUTTON = $0020;    (* Non-default pushbutton           *)
+    DLGC_RADIOBUTTON = $0040;    (* Radio button                     *)
+    DLGC_WANTCHARS = $0080;    (* Want WM_CHAR messages            *)
+    DLGC_STATIC = $0100;    (* Static item: don't include       *)
+    DLGC_BUTTON = $2000;    (* Button item: can be checked      *)
+
+    LB_CTLCODE = 0;
+
+
+
+    (* Listbox Return Values *)
+    LB_OKAY = 0;
+    LB_ERR = (-1);
+    LB_ERRSPACE = (-2);
+
+(*
+**  The idStaticPath parameter to DlgDirList can have the following values
+**  ORed if the list box should show other details of the files along with
+**  the name of the files;
+*)
+    (* all other details also will be returned *)
+
+
+    (* Listbox Notification Codes *)
+    LBN_ERRSPACE = (-2);
+    LBN_SELCHANGE = 1;
+    LBN_DBLCLK = 2;
+    LBN_SELCANCEL = 3;
+    LBN_SETFOCUS = 4;
+    LBN_KILLFOCUS = 5;
+
+
+    (* Listbox messages *)
+    LB_ADDSTRING = $0180;
+    LB_INSERTSTRING = $0181;
+    LB_DELETESTRING = $0182;
+    LB_SELITEMRANGEEX = $0183;
+    LB_RESETCONTENT = $0184;
+    LB_SETSEL = $0185;
+    LB_SETCURSEL = $0186;
+    LB_GETSEL = $0187;
+    LB_GETCURSEL = $0188;
+    LB_GETTEXT = $0189;
+    LB_GETTEXTLEN = $018A;
+    LB_GETCOUNT = $018B;
+    LB_SELECTSTRING = $018C;
+    LB_DIR = $018D;
+    LB_GETTOPINDEX = $018E;
+    LB_FINDSTRING = $018F;
+    LB_GETSELCOUNT = $0190;
+    LB_GETSELITEMS = $0191;
+    LB_SETTABSTOPS = $0192;
+    LB_GETHORIZONTALEXTENT = $0193;
+    LB_SETHORIZONTALEXTENT = $0194;
+    LB_SETCOLUMNWIDTH = $0195;
+    LB_ADDFILE = $0196;
+    LB_SETTOPINDEX = $0197;
+    LB_GETITEMRECT = $0198;
+    LB_GETITEMDATA = $0199;
+    LB_SETITEMDATA = $019A;
+    LB_SELITEMRANGE = $019B;
+    LB_SETANCHORINDEX = $019C;
+    LB_GETANCHORINDEX = $019D;
+    LB_SETCARETINDEX = $019E;
+    LB_GETCARETINDEX = $019F;
+    LB_SETITEMHEIGHT = $01A0;
+    LB_GETITEMHEIGHT = $01A1;
+    LB_FINDSTRINGEXACT = $01A2;
+    LB_SETLOCALE = $01A5;
+    LB_GETLOCALE = $01A6;
+    LB_SETCOUNT = $01A7;
+{$IF(WINVER >= $0400)}
+    LB_INITSTORAGE = $01A8;
+    LB_ITEMFROMPOINT = $01A9;
+{$ENDIF}(* WINVER >= $0400 *)
+{$IF defined(_WIN32_WCE) AND (_WIN32_WCE >= $0400)}
+    LB_MULTIPLEADDSTRING = $01B1;
+{$ENDIF}
+
+
+
+{$IF(_WIN32_WINNT >= $0501)}
+    LB_GETLISTBOXINFO = $01B2;
+{$ENDIF}(* _WIN32_WINNT >= $0501 *)
+
+{$IF(_WIN32_WINNT >= $0501)}
+    LB_MSGMAX = $01B3;
+{$ELSEIF defined(_WIN32_WCE) AND (_WIN32_WCE >= $0400)}
+    LB_MSGMAX = $01B1;
+ {$ELSEIF (WINVER >= $0400)}
+    LB_MSGMAX = $01B0;
+{$ELSE}
+    LB_MSGMAX = $01A8;
+{$ENDIF}
+
+
+    (* Listbox Styles *)
+    LBS_NOTIFY = $0001;
+    LBS_SORT = $0002;
+    LBS_NOREDRAW = $0004;
+    LBS_MULTIPLESEL = $0008;
+    LBS_OWNERDRAWFIXED = $0010;
+    LBS_OWNERDRAWVARIABLE = $0020;
+    LBS_HASSTRINGS = $0040;
+    LBS_USETABSTOPS = $0080;
+    LBS_NOINTEGRALHEIGHT = $0100;
+    LBS_MULTICOLUMN = $0200;
+    LBS_WANTKEYBOARDINPUT = $0400;
+    LBS_EXTENDEDSEL = $0800;
+    LBS_DISABLENOSCROLL = $1000;
+    LBS_NODATA = $2000;
+{$IF(WINVER >= $0400)}
+    LBS_NOSEL = $4000;
+{$ENDIF}(* WINVER >= $0400 *)
+    LBS_COMBOBOX = $8000;
+
+    LBS_STANDARD = (LBS_NOTIFY or LBS_SORT or WS_VSCROLL or WS_BORDER);
+
+
+
+    (* Combo Box return Values *)
+    CB_OKAY = 0;
+    CB_ERR = (-1);
+    CB_ERRSPACE = (-2);
+
+
+    (* Combo Box Notification Codes *)
+    CBN_ERRSPACE = (-1);
+    CBN_SELCHANGE = 1;
+    CBN_DBLCLK = 2;
+    CBN_SETFOCUS = 3;
+    CBN_KILLFOCUS = 4;
+    CBN_EDITCHANGE = 5;
+    CBN_EDITUPDATE = 6;
+    CBN_DROPDOWN = 7;
+    CBN_CLOSEUP = 8;
+    CBN_SELENDOK = 9;
+    CBN_SELENDCANCEL = 10;
+
+    (* Combo Box styles *)
+    CBS_SIMPLE = $0001;
+    CBS_DROPDOWN = $0002;
+    CBS_DROPDOWNLIST = $0003;
+    CBS_OWNERDRAWFIXED = $0010;
+    CBS_OWNERDRAWVARIABLE = $0020;
+    CBS_AUTOHSCROLL = $0040;
+    CBS_OEMCONVERT = $0080;
+    CBS_SORT = $0100;
+    CBS_HASSTRINGS = $0200;
+    CBS_NOINTEGRALHEIGHT = $0400;
+    CBS_DISABLENOSCROLL = $0800;
+{$IF(WINVER >= $0400)}
+    CBS_UPPERCASE = $2000;
+    CBS_LOWERCASE = $4000;
+{$ENDIF}(* WINVER >= $0400 *)
+
+    (* Combo Box messages *)
+    CB_GETEDITSEL = $0140;
+    CB_LIMITTEXT = $0141;
+    CB_SETEDITSEL = $0142;
+    CB_ADDSTRING = $0143;
+    CB_DELETESTRING = $0144;
+    CB_DIR = $0145;
+    CB_GETCOUNT = $0146;
+    CB_GETCURSEL = $0147;
+    CB_GETLBTEXT = $0148;
+    CB_GETLBTEXTLEN = $0149;
+    CB_INSERTSTRING = $014A;
+    CB_RESETCONTENT = $014B;
+    CB_FINDSTRING = $014C;
+    CB_SELECTSTRING = $014D;
+    CB_SETCURSEL = $014E;
+    CB_SHOWDROPDOWN = $014F;
+    CB_GETITEMDATA = $0150;
+    CB_SETITEMDATA = $0151;
+    CB_GETDROPPEDCONTROLRECT = $0152;
+    CB_SETITEMHEIGHT = $0153;
+    CB_GETITEMHEIGHT = $0154;
+    CB_SETEXTENDEDUI = $0155;
+    CB_GETEXTENDEDUI = $0156;
+    CB_GETDROPPEDSTATE = $0157;
+    CB_FINDSTRINGEXACT = $0158;
+    CB_SETLOCALE = $0159;
+    CB_GETLOCALE = $015A;
+{$IF(WINVER >= $0400)}
+    CB_GETTOPINDEX = $015b;
+    CB_SETTOPINDEX = $015c;
+    CB_GETHORIZONTALEXTENT = $015d;
+    CB_SETHORIZONTALEXTENT = $015e;
+    CB_GETDROPPEDWIDTH = $015f;
+    CB_SETDROPPEDWIDTH = $0160;
+    CB_INITSTORAGE = $0161;
+{$IF defined(_WIN32_WCE) AND(_WIN32_WCE >= $0400)}
+    CB_MULTIPLEADDSTRING = $0163;
+{$ENDIF}
+{$ENDIF}(* WINVER >= $0400 *)
+
+{$IF(_WIN32_WINNT >= $0501)}
+    CB_GETCOMBOBOXINFO = $0164;
+{$ENDIF}(* _WIN32_WINNT >= $0501 *)
+
+ {$IF(_WIN32_WINNT >= $0501)}
+    CB_MSGMAX = $0165;
+{$ELSEIF  defined(_WIN32_WCE) AND (_WIN32_WCE >= $0400)}
+    CB_MSGMAX = $0163;
+{$ELSEIF (WINVER >= $0400)}
+    CB_MSGMAX = $0162;
+{$ELSE}
+    CB_MSGMAX = $015B;
+{$ENDIF}
+
+    (* Scroll Bar Styles *)
+    SBS_HORZ = $0000;
+    SBS_VERT = $0001;
+    SBS_TOPALIGN = $0002;
+    SBS_LEFTALIGN = $0002;
+    SBS_BOTTOMALIGN = $0004;
+    SBS_RIGHTALIGN = $0004;
+    SBS_SIZEBOXTOPLEFTALIGN = $0002;
+    SBS_SIZEBOXBOTTOMRIGHTALIGN = $0004;
+    SBS_SIZEBOX = $0008;
+{$IF(WINVER >= $0400)}
+    SBS_SIZEGRIP = $0010;
+{$ENDIF}(* WINVER >= $0400 *)
+
+    (* Scroll bar messages *)
+    SBM_SETPOS = $00E0; (*not in win3.1 *)
+    SBM_GETPOS = $00E1; (*not in win3.1 *)
+    SBM_SETRANGE = $00E2; (*not in win3.1 *)
+    SBM_SETRANGEREDRAW = $00E6; (*not in win3.1 *)
+    SBM_GETRANGE = $00E3; (*not in win3.1 *)
+    SBM_ENABLE_ARROWS = $00E4; (*not in win3.1 *)
+{$IF(WINVER >= $0400)}
+    SBM_SETSCROLLINFO = $00E9;
+    SBM_GETSCROLLINFO = $00EA;
+{$ENDIF}(* WINVER >= $0400 *)
+
+{$IF(_WIN32_WINNT >= $0501)}
+    SBM_GETSCROLLBARINFO = $00EB;
+{$ENDIF}(* _WIN32_WINNT >= $0501 *)
+
+{$IF(WINVER >= $0400)}
+    SIF_RANGE = $0001;
+    SIF_PAGE = $0002;
+    SIF_POS = $0004;
+    SIF_DISABLENOSCROLL = $0008;
+    SIF_TRACKPOS = $0010;
+    SIF_ALL = (SIF_RANGE or SIF_PAGE or SIF_POS or SIF_TRACKPOS);
+
+  {$ENDIF}(* WINVER >= $0400 *)
+
+    (* MDI client style bits *)
+    MDIS_ALLCHILDSTYLES = $0001;
+
+    (* wParam Flags for WM_MDITILE and WM_MDICASCADE messages. *)
+    MDITILE_VERTICAL = $0000; (*not in win3.1 *)
+    MDITILE_HORIZONTAL = $0001;(*not in win3.1 *)
+    MDITILE_SKIPDISABLED = $0002; (*not in win3.1 *)
+  {$IF(_WIN32_WINNT >= $0500)}
+    MDITILE_ZORDER = $0004;
+  {$ENDIF}(* _WIN32_WINNT >= $0500 *)
+
+
+    (* Commands to pass to WinHelp() *)
+    HELP_CONTEXT = $0001;  (* Display topic in ulTopic *)
+    HELP_QUIT = $0002;  (* Terminate help *)
+    HELP_INDEX = $0003;  (* Display index *)
+    HELP_CONTENTS = $0003;
+    HELP_HELPONHELP = $0004;  (* Display help on using help *)
+    HELP_SETINDEX = $0005;  (* Set current Index for multi index help *)
+    HELP_SETCONTENTS = $0005;
+    HELP_CONTEXTPOPUP = $0008;
+    HELP_FORCEFILE = $0009;
+    HELP_KEY = $0101;  (* Display topic for keyword in offabData *)
+    HELP_COMMAND = $0102;
+    HELP_PARTIALKEY = $0105;
+    HELP_MULTIKEY = $0201;
+    HELP_SETWINPOS = $0203;
+{$IF(WINVER >= $0400)}
+    HELP_CONTEXTMENU = $000a;
+    HELP_FINDER = $000b;
+    HELP_WM_HELP = $000c;
+    HELP_SETPOPUP_POS = $000d;
+
+    HELP_TCARD = $8000;
+    HELP_TCARD_DATA = $0010;
+    HELP_TCARD_OTHER_CALLER = $0011;
+
+    // These are in winhelp.h in Win95.
+    IDH_NO_HELP = 28440;
+    IDH_MISSING_CONTEXT = 28441; // Control doesn't have matching help context
+    IDH_GENERIC_HELP_BUTTON = 28442; // Property sheet help button
+    IDH_OK = 28443;
+    IDH_CANCEL = 28444;
+    IDH_HELP = 28445;
+
+{$ENDIF}(* WINVER >= $0400 *)
+
+
+
+{$IF(WINVER >= $0500)}
+
+    GR_GDIOBJECTS = 0;       (* Count of GDI objects *)
+    GR_USEROBJECTS = 1;       (* Count of USER objects *)
+{$ENDIF}(* WINVER >= $0500 *)
+{$IF(WINVER >= $0601)}
+    GR_GDIOBJECTS_PEAK = 2;      (* Peak count of GDI objects *)
+    GR_USEROBJECTS_PEAK = 4;      (* Peak count of USER objects *)
+{$ENDIF}(* WINVER >= $0601 *)
+
+{$IF(WINVER >= $0601)}
+    GR_GLOBAL: THANDLE = (-2);
+{$ENDIF}(* WINVER >= $0601 *)
+
+    (* Parameter for SystemParametersInfo. *)
+
+    SPI_GETBEEP = $0001;
+    SPI_SETBEEP = $0002;
+    SPI_GETMOUSE = $0003;
+    SPI_SETMOUSE = $0004;
+    SPI_GETBORDER = $0005;
+    SPI_SETBORDER = $0006;
+    SPI_GETKEYBOARDSPEED = $000A;
+    SPI_SETKEYBOARDSPEED = $000B;
+    SPI_LANGDRIVER = $000C;
+    SPI_ICONHORIZONTALSPACING = $000D;
+    SPI_GETSCREENSAVETIMEOUT = $000E;
+    SPI_SETSCREENSAVETIMEOUT = $000F;
+    SPI_GETSCREENSAVEACTIVE = $0010;
+    SPI_SETSCREENSAVEACTIVE = $0011;
+    SPI_GETGRIDGRANULARITY = $0012;
+    SPI_SETGRIDGRANULARITY = $0013;
+    SPI_SETDESKWALLPAPER = $0014;
+    SPI_SETDESKPATTERN = $0015;
+    SPI_GETKEYBOARDDELAY = $0016;
+    SPI_SETKEYBOARDDELAY = $0017;
+    SPI_ICONVERTICALSPACING = $0018;
+    SPI_GETICONTITLEWRAP = $0019;
+    SPI_SETICONTITLEWRAP = $001A;
+    SPI_GETMENUDROPALIGNMENT = $001B;
+    SPI_SETMENUDROPALIGNMENT = $001C;
+    SPI_SETDOUBLECLKWIDTH = $001D;
+    SPI_SETDOUBLECLKHEIGHT = $001E;
+    SPI_GETICONTITLELOGFONT = $001F;
+    SPI_SETDOUBLECLICKTIME = $0020;
+    SPI_SETMOUSEBUTTONSWAP = $0021;
+    SPI_SETICONTITLELOGFONT = $0022;
+    SPI_GETFASTTASKSWITCH = $0023;
+    SPI_SETFASTTASKSWITCH = $0024;
+{$IF(WINVER >= $0400)}
+    SPI_SETDRAGFULLWINDOWS = $0025;
+    SPI_GETDRAGFULLWINDOWS = $0026;
+    SPI_GETNONCLIENTMETRICS = $0029;
+    SPI_SETNONCLIENTMETRICS = $002A;
+    SPI_GETMINIMIZEDMETRICS = $002B;
+    SPI_SETMINIMIZEDMETRICS = $002C;
+    SPI_GETICONMETRICS = $002D;
+    SPI_SETICONMETRICS = $002E;
+    SPI_SETWORKAREA = $002F;
+    SPI_GETWORKAREA = $0030;
+    SPI_SETPENWINDOWS = $0031;
+
+    SPI_GETHIGHCONTRAST = $0042;
+    SPI_SETHIGHCONTRAST = $0043;
+    SPI_GETKEYBOARDPREF = $0044;
+    SPI_SETKEYBOARDPREF = $0045;
+    SPI_GETSCREENREADER = $0046;
+    SPI_SETSCREENREADER = $0047;
+    SPI_GETANIMATION = $0048;
+    SPI_SETANIMATION = $0049;
+    SPI_GETFONTSMOOTHING = $004A;
+    SPI_SETFONTSMOOTHING = $004B;
+    SPI_SETDRAGWIDTH = $004C;
+    SPI_SETDRAGHEIGHT = $004D;
+    SPI_SETHANDHELD = $004E;
+    SPI_GETLOWPOWERTIMEOUT = $004F;
+    SPI_GETPOWEROFFTIMEOUT = $0050;
+    SPI_SETLOWPOWERTIMEOUT = $0051;
+    SPI_SETPOWEROFFTIMEOUT = $0052;
+    SPI_GETLOWPOWERACTIVE = $0053;
+    SPI_GETPOWEROFFACTIVE = $0054;
+    SPI_SETLOWPOWERACTIVE = $0055;
+    SPI_SETPOWEROFFACTIVE = $0056;
+    SPI_SETCURSORS = $0057;
+    SPI_SETICONS = $0058;
+    SPI_GETDEFAULTINPUTLANG = $0059;
+    SPI_SETDEFAULTINPUTLANG = $005A;
+    SPI_SETLANGTOGGLE = $005B;
+    SPI_GETWINDOWSEXTENSION = $005C;
+    SPI_SETMOUSETRAILS = $005D;
+    SPI_GETMOUSETRAILS = $005E;
+    SPI_SETSCREENSAVERRUNNING = $0061;
+    SPI_SCREENSAVERRUNNING = SPI_SETSCREENSAVERRUNNING;
+{$ENDIF}(* WINVER >= $0400 *)
+    SPI_GETFILTERKEYS = $0032;
+    SPI_SETFILTERKEYS = $0033;
+    SPI_GETTOGGLEKEYS = $0034;
+    SPI_SETTOGGLEKEYS = $0035;
+    SPI_GETMOUSEKEYS = $0036;
+    SPI_SETMOUSEKEYS = $0037;
+    SPI_GETSHOWSOUNDS = $0038;
+    SPI_SETSHOWSOUNDS = $0039;
+    SPI_GETSTICKYKEYS = $003A;
+    SPI_SETSTICKYKEYS = $003B;
+    SPI_GETACCESSTIMEOUT = $003C;
+    SPI_SETACCESSTIMEOUT = $003D;
+{$IF(WINVER >= $0400)}
+    SPI_GETSERIALKEYS = $003E;
+    SPI_SETSERIALKEYS = $003F;
+{$ENDIF}(* WINVER >= $0400 *)
+    SPI_GETSOUNDSENTRY = $0040;
+    SPI_SETSOUNDSENTRY = $0041;
+{$IF(_WIN32_WINNT >= $0400)}
+    SPI_GETSNAPTODEFBUTTON = $005F;
+    SPI_SETSNAPTODEFBUTTON = $0060;
+{$ENDIF}(* _WIN32_WINNT >= $0400 *)
+
+{$IF (_WIN32_WINNT >= $0400) OR (_WIN32_WINDOWS > $0400)}
+    SPI_GETMOUSEHOVERWIDTH = $0062;
+    SPI_SETMOUSEHOVERWIDTH = $0063;
+    SPI_GETMOUSEHOVERHEIGHT = $0064;
+    SPI_SETMOUSEHOVERHEIGHT = $0065;
+    SPI_GETMOUSEHOVERTIME = $0066;
+    SPI_SETMOUSEHOVERTIME = $0067;
+    SPI_GETWHEELSCROLLLINES = $0068;
+    SPI_SETWHEELSCROLLLINES = $0069;
+    SPI_GETMENUSHOWDELAY = $006A;
+    SPI_SETMENUSHOWDELAY = $006B;
+
+{$IF (_WIN32_WINNT >= $0600)}
+    SPI_GETWHEELSCROLLCHARS = $006C;
+    SPI_SETWHEELSCROLLCHARS = $006D;
+{$ENDIF}
+
+    SPI_GETSHOWIMEUI = $006E;
+    SPI_SETSHOWIMEUI = $006F;
+{$ENDIF}
+
+ {$IF(WINVER >= $0500)}
+    SPI_GETMOUSESPEED = $0070;
+    SPI_SETMOUSESPEED = $0071;
+    SPI_GETSCREENSAVERRUNNING = $0072;
+    SPI_GETDESKWALLPAPER = $0073;
+{$ENDIF}(* WINVER >= $0500 *)
+
+{$IF(WINVER >= $0600)}
+    SPI_GETAUDIODESCRIPTION = $0074;
+    SPI_SETAUDIODESCRIPTION = $0075;
+
+    SPI_GETSCREENSAVESECURE = $0076;
+    SPI_SETSCREENSAVESECURE = $0077;
+{$ENDIF}(* WINVER >= $0600 *)
+
+
+
+{$IF(_WIN32_WINNT >= $0601)}
+    SPI_GETHUNGAPPTIMEOUT = $0078;
+    SPI_SETHUNGAPPTIMEOUT = $0079;
+    SPI_GETWAITTOKILLTIMEOUT = $007A;
+    SPI_SETWAITTOKILLTIMEOUT = $007B;
+    SPI_GETWAITTOKILLSERVICETIMEOUT = $007C;
+    SPI_SETWAITTOKILLSERVICETIMEOUT = $007D;
+    SPI_GETMOUSEDOCKTHRESHOLD = $007E;
+    SPI_SETMOUSEDOCKTHRESHOLD = $007F;
+    SPI_GETPENDOCKTHRESHOLD = $0080;
+    SPI_SETPENDOCKTHRESHOLD = $0081;
+    SPI_GETWINARRANGING = $0082;
+    SPI_SETWINARRANGING = $0083;
+    SPI_GETMOUSEDRAGOUTTHRESHOLD = $0084;
+    SPI_SETMOUSEDRAGOUTTHRESHOLD = $0085;
+    SPI_GETPENDRAGOUTTHRESHOLD = $0086;
+    SPI_SETPENDRAGOUTTHRESHOLD = $0087;
+    SPI_GETMOUSESIDEMOVETHRESHOLD = $0088;
+    SPI_SETMOUSESIDEMOVETHRESHOLD = $0089;
+    SPI_GETPENSIDEMOVETHRESHOLD = $008A;
+    SPI_SETPENSIDEMOVETHRESHOLD = $008B;
+    SPI_GETDRAGFROMMAXIMIZE = $008C;
+    SPI_SETDRAGFROMMAXIMIZE = $008D;
+    SPI_GETSNAPSIZING = $008E;
+    SPI_SETSNAPSIZING = $008F;
+    SPI_GETDOCKMOVING = $0090;
+    SPI_SETDOCKMOVING = $0091;
+{$ENDIF}(* _WIN32_WINNT >= $0601 *)
+
+ {$IF(WINVER >= $0602)}
+    MAX_TOUCH_PREDICTION_FILTER_TAPS = 3;
+
+    TOUCHPREDICTIONPARAMETERS_DEFAULT_LATENCY = 8;
+    TOUCHPREDICTIONPARAMETERS_DEFAULT_SAMPLETIME = 8;
+    TOUCHPREDICTIONPARAMETERS_DEFAULT_USE_HW_TIMESTAMP = 1;
+    TOUCHPREDICTIONPARAMETERS_DEFAULT_RLS_DELTA = 0.001;
+    TOUCHPREDICTIONPARAMETERS_DEFAULT_RLS_LAMBDA_MIN = 0.9;
+    TOUCHPREDICTIONPARAMETERS_DEFAULT_RLS_LAMBDA_MAX = 0.999;
+    TOUCHPREDICTIONPARAMETERS_DEFAULT_RLS_LAMBDA_LEARNING_RATE = 0.001;
+    TOUCHPREDICTIONPARAMETERS_DEFAULT_RLS_EXPO_SMOOTH_ALPHA = 0.99;
+    SPI_GETTOUCHPREDICTIONPARAMETERS = $009C;
+    SPI_SETTOUCHPREDICTIONPARAMETERS = $009D;
+
+    MAX_LOGICALDPIOVERRIDE = 2;
+    MIN_LOGICALDPIOVERRIDE = -2;
+
+    SPI_GETLOGICALDPIOVERRIDE = $009E;
+    SPI_SETLOGICALDPIOVERRIDE = $009F;
+
+
+    SPI_GETMENURECT = $00A2;
+    SPI_SETMENURECT = $00A3;
+ {$ENDIF}(* WINVER >= $0602 *)
+
+
+
+{$IF(WINVER >= $0500)}
+    SPI_GETACTIVEWINDOWTRACKING = $1000;
+    SPI_SETACTIVEWINDOWTRACKING = $1001;
+    SPI_GETMENUANIMATION = $1002;
+    SPI_SETMENUANIMATION = $1003;
+    SPI_GETCOMBOBOXANIMATION = $1004;
+    SPI_SETCOMBOBOXANIMATION = $1005;
+    SPI_GETLISTBOXSMOOTHSCROLLING = $1006;
+    SPI_SETLISTBOXSMOOTHSCROLLING = $1007;
+    SPI_GETGRADIENTCAPTIONS = $1008;
+    SPI_SETGRADIENTCAPTIONS = $1009;
+    SPI_GETKEYBOARDCUES = $100A;
+    SPI_SETKEYBOARDCUES = $100B;
+    SPI_GETMENUUNDERLINES = SPI_GETKEYBOARDCUES;
+    SPI_SETMENUUNDERLINES = SPI_SETKEYBOARDCUES;
+    SPI_GETACTIVEWNDTRKZORDER = $100C;
+    SPI_SETACTIVEWNDTRKZORDER = $100D;
+    SPI_GETHOTTRACKING = $100E;
+    SPI_SETHOTTRACKING = $100F;
+    SPI_GETMENUFADE = $1012;
+    SPI_SETMENUFADE = $1013;
+    SPI_GETSELECTIONFADE = $1014;
+    SPI_SETSELECTIONFADE = $1015;
+    SPI_GETTOOLTIPANIMATION = $1016;
+    SPI_SETTOOLTIPANIMATION = $1017;
+    SPI_GETTOOLTIPFADE = $1018;
+    SPI_SETTOOLTIPFADE = $1019;
+    SPI_GETCURSORSHADOW = $101A;
+    SPI_SETCURSORSHADOW = $101B;
+{$IF(_WIN32_WINNT >= $0501)}
+    SPI_GETMOUSESONAR = $101C;
+    SPI_SETMOUSESONAR = $101D;
+    SPI_GETMOUSECLICKLOCK = $101E;
+    SPI_SETMOUSECLICKLOCK = $101F;
+    SPI_GETMOUSEVANISH = $1020;
+    SPI_SETMOUSEVANISH = $1021;
+    SPI_GETFLATMENU = $1022;
+    SPI_SETFLATMENU = $1023;
+    SPI_GETDROPSHADOW = $1024;
+    SPI_SETDROPSHADOW = $1025;
+    SPI_GETBLOCKSENDINPUTRESETS = $1026;
+    SPI_SETBLOCKSENDINPUTRESETS = $1027;
+{$ENDIF}(* _WIN32_WINNT >= $0501 *)
+
+    SPI_GETUIEFFECTS = $103E;
+    SPI_SETUIEFFECTS = $103F;
+
+{$IF(_WIN32_WINNT >= $0600)}
+    SPI_GETDISABLEOVERLAPPEDCONTENT = $1040;
+    SPI_SETDISABLEOVERLAPPEDCONTENT = $1041;
+    SPI_GETCLIENTAREAANIMATION = $1042;
+    SPI_SETCLIENTAREAANIMATION = $1043;
+    SPI_GETCLEARTYPE = $1048;
+    SPI_SETCLEARTYPE = $1049;
+    SPI_GETSPEECHRECOGNITION = $104A;
+    SPI_SETSPEECHRECOGNITION = $104B;
+{$ENDIF}(* _WIN32_WINNT >= $0600 *)
+
+{$IF(WINVER >= $0601)}
+    SPI_GETCARETBROWSING = $104C;
+    SPI_SETCARETBROWSING = $104D;
+    SPI_GETTHREADLOCALINPUTSETTINGS = $104E;
+    SPI_SETTHREADLOCALINPUTSETTINGS = $104F;
+    SPI_GETSYSTEMLANGUAGEBAR = $1050;
+    SPI_SETSYSTEMLANGUAGEBAR = $1051;
+{$ENDIF}(* WINVER >= $0601 *)
+
+{$IF (NTDDI_VERSION >= NTDDI_WIN10_RS3)}
+{$ENDIF}// NTDDI_VERSION >= NTDDI_WIN10_RS3
+
+    SPI_GETFOREGROUNDLOCKTIMEOUT = $2000;
+    SPI_SETFOREGROUNDLOCKTIMEOUT = $2001;
+    SPI_GETACTIVEWNDTRKTIMEOUT = $2002;
+    SPI_SETACTIVEWNDTRKTIMEOUT = $2003;
+    SPI_GETFOREGROUNDFLASHCOUNT = $2004;
+    SPI_SETFOREGROUNDFLASHCOUNT = $2005;
+    SPI_GETCARETWIDTH = $2006;
+    SPI_SETCARETWIDTH = $2007;
+
+{$IF(_WIN32_WINNT >= $0501)}
+    SPI_GETMOUSECLICKLOCKTIME = $2008;
+    SPI_SETMOUSECLICKLOCKTIME = $2009;
+    SPI_GETFONTSMOOTHINGTYPE = $200A;
+    SPI_SETFONTSMOOTHINGTYPE = $200B;
+
+    (* constants for SPI_GETFONTSMOOTHINGTYPE and SPI_SETFONTSMOOTHINGTYPE: *)
+    FE_FONTSMOOTHINGSTANDARD = $0001;
+    FE_FONTSMOOTHINGCLEARTYPE = $0002;
+
+    SPI_GETFONTSMOOTHINGCONTRAST = $200C;
+    SPI_SETFONTSMOOTHINGCONTRAST = $200D;
+
+    SPI_GETFOCUSBORDERWIDTH = $200E;
+    SPI_SETFOCUSBORDERWIDTH = $200F;
+    SPI_GETFOCUSBORDERHEIGHT = $2010;
+    SPI_SETFOCUSBORDERHEIGHT = $2011;
+
+    SPI_GETFONTSMOOTHINGORIENTATION = $2012;
+    SPI_SETFONTSMOOTHINGORIENTATION = $2013;
+
+    (* constants for SPI_GETFONTSMOOTHINGORIENTATION and SPI_SETFONTSMOOTHINGORIENTATION: *)
+    FE_FONTSMOOTHINGORIENTATIONBGR = $0000;
+    FE_FONTSMOOTHINGORIENTATIONRGB = $0001;
+{$ENDIF}(* _WIN32_WINNT >= $0501 *)
+
+{$IF(_WIN32_WINNT >= $0600)}
+    SPI_GETMINIMUMHITRADIUS = $2014;
+    SPI_SETMINIMUMHITRADIUS = $2015;
+    SPI_GETMESSAGEDURATION = $2016;
+    SPI_SETMESSAGEDURATION = $2017;
+{$ENDIF}(* _WIN32_WINNT >= $0600 *)
+
+{$IF(WINVER >= $0602)}
+    SPI_GETCONTACTVISUALIZATION = $2018;
+    SPI_SETCONTACTVISUALIZATION = $2019;
+    (* constants for SPI_GETCONTACTVISUALIZATION and SPI_SETCONTACTVISUALIZATION *)
+    CONTACTVISUALIZATION_OFF = $0000;
+    CONTACTVISUALIZATION_ON = $0001;
+    CONTACTVISUALIZATION_PRESENTATIONMODE = $0002;
+
+    SPI_GETGESTUREVISUALIZATION = $201A;
+    SPI_SETGESTUREVISUALIZATION = $201B;
+    (* constants for SPI_GETGESTUREVISUALIZATION and SPI_SETGESTUREVISUALIZATION *)
+    GESTUREVISUALIZATION_OFF = $0000;
+    GESTUREVISUALIZATION_ON = $001F;
+    GESTUREVISUALIZATION_TAP = $0001;
+    GESTUREVISUALIZATION_DOUBLETAP = $0002;
+    GESTUREVISUALIZATION_PRESSANDTAP = $0004;
+    GESTUREVISUALIZATION_PRESSANDHOLD = $0008;
+    GESTUREVISUALIZATION_RIGHTTAP = $0010;
+{$ENDIF}(* WINVER >= $0602 *)
+
+{$IF(WINVER >= $0602)}
+    SPI_GETMOUSEWHEELROUTING = $201C;
+    SPI_SETMOUSEWHEELROUTING = $201D;
+
+    MOUSEWHEEL_ROUTING_FOCUS = 0;
+    MOUSEWHEEL_ROUTING_HYBRID = 1;
+{$IF(WINVER >= $0603)}
+    MOUSEWHEEL_ROUTING_MOUSE_POS = 2;
+{$ENDIF}(* WINVER >= $0603 *)
+{$ENDIF}(* WINVER >= $0602 *)
+
+{$IF(WINVER >= $0604)}
+    SPI_GETPENVISUALIZATION = $201E;
+    SPI_SETPENVISUALIZATION = $201F;
+    (* constants for SPI_{GET|SET}PENVISUALIZATION *)
+    PENVISUALIZATION_ON = $0023;
+    PENVISUALIZATION_OFF = $0000;
+    PENVISUALIZATION_TAP = $0001;
+    PENVISUALIZATION_DOUBLETAP = $0002;
+    PENVISUALIZATION_CURSOR = $0020;
+
+    SPI_GETPENARBITRATIONTYPE = $2020;
+    SPI_SETPENARBITRATIONTYPE = $2021;
+    (* constants for SPI_{GET|SET}PENARBITRATIONTYPE *)
+    PENARBITRATIONTYPE_NONE = $0000;
+    PENARBITRATIONTYPE_WIN8 = $0001;
+    PENARBITRATIONTYPE_FIS = $0002;
+    PENARBITRATIONTYPE_SPT = $0003;
+    PENARBITRATIONTYPE_MAX = $0004;
+{$ENDIF}(* WINVER >= $0604 *)
+
+{$IF (NTDDI_VERSION >= NTDDI_WIN10_RS3)}
+    SPI_GETCARETTIMEOUT = $2022;
+    SPI_SETCARETTIMEOUT = $2023;
+{$ENDIF}// NTDDI_VERSION >= NTDDI_WIN10_RS3
+
+{$IF (NTDDI_VERSION >= NTDDI_WIN10_RS4)}
+    SPI_GETHANDEDNESS = $2024;
+    SPI_SETHANDEDNESS = $2025;
+
+{$ENDIF}// NTDDI_VERSION >= NTDDI_WIN10_RS4
+
+{$ENDIF}(* WINVER >= $0500 *)
+
+    (* Flags *)
+    SPIF_UPDATEINIFILE = $0001;
+    SPIF_SENDWININICHANGE = $0002;
+    SPIF_SENDCHANGE = SPIF_SENDWININICHANGE;
+
+
+    METRICS_USEDEFAULT = -1;
+
+    ARW_BOTTOMLEFT = $0000;
+    ARW_BOTTOMRIGHT = $0001;
+    ARW_TOPLEFT = $0002;
+    ARW_TOPRIGHT = $0003;
+    ARW_STARTMASK = $0003;
+    ARW_STARTRIGHT = $0001;
+    ARW_STARTTOP = $0002;
+
+    ARW_LEFT = $0000;
+    ARW_RIGHT = $0000;
+    ARW_UP = $0004;
+    ARW_DOWN = $0004;
+    ARW_HIDE = $0008;
+
+    (* flags for SERIALKEYS dwFlags field *)
+    SERKF_SERIALKEYSON = $00000001;
+    SERKF_AVAILABLE = $00000002;
+    SERKF_INDICATOR = $00000004;
+
+    (* flags for HIGHCONTRAST dwFlags field *)
+    HCF_HIGHCONTRASTON = $00000001;
+    HCF_AVAILABLE = $00000002;
+    HCF_HOTKEYACTIVE = $00000004;
+    HCF_CONFIRMHOTKEY = $00000008;
+    HCF_HOTKEYSOUND = $00000010;
+    HCF_INDICATOR = $00000020;
+    HCF_HOTKEYAVAILABLE = $00000040;
+    HCF_LOGONDESKTOP = $00000100;
+    HCF_DEFAULTDESKTOP = $00000200;
+
+    (* Flags for ChangeDisplaySettings *)
+    CDS_UPDATEREGISTRY = $00000001;
+    CDS_TEST = $00000002;
+    CDS_FULLSCREEN = $00000004;
+    CDS_GLOBAL = $00000008;
+    CDS_SET_PRIMARY = $00000010;
+    CDS_VIDEOPARAMETERS = $00000020;
+{$IF(WINVER >= $0600)}
+    CDS_ENABLE_UNSAFE_MODES = $00000100;
+    CDS_DISABLE_UNSAFE_MODES = $00000200;
+{$ENDIF}(* WINVER >= $0600 *)
+    CDS_RESET = $40000000;
+    CDS_RESET_EX = $20000000;
+    CDS_NORESET = $10000000;
+
+    //#include <tvout.h>
+    VP_COMMAND_GET = $0001;  // size set, return caps.
+    // returned Flags = 0 if not supported.
+    VP_COMMAND_SET = $0002;  // size and params set.
+
+    VP_FLAGS_TV_MODE = $0001;
+    VP_FLAGS_TV_STANDARD = $0002;
+    VP_FLAGS_FLICKER = $0004;
+    VP_FLAGS_OVERSCAN = $0008;
+    VP_FLAGS_MAX_UNSCALED = $0010; // do not use on SET
+    VP_FLAGS_POSITION = $0020;
+    VP_FLAGS_BRIGHTNESS = $0040;
+    VP_FLAGS_CONTRAST = $0080;
+    VP_FLAGS_COPYPROTECT = $0100;
+
+    VP_MODE_WIN_GRAPHICS = $0001;
+    VP_MODE_TV_PLAYBACK = $0002; // optimize for TV video playback
+
+    VP_TV_STANDARD_NTSC_M = $0001; //        75 IRE Setup
+    VP_TV_STANDARD_NTSC_M_J = $0002; // Japan,  0 IRE Setup
+    VP_TV_STANDARD_PAL_B = $0004;
+    VP_TV_STANDARD_PAL_D = $0008;
+    VP_TV_STANDARD_PAL_H = $0010;
+    VP_TV_STANDARD_PAL_I = $0020;
+    VP_TV_STANDARD_PAL_M = $0040;
+    VP_TV_STANDARD_PAL_N = $0080;
+    VP_TV_STANDARD_SECAM_B = $0100;
+    VP_TV_STANDARD_SECAM_D = $0200;
+    VP_TV_STANDARD_SECAM_G = $0400;
+    VP_TV_STANDARD_SECAM_H = $0800;
+    VP_TV_STANDARD_SECAM_K = $1000;
+    VP_TV_STANDARD_SECAM_K1 = $2000;
+    VP_TV_STANDARD_SECAM_L = $4000;
+    VP_TV_STANDARD_WIN_VGA = $8000;
+    // and the rest
+    VP_TV_STANDARD_NTSC_433 = $00010000;
+    VP_TV_STANDARD_PAL_G = $00020000;
+    VP_TV_STANDARD_PAL_60 = $00040000;
+    VP_TV_STANDARD_SECAM_L1 = $00080000;
+
+    VP_CP_TYPE_APS_TRIGGER = $0001;  // DVD trigger bits only
+    VP_CP_TYPE_MACROVISION = $0002;  // full macrovision data available
+
+    VP_CP_CMD_ACTIVATE = $0001;  // CP command type
+    VP_CP_CMD_DEACTIVATE = $0002;
+    VP_CP_CMD_CHANGE = $0004;
+
+    (* Return values for ChangeDisplaySettings *)
+    DISP_CHANGE_SUCCESSFUL = 0;
+    DISP_CHANGE_RESTART = 1;
+    DISP_CHANGE_FAILED = -1;
+    DISP_CHANGE_BADMODE = -2;
+    DISP_CHANGE_NOTUPDATED = -3;
+    DISP_CHANGE_BADFLAGS = -4;
+    DISP_CHANGE_BADPARAM = -5;
+{$IF(_WIN32_WINNT >= $0501)}
+    DISP_CHANGE_BADDUALVIEW = -6;
+{$ENDIF}(* _WIN32_WINNT >= $0501 *)
+
+    ENUM_CURRENT_SETTINGS = DWORD(-1);
+    ENUM_REGISTRY_SETTINGS = DWORD(-2);
+
+    (* Flags for EnumDisplaySettingsEx *)
+    EDS_RAWMODE = $00000002;
+    EDS_ROTATEDMODE = $00000004;
+
+    (* Flags for EnumDisplayDevices *)
+    EDD_GET_DEVICE_INTERFACE_NAME = $00000001;
+
+    (* FILTERKEYS dwFlags field *)
+    FKF_FILTERKEYSON = $00000001;
+    FKF_AVAILABLE = $00000002;
+    FKF_HOTKEYACTIVE = $00000004;
+    FKF_CONFIRMHOTKEY = $00000008;
+    FKF_HOTKEYSOUND = $00000010;
+    FKF_INDICATOR = $00000020;
+    FKF_CLICKON = $00000040;
+
+    (* STICKYKEYS dwFlags field *)
+    SKF_STICKYKEYSON = $00000001;
+    SKF_AVAILABLE = $00000002;
+    SKF_HOTKEYACTIVE = $00000004;
+    SKF_CONFIRMHOTKEY = $00000008;
+    SKF_HOTKEYSOUND = $00000010;
+    SKF_INDICATOR = $00000020;
+    SKF_AUDIBLEFEEDBACK = $00000040;
+    SKF_TRISTATE = $00000080;
+    SKF_TWOKEYSOFF = $00000100;
+{$IF(_WIN32_WINNT >= $0500)}
+    SKF_LALTLATCHED = $10000000;
+    SKF_LCTLLATCHED = $04000000;
+    SKF_LSHIFTLATCHED = $01000000;
+    SKF_RALTLATCHED = $20000000;
+    SKF_RCTLLATCHED = $08000000;
+    SKF_RSHIFTLATCHED = $02000000;
+    SKF_LWINLATCHED = $40000000;
+    SKF_RWINLATCHED = $80000000;
+    SKF_LALTLOCKED = $00100000;
+    SKF_LCTLLOCKED = $00040000;
+    SKF_LSHIFTLOCKED = $00010000;
+    SKF_RALTLOCKED = $00200000;
+    SKF_RCTLLOCKED = $00080000;
+    SKF_RSHIFTLOCKED = $00020000;
+    SKF_LWINLOCKED = $00400000;
+    SKF_RWINLOCKED = $00800000;
+{$ENDIF}(* _WIN32_WINNT >= $0500 *)
+
+    (* MOUSEKEYS dwFlags field *)
+    MKF_MOUSEKEYSON = $00000001;
+    MKF_AVAILABLE = $00000002;
+    MKF_HOTKEYACTIVE = $00000004;
+    MKF_CONFIRMHOTKEY = $00000008;
+    MKF_HOTKEYSOUND = $00000010;
+    MKF_INDICATOR = $00000020;
+    MKF_MODIFIERS = $00000040;
+    MKF_REPLACENUMBERS = $00000080;
+{$IF(_WIN32_WINNT >= $0500)}
+    MKF_LEFTBUTTONSEL = $10000000;
+    MKF_RIGHTBUTTONSEL = $20000000;
+    MKF_LEFTBUTTONDOWN = $01000000;
+    MKF_RIGHTBUTTONDOWN = $02000000;
+    MKF_MOUSEMODE = $80000000;
+{$ENDIF}(* _WIN32_WINNT >= $0500 *)
+
+
+    (* ACCESSTIMEOUT dwFlags field *)
+    ATF_TIMEOUTON = $00000001;
+    ATF_ONOFFFEEDBACK = $00000002;
+
+    (* values for SOUNDSENTRY iFSGrafEffect field *)
+    SSGF_NONE = 0;
+    SSGF_DISPLAY = 3;
+
+    (* values for SOUNDSENTRY iFSTextEffect field *)
+    SSTF_NONE = 0;
+    SSTF_CHARS = 1;
+    SSTF_BORDER = 2;
+    SSTF_DISPLAY = 3;
+
+    (* values for SOUNDSENTRY iWindowsEffect field *)
+    SSWF_NONE = 0;
+    SSWF_TITLE = 1;
+    SSWF_WINDOW = 2;
+    SSWF_DISPLAY = 3;
+    SSWF_CUSTOM = 4;
+
+
+    (* SOUNDSENTRY dwFlags field *)
+    SSF_SOUNDSENTRYON = $00000001;
+    SSF_AVAILABLE = $00000002;
+    SSF_INDICATOR = $00000004;
+
+    (* TOGGLEKEYS dwFlags field *)
+    TKF_TOGGLEKEYSON = $00000001;
+    TKF_AVAILABLE = $00000002;
+    TKF_HOTKEYACTIVE = $00000004;
+    TKF_CONFIRMHOTKEY = $00000008;
+    TKF_HOTKEYSOUND = $00000010;
+    TKF_INDICATOR = $00000020;
+
+    (* SetLastErrorEx() types. *)
+
+    SLE_ERROR = $00000001;
+    SLE_MINORERROR = $00000002;
+    SLE_WARNING = $00000003;
+
+    (* Multimonitor API. *)
+
+    MONITOR_DEFAULTTONULL = $00000000;
+    MONITOR_DEFAULTTOPRIMARY = $00000001;
+    MONITOR_DEFAULTTONEAREST = $00000002;
+
+    MONITORINFOF_PRIMARY = $00000001;
+
+    CCHDEVICENAME = 32;
+
+    (* dwFlags for SetWinEventHook *)
+    WINEVENT_OUTOFCONTEXT = $0000; // Events are ASYNC
+    WINEVENT_SKIPOWNTHREAD = $0001;  // Don't call back for events on installer's thread
+    WINEVENT_SKIPOWNPROCESS = $0002;  // Don't call back for events on installer's process
+    WINEVENT_INCONTEXT = $0004; // Events are SYNC, this causes your dll to be injected into every process
+
+
+(*
+ * idObject values for WinEventProc and NotifyWinEvent
+ *)
+
+(*
+ * hwnd + idObject can be used with OLEACC.DLL's OleGetObjectFromWindow()
+ * to get an interface pointer to the container.  indexChild is the item
+ * within the container in question.  Setup a VARIANT with vt VT_I4 and
+ * lVal the indexChild and pass that in to all methods.  Then you
+ * are raring to go.
+ *)
+
+
+(*
+ * Common object IDs (cookies, only for sending WM_GETOBJECT to get at the
+ * thing in question).  Positive IDs are reserved for apps (app specific),
+ * negative IDs are system things and are global, 0 means "just little old
+ * me".
+ *)
+    CHILDID_SELF = 0;
+    INDEXID_OBJECT = 0;
+    INDEXID_CONTAINER = 0;
+
+ (*
+ * Reserved IDs for system objects
+ *)
+    OBJID_WINDOW = LONG($00000000);
+    OBJID_SYSMENU = LONG($FFFFFFFF);
+    OBJID_TITLEBAR = LONG($FFFFFFFE);
+    OBJID_MENU = LONG($FFFFFFFD);
+    OBJID_CLIENT = LONG($FFFFFFFC);
+    OBJID_VSCROLL = LONG($FFFFFFFB);
+    OBJID_HSCROLL = LONG($FFFFFFFA);
+    OBJID_SIZEGRIP = LONG($FFFFFFF9);
+    OBJID_CARET = LONG($FFFFFFF8);
+    OBJID_CURSOR = LONG($FFFFFFF7);
+    OBJID_ALERT = LONG($FFFFFFF6);
+    OBJID_SOUND = LONG($FFFFFFF5);
+    OBJID_QUERYCLASSNAMEIDX = LONG($FFFFFFF4);
+    OBJID_NATIVEOM = LONG($FFFFFFF0);
+
+    (* EVENT DEFINITION *)
+    EVENT_MIN = $00000001;
+    EVENT_MAX = $7FFFFFFF;
+
+(*
+ *  EVENT_SYSTEM_SOUND
+ *  Sent when a sound is played.  Currently nothing is generating this, we
+ *  this event when a system sound (for menus, etc) is played.  Apps
+ *  generate this, if accessible, when a private sound is played.  For
+ *  example, if Mail plays a "New Mail" sound.
+ *
+ *  System Sounds:
+ *  (Generated by PlaySoundEvent in USER itself)
+ *      hwnd            is NULL
+ *      idObject        is OBJID_SOUND
+ *      idChild         is sound child ID if one
+ *  App Sounds:
+ *  (PlaySoundEvent won't generate notification; up to app)
+ *      hwnd + idObject gets interface pointer to Sound object
+ *      idChild identifies the sound in question
+ *  are going to be cleaning up the SOUNDSENTRY feature in the control panel
+ *  and will use this at that time.  Applications implementing WinEvents
+ *  are perfectly welcome to use it.  Clients of IAccessible* will simply
+ *  turn around and get back a non-visual object that describes the sound.
+ *)
+    EVENT_SYSTEM_SOUND = $0001;
+
+(*
+ * EVENT_SYSTEM_ALERT
+ * System Alerts:
+ * (Generated by MessageBox() calls for example)
+ *      hwnd            is hwndMessageBox
+ *      idObject        is OBJID_ALERT
+ * App Alerts:
+ * (Generated whenever)
+ *      hwnd+idObject gets interface pointer to Alert
+ *)
+    EVENT_SYSTEM_ALERT = $0002;
+
+(*
+ * EVENT_SYSTEM_FOREGROUND
+ * Sent when the foreground (active) window changes, even if it is changing
+ * to another window in the same thread as the previous one.
+ *      hwnd            is hwndNewForeground
+ *      idObject        is OBJID_WINDOW
+ *      idChild    is INDEXID_OBJECT
+ *)
+    EVENT_SYSTEM_FOREGROUND = $0003;
+
+(*
+ * Menu
+ *      hwnd            is window (top level window or popup menu window)
+ *      idObject        is ID of control (OBJID_MENU, OBJID_SYSMENU, OBJID_SELF for popup)
+ *      idChild         is CHILDID_SELF
+ *
+ * EVENT_SYSTEM_MENUSTART
+ * EVENT_SYSTEM_MENUEND
+ * For MENUSTART, hwnd+idObject+idChild refers to the control with the menu bar,
+ *  or the control bringing up the context menu.
+ *
+ * Sent when entering into and leaving from menu mode (system, app bar, and
+ * track popups).
+ *)
+    EVENT_SYSTEM_MENUSTART = $0004;
+    EVENT_SYSTEM_MENUEND = $0005;
+
+(*
+ * EVENT_SYSTEM_MENUPOPUPSTART
+ * EVENT_SYSTEM_MENUPOPUPEND
+ * Sent when a menu popup comes up and just before it is taken down.  Note
+ * that for a call to TrackPopupMenu(), a client will see EVENT_SYSTEM_MENUSTART
+ * followed almost immediately by EVENT_SYSTEM_MENUPOPUPSTART for the popup
+ * being shown.
+ *
+ * For MENUPOPUP, hwnd+idObject+idChild refers to the NEW popup coming up, not the
+ * parent item which is hierarchical.  You can get the parent menu/popup by
+ * asking for the accParent object.
+ *)
+    EVENT_SYSTEM_MENUPOPUPSTART = $0006;
+    EVENT_SYSTEM_MENUPOPUPEND = $0007;
+
+
+(*
+ * EVENT_SYSTEM_CAPTURESTART
+ * EVENT_SYSTEM_CAPTUREEND
+ * Sent when a window takes the capture and releases the capture.
+ *)
+    EVENT_SYSTEM_CAPTURESTART = $0008;
+    EVENT_SYSTEM_CAPTUREEND = $0009;
+
+(*
+ * Move Size
+ * EVENT_SYSTEM_MOVESIZESTART
+ * EVENT_SYSTEM_MOVESIZEEND
+ * Sent when a window enters and leaves move-size dragging mode.
+ *)
+    EVENT_SYSTEM_MOVESIZESTART = $000A;
+    EVENT_SYSTEM_MOVESIZEEND = $000B;
+
+(*
+ * Context Help
+ * EVENT_SYSTEM_CONTEXTHELPSTART
+ * EVENT_SYSTEM_CONTEXTHELPEND
+ * Sent when a window enters and leaves context sensitive help mode.
+ *)
+    EVENT_SYSTEM_CONTEXTHELPSTART = $000C;
+    EVENT_SYSTEM_CONTEXTHELPEND = $000D;
+
+(*
+ * Drag & Drop
+ * EVENT_SYSTEM_DRAGDROPSTART
+ * EVENT_SYSTEM_DRAGDROPEND
+ * Send the START notification just before going into drag&drop loop.  Send
+ * the END notification just after canceling out.
+ * Note that it is up to apps and OLE to generate this, since the system
+ * doesn't know.  Like EVENT_SYSTEM_SOUND, it will be a while before this
+ * is prevalent.
+ *)
+    EVENT_SYSTEM_DRAGDROPSTART = $000E;
+    EVENT_SYSTEM_DRAGDROPEND = $000F;
+
+(*
+ * Dialog
+ * Send the START notification right after the dialog is completely
+ *  initialized and visible.  Send the END right before the dialog
+ *  is hidden and goes away.
+ * EVENT_SYSTEM_DIALOGSTART
+ * EVENT_SYSTEM_DIALOGEND
+ *)
+    EVENT_SYSTEM_DIALOGSTART = $0010;
+    EVENT_SYSTEM_DIALOGEND = $0011;
+
+(*
+ * EVENT_SYSTEM_SCROLLING
+ * EVENT_SYSTEM_SCROLLINGSTART
+ * EVENT_SYSTEM_SCROLLINGEND
+ * Sent when beginning and ending the tracking of a scrollbar in a window,
+ * and also for scrollbar controls.
+ *)
+    EVENT_SYSTEM_SCROLLINGSTART = $0012;
+    EVENT_SYSTEM_SCROLLINGEND = $0013;
+
+(*
+ * Alt-Tab Window
+ * Send the START notification right after the switch window is initialized
+ * and visible.  Send the END right before it is hidden and goes away.
+ * EVENT_SYSTEM_SWITCHSTART
+ * EVENT_SYSTEM_SWITCHEND
+ *)
+    EVENT_SYSTEM_SWITCHSTART = $0014;
+    EVENT_SYSTEM_SWITCHEND = $0015;
+
+(*
+ * EVENT_SYSTEM_MINIMIZESTART
+ * EVENT_SYSTEM_MINIMIZEEND
+ * Sent when a window minimizes and just before it restores.
+ *)
+    EVENT_SYSTEM_MINIMIZESTART = $0016;
+    EVENT_SYSTEM_MINIMIZEEND = $0017;
+
+
+{$IF(_WIN32_WINNT >= $0600)}
+    EVENT_SYSTEM_DESKTOPSWITCH = $0020;
+{$ENDIF}(* _WIN32_WINNT >= $0600 *)
+
+
+{$IF(_WIN32_WINNT >= $0602)}
+    // AppGrabbed: HWND = hwnd of app thumbnail, objectID = 0, childID = 0
+    EVENT_SYSTEM_SWITCHER_APPGRABBED = $0024;
+    // OverTarget: HWND = hwnd of app thumbnail, objectID =
+    //            1 for center
+    //            2 for near snapped
+    //            3 for far snapped
+    //            4 for prune
+    //            childID = 0
+    EVENT_SYSTEM_SWITCHER_APPOVERTARGET = $0025;
+    // Dropped: HWND = hwnd of app thumbnail, objectID = <same as above>, childID = 0
+    EVENT_SYSTEM_SWITCHER_APPDROPPED = $0026;
+    // Cancelled: HWND = hwnd of app thumbnail, objectID = 0, childID = 0
+    EVENT_SYSTEM_SWITCHER_CANCELLED = $0027;
+{$ENDIF}(* _WIN32_WINNT >= $0602 *)
+
+
+{$IF(_WIN32_WINNT >= $0602)}
+
+(*
+ * Sent when an IME's soft key is pressed and should be echoed,
+ * but is not passed through the keyboard hook.
+ * Must not be sent when a key is sent through the keyboard hook.
+ *     HWND             is the hwnd of the UI containing the soft key
+ *     idChild          is the Unicode value of the character entered
+ *     idObject         is a bitfield
+ *         =$00000001: set if a 32-bit Unicode surrogate pair is used
+ *)
+    EVENT_SYSTEM_IME_KEY_NOTIFICATION = $0029;
+
+{$ENDIF}(* _WIN32_WINNT >= $0602 *)
+
+
+{$IF(_WIN32_WINNT >= $0601)}
+    EVENT_SYSTEM_END = $00FF;
+
+    EVENT_OEM_DEFINED_START = $0101;
+    EVENT_OEM_DEFINED_END = $01FF;
+
+    EVENT_UIA_EVENTID_START = $4E00;
+    EVENT_UIA_EVENTID_END = $4EFF;
+
+    EVENT_UIA_PROPID_START = $7500;
+    EVENT_UIA_PROPID_END = $75FF;
+{$ENDIF}(* _WIN32_WINNT >= $0601 *)
+
+{$IF(_WIN32_WINNT >= $0501)}
+    EVENT_CONSOLE_CARET = $4001;
+    EVENT_CONSOLE_UPDATE_REGION = $4002;
+    EVENT_CONSOLE_UPDATE_SIMPLE = $4003;
+    EVENT_CONSOLE_UPDATE_SCROLL = $4004;
+    EVENT_CONSOLE_LAYOUT = $4005;
+    EVENT_CONSOLE_START_APPLICATION = $4006;
+    EVENT_CONSOLE_END_APPLICATION = $4007;
+
+(*
+ * Flags for EVENT_CONSOLE_START/END_APPLICATION.
+ *)
+{$IF defined(_WIN64)}
+    CONSOLE_APPLICATION_16BIT = $0000;
+{$ELSE}
+    CONSOLE_APPLICATION_16BIT = $0001;
+{$ENDIF}
+
+(*
+ * Flags for EVENT_CONSOLE_CARET
+ *)
+    CONSOLE_CARET_SELECTION = $0001;
+    CONSOLE_CARET_VISIBLE = $0002;
+{$ENDIF}(* _WIN32_WINNT >= $0501 *)
+
+{$IF(_WIN32_WINNT >= $0601)}
+    EVENT_CONSOLE_END = $40FF;
+{$ENDIF}(* _WIN32_WINNT >= $0601 *)
+
+
+(*
+ * Object events
+ *
+ * The system AND apps generate these.  The system generates these for
+ * real windows.  Apps generate these for objects within their window which
+ * act like a separate control, e.g. an item in a list view.
+ *
+ * When the system generate them, dwParam2 is always WMOBJID_SELF.  When
+ * apps generate them, apps put the has-meaning-to-the-app-only ID value
+ * in dwParam2.
+ * For all events, if you want detailed accessibility information, callers
+ * should
+ *      * Call AccessibleObjectFromWindow() with the hwnd, idObject parameters
+ *          of the event, and IID_IAccessible as the REFIID, to get back an
+ *          IAccessible* to talk to
+ *      * Initialize and fill in a VARIANT as VT_I4 with lVal the idChild
+ *          parameter of the event.
+ *      * If idChild isn't zero, call get_accChild() in the container to see
+ *          if the child is an object in its own right.  If so, you will get
+ *          back an IDispatch* object for the child.  You should release the
+ *          parent, and call QueryInterface() on the child object to get its
+ *          IAccessible*.  Then you talk directly to the child.  Otherwise,
+ *          if get_accChild() returns you nothing, you should continue to
+ *          use the child VARIANT.  You will ask the container for the properties
+ *          of the child identified by the VARIANT.  In other words, the
+ *          child in this case is accessible but not a full-blown object.
+ *          Like a button on a titlebar which is 'small' and has no children.
+ *)
+
+(*
+ * For all EVENT_OBJECT events,
+ *      hwnd is the dude to Send the WM_GETOBJECT message to (unless NULL,
+ *          see above for system things)
+ *      idObject is the ID of the object that can resolve any queries a
+ *          client might have.  It's a way to deal with windowless controls,
+ *          controls that are just drawn on the screen in some larger parent
+ *          window (like SDM), or standard frame elements of a window.
+ *      idChild is the piece inside of the object that is affected.  This
+ *          allows clients to access things that are too small to have full
+ *          blown objects in their own right.  Like the thumb of a scrollbar.
+ *          The hwnd/idObject pair gets you to the container, the dude you
+ *          probably want to talk to most of the time anyway.  The idChild
+ *          can then be passed into the acc properties to get the name/value
+ *          of it as needed.
+ *
+ * Example #1:
+ *      System propagating a listbox selection change
+ *      EVENT_OBJECT_SELECTION
+ *          hwnd == listbox hwnd
+ *          idObject == OBJID_WINDOW
+ *          idChild == new selected item, or CHILDID_SELF if
+ *              nothing now selected within container.
+ *      Word '97 propagating a listbox selection change
+ *          hwnd == SDM window
+ *          idObject == SDM ID to get at listbox 'control'
+ *          idChild == new selected item, or CHILDID_SELF if
+ *              nothing
+ *
+ * Example #2:
+ *      System propagating a menu item selection on the menu bar
+ *      EVENT_OBJECT_SELECTION
+ *          hwnd == top level window
+ *          idObject == OBJID_MENU
+ *          idChild == ID of child menu bar item selected
+ *
+ * Example #3:
+ *      System propagating a dropdown coming off of said menu bar item
+ *      EVENT_OBJECT_CREATE
+ *          hwnd == popup item
+ *          idObject == OBJID_WINDOW
+ *          idChild == CHILDID_SELF
+ *
+ * Example #4:
+ *
+ * For EVENT_OBJECT_REORDER, the object referred to by hwnd/idObject is the
+ * PARENT container in which the zorder is occurring.  This is because if
+ * one child is zordering, all of them are changing their relative zorder.
+ *)
+    EVENT_OBJECT_CREATE = $8000;  // hwnd + ID + idChild is created item
+    EVENT_OBJECT_DESTROY = $8001;  // hwnd + ID + idChild is destroyed item
+    EVENT_OBJECT_SHOW = $8002;  // hwnd + ID + idChild is shown item
+    EVENT_OBJECT_HIDE = $8003;  // hwnd + ID + idChild is hidden item
+    EVENT_OBJECT_REORDER = $8004;  // hwnd + ID + idChild is parent of zordering children
+(*
+ * NOTE:
+ * Minimize the number of notifications!
+ *
+ * When you are hiding a parent object, obviously all child objects are no
+ * longer visible on screen.  They still have the same "visible" status,
+ * but are not truly visible.  Hence do not send HIDE notifications for the
+ * children also.  One implies all.  The same goes for SHOW.
+ *)
+
+
+    EVENT_OBJECT_FOCUS = $8005;  // hwnd + ID + idChild is focused item
+    EVENT_OBJECT_SELECTION = $8006;
+    // hwnd + ID + idChild is selected item (if only one), or idChild is OBJID_WINDOW if complex
+    EVENT_OBJECT_SELECTIONADD = $8007;  // hwnd + ID + idChild is item added
+    EVENT_OBJECT_SELECTIONREMOVE = $8008;  // hwnd + ID + idChild is item removed
+    EVENT_OBJECT_SELECTIONWITHIN = $8009;  // hwnd + ID + idChild is parent of changed selected items
+
+(*
+ * NOTES:
+ * There is only one "focused" child item in a parent.  This is the place
+ * keystrokes are going at a given moment.  Hence only send a notification
+ * about where the NEW focus is going.  A NEW item getting the focus already
+ * implies that the OLD item is losing it.
+ *
+ * SELECTION however can be multiple.  Hence the different SELECTION
+ * notifications.  Here's when to use each:
+ *
+ * (1) Send a SELECTION notification in the simple single selection
+ *     case (like the focus) when the item with the selection is
+ *     merely moving to a different item within a container.  hwnd + ID
+ *     is the container control, idChildItem is the new child with the
+ *     selection.
+ *
+ * (2) Send a SELECTIONADD notification when a new item has simply been added
+ *     to the selection within a container.  This is appropriate when the
+ *     number of newly selected items is very small.  hwnd + ID is the
+ *     container control, idChildItem is the new child added to the selection.
+ *
+ * (3) Send a SELECTIONREMOVE notification when a new item has simply been
+ *     removed from the selection within a container.  This is appropriate
+ *     when the number of newly selected items is very small, just like
+ *     SELECTIONADD.  hwnd + ID is the container control, idChildItem is the
+ *     new child removed from the selection.
+ *
+ * (4) Send a SELECTIONWITHIN notification when the selected items within a
+ *     control have changed substantially.  Rather than propagate a large
+ *     number of changes to reflect removal for some items, addition of
+ *     others, just tell somebody who cares that a lot happened.  It will
+ *     be faster an easier for somebody watching to just turn around and
+ *     query the container control what the new bunch of selected items
+ *     are.
+ *)
+
+    EVENT_OBJECT_STATECHANGE = $800A;  // hwnd + ID + idChild is item w/ state change
+(*
+ * Examples of when to send an EVENT_OBJECT_STATECHANGE include
+ *      * It is being enabled/disabled (USER does for windows)
+ *      * It is being pressed/released (USER does for buttons)
+ *      * It is being checked/unchecked (USER does for radio/check buttons)
+ *)
+    EVENT_OBJECT_LOCATIONCHANGE = $800B;  // hwnd + ID + idChild is moved/sized item
+
+(*
+ * Note:
+ * A LOCATIONCHANGE is not sent for every child object when the parent
+ * changes shape/moves.  Send one notification for the topmost object
+ * that is changing.  For example, if the user resizes a top level window,
+ * USER will generate a LOCATIONCHANGE for it, but not for the menu bar,
+ * title bar, scrollbars, etc.  that are also changing shape/moving.
+ *
+ * In other words, it only generates LOCATIONCHANGE notifications for
+ * real windows that are moving/sizing.  It will not generate a LOCATIONCHANGE
+ * for every non-floating child window when the parent moves (the children are
+ * logically moving also on screen, but not relative to the parent).
+ *
+ * Now, if the app itself resizes child windows as a result of being
+ * sized, USER will generate LOCATIONCHANGEs for those dudes also because
+ * it doesn't know better.
+ *
+ * Note also that USER will generate LOCATIONCHANGE notifications for two
+ * non-window sys objects:
+ *      (1) System caret
+ *      (2) Cursor
+ *)
+
+    EVENT_OBJECT_NAMECHANGE = $800C;  // hwnd + ID + idChild is item w/ name change
+    EVENT_OBJECT_DESCRIPTIONCHANGE = $800D;  // hwnd + ID + idChild is item w/ desc change
+    EVENT_OBJECT_VALUECHANGE = $800E;  // hwnd + ID + idChild is item w/ value change
+    EVENT_OBJECT_PARENTCHANGE = $800F; // hwnd + ID + idChild is item w/ new parent
+    EVENT_OBJECT_HELPCHANGE = $8010; // hwnd + ID + idChild is item w/ help change
+    EVENT_OBJECT_DEFACTIONCHANGE = $8011;  // hwnd + ID + idChild is item w/ def action change
+    EVENT_OBJECT_ACCELERATORCHANGE = $8012; // hwnd + ID + idChild is item w/ keybd accel change
+
+{$IF(_WIN32_WINNT >= $0600)}
+    EVENT_OBJECT_INVOKED = $8013;  // hwnd + ID + idChild is item invoked
+    EVENT_OBJECT_TEXTSELECTIONCHANGED = $8014; // hwnd + ID + idChild is item w? test selection change
+
+(*
+ * EVENT_OBJECT_CONTENTSCROLLED
+ * Sent when ending the scrolling of a window object.
+ *
+ * Unlike the similar event (EVENT_SYSTEM_SCROLLEND), this event will be
+ * associated with the scrolling window itself. There is no difference
+ * between horizontal or vertical scrolling.
+ *
+ * This event should be posted whenever scroll action is completed, including
+ * when it is scrolled by scroll bars, mouse wheel, or keyboard navigations.
+ *
+ *   example:
+ *          hwnd == window that is scrolling
+ *          idObject == OBJID_CLIENT
+ *          idChild == CHILDID_SELF
+ *)
+    EVENT_OBJECT_CONTENTSCROLLED = $8015;
+{$ENDIF}(* _WIN32_WINNT >= $0600 *)
+
+{$IF(_WIN32_WINNT >= $0601)}
+    EVENT_SYSTEM_ARRANGMENTPREVIEW = $8016;
+{$ENDIF}(* _WIN32_WINNT >= $0601 *)
+
+{$IF(_WIN32_WINNT >= $0602)}
+
+(*
+ * EVENT_OBJECT_CLOAKED / UNCLOAKED
+ * Sent when a window is cloaked or uncloaked.
+ * A cloaked window still exists, but is invisible to
+ * the user.
+ *)
+    EVENT_OBJECT_CLOAKED = $8017;
+    EVENT_OBJECT_UNCLOAKED = $8018;
+
+(*
+ * EVENT_OBJECT_LIVEREGIONCHANGED
+ * Sent when an object that is part of a live region
+ * changes.  A live region is an area of an application
+ * that changes frequently and/or asynchronously, so
+ * that an assistive technology tool might want to pay
+ * special attention to it.
+ *)
+    EVENT_OBJECT_LIVEREGIONCHANGED = $8019;
+
+(*
+ * EVENT_OBJECT_HOSTEDOBJECTSINVALIDATED
+ * Sent when a window that is hosting other Accessible
+ * objects changes the hosted objects.  A client may
+ * wish to requery to see what the new hosted objects are,
+ * especially if it has been monitoring events from this
+ * window.  A hosted object is one with a different Accessibility
+ * framework (MSAA or UI Automation) from its host.
+ *
+ * Changes in hosted objects with the *same* framework
+ * as the parent should be handed with the usual structural
+ * change events, such as EVENT_OBJECT_CREATED for MSAA.
+ * see above.
+ *)
+    EVENT_OBJECT_HOSTEDOBJECTSINVALIDATED = $8020;
+
+(*
+ * Drag / Drop Events
+ * These events are used in conjunction with the
+ * UI Automation Drag/Drop patterns.
+ *
+ * For DRAGSTART, DRAGCANCEL, and DRAGCOMPLETE,
+ * HWND+objectID+childID refers to the object being dragged.
+ *
+ * For DRAGENTER, DRAGLEAVE, and DRAGDROPPED,
+ * HWND+objectID+childID refers to the target of the drop
+ * that is being hovered over.
+ *)
+
+    EVENT_OBJECT_DRAGSTART = $8021;
+    EVENT_OBJECT_DRAGCANCEL = $8022;
+    EVENT_OBJECT_DRAGCOMPLETE = $8023;
+
+    EVENT_OBJECT_DRAGENTER = $8024;
+    EVENT_OBJECT_DRAGLEAVE = $8025;
+    EVENT_OBJECT_DRAGDROPPED = $8026;
+
+(*
+ * EVENT_OBJECT_IME_SHOW/HIDE
+ * Sent by an IME window when it has become visible or invisible.
+ *)
+    EVENT_OBJECT_IME_SHOW = $8027;
+    EVENT_OBJECT_IME_HIDE = $8028;
+
+(*
+ * EVENT_OBJECT_IME_CHANGE
+ * Sent by an IME window whenever it changes size or position.
+ *)
+    EVENT_OBJECT_IME_CHANGE = $8029;
+
+    EVENT_OBJECT_TEXTEDIT_CONVERSIONTARGETCHANGED = $8030;
+
+{$ENDIF}(* _WIN32_WINNT >= $0602 *)
+
+{$IF(_WIN32_WINNT >= $0601)}
+    EVENT_OBJECT_END = $80FF;
+
+    EVENT_AIA_START = $A000;
+    EVENT_AIA_END = $AFFF;
+{$ENDIF}(* _WIN32_WINNT >= $0601 *)
+
+
+    (* Child IDs *)
+
+
+    (* System Sounds (idChild of system SOUND notification) *)
+    SOUND_SYSTEM_STARTUP = 1;
+    SOUND_SYSTEM_SHUTDOWN = 2;
+    SOUND_SYSTEM_BEEP = 3;
+    SOUND_SYSTEM_ERROR = 4;
+    SOUND_SYSTEM_QUESTION = 5;
+    SOUND_SYSTEM_WARNING = 6;
+    SOUND_SYSTEM_INFORMATION = 7;
+    SOUND_SYSTEM_MAXIMIZE = 8;
+    SOUND_SYSTEM_MINIMIZE = 9;
+    SOUND_SYSTEM_RESTOREUP = 10;
+    SOUND_SYSTEM_RESTOREDOWN = 11;
+    SOUND_SYSTEM_APPSTART = 12;
+    SOUND_SYSTEM_FAULT = 13;
+    SOUND_SYSTEM_APPEND = 14;
+    SOUND_SYSTEM_MENUCOMMAND = 15;
+    SOUND_SYSTEM_MENUPOPUP = 16;
+    CSOUND_SYSTEM = 16;
+
+    (* System Alerts (indexChild of system ALERT notification) *)
+    ALERT_SYSTEM_INFORMATIONAL = 1;      // MB_INFORMATION
+    ALERT_SYSTEM_WARNING = 2;      // MB_WARNING
+    ALERT_SYSTEM_ERROR = 3;      // MB_ERROR
+    ALERT_SYSTEM_QUERY = 4;      // MB_QUESTION
+    ALERT_SYSTEM_CRITICAL = 5;      // HardSysErrBox
+    CALERT_SYSTEM = 6;
+
+
+    GUI_CARETBLINKING = $00000001;
+    GUI_INMOVESIZE = $00000002;
+    GUI_INMENUMODE = $00000004;
+    GUI_SYSTEMMENUMODE = $00000008;
+    GUI_POPUPMENUMODE = $00000010;
+{$IF(_WIN32_WINNT >= $0501)}
+{$IFDEF WIN64}
+    GUI_16BITTASK = $00000000;
+{$ELSE}
+    GUI_16BITTASK = $00000020;
+{$ENDIF}
+{$ENDIF}(* _WIN32_WINNT >= $0501 *)
+
+{$IF(_WIN32_WINNT >= $0600)}
+    USER_DEFAULT_SCREEN_DPI = 96;
+ {$ENDIF}(* _WIN32_WINNT >= $0600 *)
+
+
+    STATE_SYSTEM_UNAVAILABLE = $00000001;  // Disabled
+    STATE_SYSTEM_SELECTED = $00000002;
+    STATE_SYSTEM_FOCUSED = $00000004;
+    STATE_SYSTEM_PRESSED = $00000008;
+    STATE_SYSTEM_CHECKED = $00000010;
+    STATE_SYSTEM_MIXED = $00000020; // 3-state checkbox or toolbar button
+    STATE_SYSTEM_INDETERMINATE = STATE_SYSTEM_MIXED;
+    STATE_SYSTEM_READONLY = $00000040;
+    STATE_SYSTEM_HOTTRACKED = $00000080;
+    STATE_SYSTEM_DEFAULT = $00000100;
+    STATE_SYSTEM_EXPANDED = $00000200;
+    STATE_SYSTEM_COLLAPSED = $00000400;
+    STATE_SYSTEM_BUSY = $00000800;
+    STATE_SYSTEM_FLOATING = $00001000; // Children "owned" not "contained" by parent
+    STATE_SYSTEM_MARQUEED = $00002000;
+    STATE_SYSTEM_ANIMATED = $00004000;
+    STATE_SYSTEM_INVISIBLE = $00008000;
+    STATE_SYSTEM_OFFSCREEN = $00010000;
+    STATE_SYSTEM_SIZEABLE = $00020000;
+    STATE_SYSTEM_MOVEABLE = $00040000;
+    STATE_SYSTEM_SELFVOICING = $00080000;
+    STATE_SYSTEM_FOCUSABLE = $00100000;
+    STATE_SYSTEM_SELECTABLE = $00200000;
+    STATE_SYSTEM_LINKED = $00400000;
+    STATE_SYSTEM_TRAVERSED = $00800000;
+    STATE_SYSTEM_MULTISELECTABLE = $01000000;  // Supports multiple selection
+    STATE_SYSTEM_EXTSELECTABLE = $02000000;  // Supports extended selection
+    STATE_SYSTEM_ALERT_LOW = $04000000;  // This information is of low priority
+    STATE_SYSTEM_ALERT_MEDIUM = $08000000;  // This information is of medium priority
+    STATE_SYSTEM_ALERT_HIGH = $10000000;  // This information is of high priority
+    STATE_SYSTEM_PROTECTED = $20000000;  // access to this is restricted
+    STATE_SYSTEM_VALID = $3FFFFFFF;
+
+
+    CCHILDREN_TITLEBAR = 5;
+    CCHILDREN_SCROLLBAR = 5;
+
+    CURSOR_SHOWING = $00000001;
+{$IF(WINVER >= $0602)}
+    CURSOR_SUPPRESSED = $00000002;
+{$ENDIF}(* WINVER >= $0602 *)
+
+    WS_ACTIVECAPTION = $0001;
+
+    (* The "real" ancestor window *)
+    GA_PARENT = 1;
+    GA_ROOT = 2;
+    GA_ROOTOWNER = 3;
+
+    (* WM_INPUT wParam *)
+
+ (*
+ * The input is in the regular message flow,
+ * the app is required to call DefWindowProc
+ * so that the system can perform clean ups.
+ *)
+    RIM_INPUT = 0;
+
+(*
+ * The input is sink only. The app is expected
+ * to behave nicely.
+ *)
+    RIM_INPUTSINK = 1;
+
+
+    (* Type of the raw input *)
+    RIM_TYPEMOUSE = 0;
+    RIM_TYPEKEYBOARD = 1;
+    RIM_TYPEHID = 2;
+    RIM_TYPEMAX = 2;
+
+    (* Define the mouse button state indicators. *)
+
+    RI_MOUSE_LEFT_BUTTON_DOWN = $0001;  // Left Button changed to down.
+    RI_MOUSE_LEFT_BUTTON_UP = $0002;  // Left Button changed to up.
+    RI_MOUSE_RIGHT_BUTTON_DOWN = $0004;  // Right Button changed to down.
+    RI_MOUSE_RIGHT_BUTTON_UP = $0008;  // Right Button changed to up.
+    RI_MOUSE_MIDDLE_BUTTON_DOWN = $0010;  // Middle Button changed to down.
+    RI_MOUSE_MIDDLE_BUTTON_UP = $0020;  // Middle Button changed to up.
+
+    RI_MOUSE_BUTTON_1_DOWN = RI_MOUSE_LEFT_BUTTON_DOWN;
+    RI_MOUSE_BUTTON_1_UP = RI_MOUSE_LEFT_BUTTON_UP;
+    RI_MOUSE_BUTTON_2_DOWN = RI_MOUSE_RIGHT_BUTTON_DOWN;
+    RI_MOUSE_BUTTON_2_UP = RI_MOUSE_RIGHT_BUTTON_UP;
+    RI_MOUSE_BUTTON_3_DOWN = RI_MOUSE_MIDDLE_BUTTON_DOWN;
+    RI_MOUSE_BUTTON_3_UP = RI_MOUSE_MIDDLE_BUTTON_UP;
+
+    RI_MOUSE_BUTTON_4_DOWN = $0040;
+    RI_MOUSE_BUTTON_4_UP = $0080;
+    RI_MOUSE_BUTTON_5_DOWN = $0100;
+    RI_MOUSE_BUTTON_5_UP = $0200;
+
+(*
+ * If usButtonFlags has RI_MOUSE_WHEEL, the wheel delta is stored in usButtonData.
+ * Take it as a signed value.
+ *)
+    RI_MOUSE_WHEEL = $0400;
+{$IF(WINVER >= $0600)}
+    RI_MOUSE_HWHEEL = $0800;
+{$ENDIF}(* WINVER >= $0600 *)
+
+    (* Define the mouse indicator flags. *)
+    MOUSE_MOVE_RELATIVE = 0;
+    MOUSE_MOVE_ABSOLUTE = 1;
+    MOUSE_VIRTUAL_DESKTOP = $02;  // the coordinates are mapped to the virtual desktop
+    MOUSE_ATTRIBUTES_CHANGED = $04;  // requery for mouse attributes
+{$IF(WINVER >= $0600)}
+    MOUSE_MOVE_NOCOALESCE = $08;  // do not coalesce mouse moves
+{$ENDIF}(* WINVER >= $0600 *)
+
+    (* Define the keyboard overrun MakeCode. *)
+
+    KEYBOARD_OVERRUN_MAKE_CODE = $FF;
+
+    (* Define the keyboard input data Flags. *)
+    RI_KEY_MAKE = 0;
+    RI_KEY_BREAK = 1;
+    RI_KEY_E0 = 2;
+    RI_KEY_E1 = 4;
+    RI_KEY_TERMSRV_SET_LED = 8;
+    RI_KEY_TERMSRV_SHADOW = $10;
+
+    (* Flags for GetRawInputData *)
+
+    RID_INPUT = $10000003;
+    RID_HEADER = $10000005;
+
+    (* Raw Input Device Information *)
+    RIDI_PREPARSEDDATA = $20000005;
+    RIDI_DEVICENAME = $20000007;  // the return valus is the character length, not the byte size
+    RIDI_DEVICEINFO = $2000000b;
+
+    RIDEV_REMOVE = $00000001;
+    RIDEV_EXCLUDE = $00000010;
+    RIDEV_PAGEONLY = $00000020;
+    RIDEV_NOLEGACY = $00000030;
+    RIDEV_INPUTSINK = $00000100;
+    RIDEV_CAPTUREMOUSE = $00000200;  // effective when mouse nolegacy is specified, otherwise it would be an error
+    RIDEV_NOHOTKEYS = $00000200;  // effective for keyboard.
+    RIDEV_APPKEYS = $00000400;  // effective for keyboard.
+{$IF(_WIN32_WINNT >= $0501)}
+    RIDEV_EXINPUTSINK = $00001000;
+    RIDEV_DEVNOTIFY = $00002000;
+{$ENDIF}(* _WIN32_WINNT >= $0501 *)
+    RIDEV_EXMODEMASK = $000000F0;
+
+{$IF(_WIN32_WINNT >= $0501)}
+    (* Flags for the WM_INPUT_DEVICE_CHANGE message. *)
+    GIDC_ARRIVAL = 1;
+    GIDC_REMOVAL = 2;
+{$ENDIF}(* _WIN32_WINNT >= $0501 *)
+
+{$IF(WINVER >= $0602)}
+
+    POINTER_DEVICE_PRODUCT_STRING_MAX = 520;
+    (* wParam values for WM_POINTERDEVICECHANGE *)
+    PDC_ARRIVAL = $001;
+    PDC_REMOVAL = $002;
+    PDC_ORIENTATION_0 = $004;
+    PDC_ORIENTATION_90 = $008;
+    PDC_ORIENTATION_180 = $010;
+    PDC_ORIENTATION_270 = $020;
+    PDC_MODE_DEFAULT = $040;
+    PDC_MODE_CENTERED = $080;
+    PDC_MAPPING_CHANGE = $100;
+    PDC_RESOLUTION = $200;
+    PDC_ORIGIN = $400;
+    PDC_MODE_ASPECTRATIOPRESERVED = $800;
+{$ENDIF}(* WINVER >= $0602 *)
+
+ {$IF(WINVER >= $0600)}
+    (* Message Filter *)
+    MSGFLT_ADD = 1;
+    MSGFLT_REMOVE = 2;
+{$ENDIF}(* WINVER >= $0600 *)
+
+ {$IF(WINVER >= $0601)}
+    (* Message filter info values (CHANGEFILTERSTRUCT.ExtStatus) *)
+    MSGFLTINFO_NONE = (0);
+    MSGFLTINFO_ALREADYALLOWED_FORWND = (1);
+    MSGFLTINFO_ALREADYDISALLOWED_FORWND = (2);
+    MSGFLTINFO_ALLOWED_HIGHER = (3);
+
+    (* Message filter action values (action parameter to ChangeWindowMessageFilterEx) *)
+    MSGFLT_RESET = (0);
+    MSGFLT_ALLOW = (1);
+    MSGFLT_DISALLOW = (2);
+{$ENDIF}(* WINVER >= $0601 *)
+
+{$IF(WINVER >= $0601)}
+    (* Gesture defines and functions *)
+
+    (* Gesture flags - GESTUREINFO.dwFlags *)
+    GF_BEGIN = $00000001;
+    GF_INERTIA = $00000002;
+    GF_END = $00000004;
+
+    (* Gesture IDs *)
+    GID_BEGIN = 1;
+    GID_END = 2;
+    GID_ZOOM = 3;
+    GID_PAN = 4;
+    GID_ROTATE = 5;
+    GID_TWOFINGERTAP = 6;
+    GID_PRESSANDTAP = 7;
+    GID_ROLLOVER = GID_PRESSANDTAP;
+
+
+    (* Gesture configuration flags - GESTURECONFIG.dwWant or GESTURECONFIG.dwBlock *)
+
+    (* Common gesture configuration flags - set GESTURECONFIG.dwID to zero *)
+    GC_ALLGESTURES = $00000001;
+
+    (* Zoom gesture configuration flags - set GESTURECONFIG.dwID to GID_ZOOM *)
+    GC_ZOOM = $00000001;
+
+    (* Pan gesture configuration flags - set GESTURECONFIG.dwID to GID_PAN *)
+    GC_PAN = $00000001;
+    GC_PAN_WITH_SINGLE_FINGER_VERTICALLY = $00000002;
+    GC_PAN_WITH_SINGLE_FINGER_HORIZONTALLY = $00000004;
+    GC_PAN_WITH_GUTTER = $00000008;
+    GC_PAN_WITH_INERTIA = $00000010;
+
+    (* Rotate gesture configuration flags - set GESTURECONFIG.dwID to GID_ROTATE *)
+    GC_ROTATE = $00000001;
+
+    (* Two finger tap gesture configuration flags - set GESTURECONFIG.dwID to GID_TWOFINGERTAP *)
+    GC_TWOFINGERTAP = $00000001;
+
+    (* PressAndTap gesture configuration flags - set GESTURECONFIG.dwID to GID_PRESSANDTAP *)
+    GC_PRESSANDTAP = $00000001;
+    GC_ROLLOVER = GC_PRESSANDTAP;
+
+    GESTURECONFIGMAXCOUNT = 256;             // Maximum number of gestures that can be included
+
+    GCF_INCLUDE_ANCESTORS = $00000001;      // If specified, GetGestureConfig returns consolidated configuration
+    // for the specified window and it's parent window chain
+{$ENDIF}(* WINVER >= $0601 *)
+
+    // in a single call to SetGestureConfig / GetGestureConfig
+
+{$IF(WINVER >= $0601)}
+
+    (* GetSystemMetrics(SM_DIGITIZER) flag values *)
+    NID_INTEGRATED_TOUCH = $00000001;
+    NID_EXTERNAL_TOUCH = $00000002;
+    NID_INTEGRATED_PEN = $00000004;
+    NID_EXTERNAL_PEN = $00000008;
+    NID_MULTI_INPUT = $00000040;
+    NID_READY = $00000080;
+
+{$ENDIF}(* WINVER >= $0601 *)
+
+    MAX_STR_BLOCKREASON = 256;
+
+
+
+
+    GMDI_USEDISABLED = $0001;
+    GMDI_GOINTOPOPUPS = $0002;
+
+
+
+    (* Flags for TrackPopupMenu *)
+    TPM_LEFTBUTTON = $0000;
+    TPM_RIGHTBUTTON = $0002;
+    TPM_LEFTALIGN = $0000;
+    TPM_CENTERALIGN = $0004;
+    TPM_RIGHTALIGN = $0008;
+{$IF(WINVER >= $0400)}
+    TPM_TOPALIGN = $0000;
+    TPM_VCENTERALIGN = $0010;
+    TPM_BOTTOMALIGN = $0020;
+
+    TPM_HORIZONTAL = $0000;     (* Horz alignment matters more *)
+    TPM_VERTICAL = $0040;     (* Vert alignment matters more *)
+    TPM_NONOTIFY = $0080;     (* Don't send any notification msgs *)
+    TPM_RETURNCMD = $0100;
+{$ENDIF}(* WINVER >= $0400 *)
+{$IF(WINVER >= $0500)}
+    TPM_RECURSE = $0001;
+    TPM_HORPOSANIMATION = $0400;
+    TPM_HORNEGANIMATION = $0800;
+    TPM_VERPOSANIMATION = $1000;
+    TPM_VERNEGANIMATION = $2000;
+{$IF(_WIN32_WINNT >= $0500)}
+    TPM_NOANIMATION = $4000;
+{$ENDIF}(* _WIN32_WINNT >= $0500 *)
+{$IF(_WIN32_WINNT >= $0501)}
+    TPM_LAYOUTRTL = $8000;
+{$ENDIF}(* _WIN32_WINNT >= $0501 *)
+{$ENDIF}(* WINVER >= $0500 *)
+{$IF(_WIN32_WINNT >= $0601)}
+    TPM_WORKAREA = $10000;
+{$ENDIF}(* _WIN32_WINNT >= $0601 *)
+
+
+
+
+    DOF_EXECUTABLE = $8001;     // wFmt flags
+    DOF_DOCUMENT = $8002;
+    DOF_DIRECTORY = $8003;
+    DOF_MULTIPLE = $8004;
+    DOF_PROGMAN = $0001;
+    DOF_SHELLDATA = $0002;
+
+    DO_DROPFILE = $454C4946;
+    DO_PRINTFILE = $544E5250;
+
+
+
+
+    (* DrawText() Format Flags *)
+    DT_TOP = $00000000;
+    DT_LEFT = $00000000;
+    DT_CENTER = $00000001;
+    DT_RIGHT = $00000002;
+    DT_VCENTER = $00000004;
+    DT_BOTTOM = $00000008;
+    DT_WORDBREAK = $00000010;
+    DT_SINGLELINE = $00000020;
+    DT_EXPANDTABS = $00000040;
+    DT_TABSTOP = $00000080;
+    DT_NOCLIP = $00000100;
+    DT_EXTERNALLEADING = $00000200;
+    DT_CALCRECT = $00000400;
+    DT_NOPREFIX = $00000800;
+    DT_INTERNAL = $00001000;
+
+
+    DT_EDITCONTROL = $00002000;
+    DT_PATH_ELLIPSIS = $00004000;
+    DT_END_ELLIPSIS = $00008000;
+    DT_MODIFYSTRING = $00010000;
+    DT_RTLREADING = $00020000;
+    DT_WORD_ELLIPSIS = $00040000;
+{$IF(WINVER >= $0500)}
+    DT_NOFULLWIDTHCHARBREAK = $00080000;
+{$IF(_WIN32_WINNT >= $0500)}
+    DT_HIDEPREFIX = $00100000;
+    DT_PREFIXONLY = $00200000;
+{$ENDIF}(* _WIN32_WINNT >= $0500 *)
+{$ENDIF}(* WINVER >= $0500 *)
+
+{$IF(WINVER >= $0400)}
+    CWP_ALL = $0000;
+    CWP_SKIPINVISIBLE = $0001;
+    CWP_SKIPDISABLED = $0002;
+    CWP_SKIPTRANSPARENT = $0004;
+{$ENDIF}(* WINVER >= $0400 *)
+
+ {$IF(WINVER >= $0400)}
+    IDI_WARNING = IDI_EXCLAMATION;
+    IDI_ERROR = IDI_HAND;
+    IDI_INFORMATION = IDI_ASTERISK;
+{$ENDIF}(* WINVER >= $0400 *)
+
+    (* Get/SetWindowWord/Long offsets for use with WC_DIALOG windows *)
+    DWLP_MSGRESULT = 0;
+    DWLP_DLGPROC = DWLP_MSGRESULT + sizeof(LRESULT); // 4 on Win32
+    DWLP_USER = DWLP_DLGPROC + sizeof(DLGPROC); // 8 on Win32
+
+    (* DlgDirList, DlgDirListComboBox flags values *)
+    DDL_READWRITE = $0000;
+    DDL_READONLY = $0001;
+    DDL_HIDDEN = $0002;
+    DDL_SYSTEM = $0004;
+    DDL_DIRECTORY = $0010;
+    DDL_ARCHIVE = $0020;
+    DDL_POSTMSGS = $2000;
+    DDL_DRIVES = $4000;
+    DDL_EXCLUSIVE = $8000;
+
+    (* Dialog window class *)
+    WC_DIALOG = MAKEINTATOM($8002);
+
+type
+
+
+    TLRESULT = LRESULT;
+
+    TMENUTEMPLATEA = procedure; // VOID
+    TMENUTEMPLATEW = procedure;
+
+    PMENUTEMPLATEA = ^TMENUTEMPLATEA;
+    PMENUTEMPLATEW = ^TMENUTEMPLATEW;
+
+    TWPARAM = UINT_PTR;
+    TLPARAM = UINT_PTR;
+
+    TWNDPROC = function(hwnd: THWND; uMsg: UINT; wParam: TWPARAM; lParam: TLPARAM): LRESULT; stdcall;
+    TDLGPROC = function(hwndDlg: THWND; uMsg: UINT; wParam: TWPARAM; lParam: TLPARAM): INT_PTR; stdcall;
+
+    TTIMERPROC = procedure(Window: THWND; uMsg: UINT; idEvent: UINT_PTR; dwTime: DWORD); stdcall;
+    TGRAYSTRINGPROC = function(hdc: THDC; lParam: TLPARAM; cchLength: integer): longbool; stdcall;
+    TWNDENUMPROC = function(hwnd: THWND; lParam: TLPARAM): longbool; stdcall;
+    THOOKPROC = function(code: integer; wParam: TWPARAM; lParam: TLPARAM): LRESULT; stdcall;
+    TSENDASYNCPROC = procedure(hwnd: THWND; uMsg: UINT; dwData: ULONG_PTR; lresult: LRESULT); stdcall;
+
+    TPROPENUMPROCA = function(hwnd: THWND; lpszString: LPCSTR; hData: THANDLE): longbool; stdcall;
+    TPROPENUMPROCW = function(hwnd: THWND; lpszString: LPCWSTR; hData: THANDLE): longbool; stdcall;
+
+    TPROPENUMPROCEXA = function(hwnd: THWND; lpszString: LPSTR; hData: THANDLE; dwData: ULONG_PTR): longbool; stdcall;
+    TPROPENUMPROCEXW = function(hwnd: THWND; lpszString: LPWSTR; hData: THANDLE; dwData: ULONG_PTR): longbool; stdcall;
+
+    TEDITWORDBREAKPROCA = function(lpch: LPSTR; ichCurrent: integer; cch: integer; code: integer): integer; stdcall;
+    TEDITWORDBREAKPROCW = function(lpch: LPWSTR; ichCurrent: integer; cch: integer; code: integer): integer; stdcall;
+
+{$IF (WINVER >= $0400)}
+    TDRAWSTATEPROC = function(hdc: THDC; lData: LPARAM; wData: WPARAM; cx: integer; cy: integer): longbool; stdcall;
+{$ENDIF}(* WINVER >= $0400 *)
+
+    TNAMEENUMPROCA = function(lpszWindowStation: LPSTR; lParam: TLPARAM): longbool;
+    TNAMEENUMPROCW = function(lpszWindowStation: LPWSTR; lParam: TLPARAM): longbool;
+
+    TWINSTAENUMPROCA = TNAMEENUMPROCA;
+    TDESKTOPENUMPROCA = TNAMEENUMPROCA;
+    TWINSTAENUMPROCW = TNAMEENUMPROCW;
+    TDESKTOPENUMPROCW = TNAMEENUMPROCW;
+
+
+    PCREATESTRUCTA = ^TCREATESTRUCTA;
+    PCREATESTRUCTW = ^TCREATESTRUCTW;
+    (* HCBT_CREATEWND parameters pointed to by lParam *)
+    TCBT_CREATEWNDA = record
+        lpcs: PCREATESTRUCTA;
+        hwndInsertAfter: THWND;
+    end;
+    PCBT_CREATEWNDA = ^TCBT_CREATEWNDA;
+
+    (* HCBT_CREATEWND parameters pointed to by lParam *)
+    TCBT_CREATEWNDW = record
+        lpcs: PCREATESTRUCTW;
+        hwndInsertAfter: THWND;
+    end;
+    PCBT_CREATEWNDW = ^TCBT_CREATEWNDW;
+
+
+    (* HCBT_ACTIVATE structure pointed to by lParam *)
+    TCBTACTIVATESTRUCT = record
+        fMouse: longbool;
+        hWndActive: THWND;
+    end;
+    PCBTACTIVATESTRUCT = ^TCBTACTIVATESTRUCT;
+
+    {$IF(_WIN32_WINNT >= $0501)}
+    (* WTSSESSION_NOTIFICATION struct pointed by lParam, for WM_WTSSESSION_CHANGE *)
+    TWTSSESSION_NOTIFICATION = record
+        cbSize: DWORD;
+        dwSessionId: DWORD;
+    end;
+    PWTSSESSION_NOTIFICATION = ^TWTSSESSION_NOTIFICATION;
+{$ENDIF}(* _WIN32_WINNT >= $0501 *)
+
+
+
+    TSHELLHOOKINFO = record
+        hwnd: THWND;
+        rc: TRECT;
+    end;
+    PSHELLHOOKINFO = ^TSHELLHOOKINFO;
+
+(*
+ * Message Structure used in Journaling
+ *)
+    TEVENTMSG = record
+        _message: UINT;
+        paramL: UINT;
+        paramH: UINT;
+        time: DWORD;
+        hwnd: THWND;
+    end;
+    PEVENTMSGMSG = ^TEVENTMSG;
+    PEVENTMSG = ^TEVENTMSG;
+
+
+    (* Message structure used by WH_CALLWNDPROC *)
+    TCWPSTRUCT = record
+        lParam: TLPARAM;
+        wParam: TWPARAM;
+        _message: UINT;
+        hwnd: THWND;
+    end;
+    PCWPSTRUCT = ^TCWPSTRUCT;
+
+{$IF(WINVER >= $0400)}
+    (* Message structure used by WH_CALLWNDPROCRET *)
+    TCWPRETSTRUCT = record
+        lResult: TLRESULT;
+        lParam: TLPARAM;
+        wParam: TWPARAM;
+        _message: UINT;
+        hwnd: THWND;
+    end;
+    PCWPRETSTRUCT = ^TCWPRETSTRUCT;
+{$ENDIF}(* WINVER >= $0400 *)
+
+{$IF (_WIN32_WINNT >= $0400)}
+    (* Structure used by WH_KEYBOARD_LL *)
+    TKBDLLHOOKSTRUCT = record
+        vkCode: DWORD;
+        scanCode: DWORD;
+        flags: DWORD;
+        time: DWORD;
+        dwExtraInfo: ULONG_PTR;
+    end;
+    PKBDLLHOOKSTRUCT = ^TKBDLLHOOKSTRUCT;
+
+    (* Structure used by WH_MOUSE_LL *)
+    TMSLLHOOKSTRUCT = record
+        pt: TPOINT;
+        mouseData: DWORD;
+        flags: DWORD;
+        time: DWORD;
+        dwExtraInfo: ULONG_PTR;
+    end;
+    PMSLLHOOKSTRUCT = ^TMSLLHOOKSTRUCT;
+{$ENDIF}// (_WIN32_WINNT >= $0400)
+
+    (* Structure used by WH_DEBUG *)
+    TDEBUGHOOKINFO = record
+        idThread: DWORD;
+        idThreadInstaller: DWORD;
+        lParam: TLPARAM;
+        wParam: TWPARAM;
+        code: integer;
+    end;
+    PDEBUGHOOKINFO = ^TDEBUGHOOKINFO;
+
+    (* Structure used by WH_MOUSE *)
+    TMOUSEHOOKSTRUCT = record
+        pt: TPOINT;
+        hwnd: THWND;
+        wHitTestCode: UINT;
+        dwExtraInfo: ULONG_PTR;
+    end;
+    PMOUSEHOOKSTRUCT = ^TMOUSEHOOKSTRUCT;
+
+{$IF(_WIN32_WINNT >= $0500)}
+    TMOUSEHOOKSTRUCTEX = record
+        pt: TPOINT;
+        hwnd: THWND;
+        wHitTestCode: UINT;
+        dwExtraInfo: ULONG_PTR;
+        mouseData: DWORD;
+    end;
+    PMOUSEHOOKSTRUCTEX = ^TMOUSEHOOKSTRUCTEX;
+{$ENDIF}(* _WIN32_WINNT >= $0500 *)
+
+{$IF(WINVER >= $0400)}
+    (* Structure used by WH_HARDWARE *)
+    THARDWAREHOOKSTRUCT = record
+        hwnd: THWND;
+        umessage: UINT;
+        wParam: TWPARAM;
+        lParam: TLPARAM;
+    end;
+    PHARDWAREHOOKSTRUCT = ^THARDWAREHOOKSTRUCT;
+{$ENDIF}(* WINVER >= $0400 *)
+
+  {$IF(WINVER >= $0500)}
+    TMOUSEMOVEPOINT = record
+        x: integer;
+        y: integer;
+        time: DWORD;
+        dwExtraInfo: ULONG_PTR;
+    end;
+    PMOUSEMOVEPOINT = ^TMOUSEMOVEPOINT;
+{$ENDIF}(* WINVER >= $0500 *)
+
+
+    TUSEROBJECTFLAGS = record
+        fInherit: longbool;
+        fReserved: longbool;
+        dwFlags: DWORD;
+    end;
+    PUSEROBJECTFLAGS = ^TUSEROBJECTFLAGS;
+
+
+{$IF(WINVER >= $0400)}
+    TWNDCLASSEXA = record
+        cbSize: UINT;
+        (* Win 3.x *)
+        style: UINT;
+        lpfnWndProc: TWNDPROC;
+        cbClsExtra: integer;
+        cbWndExtra: integer;
+        hInstance: THINSTANCE;
+        hIcon: THICON;
+        hCursor: THCURSOR;
+        hbrBackground: THBRUSH;
+        lpszMenuName: LPCSTR;
+        lpszClassName: LPCSTR;
+        (* Win 4.0 *)
+        hIconSm: THICON;
+    end;
+    PWNDCLASSEXA = ^TWNDCLASSEXA;
+
+    TWNDCLASSEXW = record
+        cbSize: UINT;
+        (* Win 3.x *)
+        style: UINT;
+        lpfnWndProc: TWNDPROC;
+        cbClsExtra: integer;
+        cbWndExtra: integer;
+        hInstance: THINSTANCE;
+        hIcon: THICON;
+        hCursor: THCURSOR;
+        hbrBackground: THBRUSH;
+        lpszMenuName: LPCWSTR;
+        lpszClassName: LPCWSTR;
+        (* Win 4.0 *)
+        hIconSm: THICON;
+    end;
+    PWNDCLASSEXW = ^TWNDCLASSEXW;
+
+{$ENDIF}(* WINVER >= $0400 *)
+
+    TWNDCLASSA = record
+        style: UINT;
+        lpfnWndProc: TWNDPROC;
+        cbClsExtra: integer;
+        cbWndExtra: integer;
+        hInstance: THINSTANCE;
+        hIcon: THICON;
+        hCursor: THCURSOR;
+        hbrBackground: THBRUSH;
+        lpszMenuName: LPCSTR;
+        lpszClassName: LPCSTR;
+    end;
+    PWNDCLASSA = ^TWNDCLASSA;
+
+    TWNDCLASSW = record
+        style: UINT;
+        lpfnWndProc: TWNDPROC;
+        cbClsExtra: integer;
+        cbWndExtra: integer;
+        hInstance: THINSTANCE;
+        hIcon: THICON;
+        hCursor: THCURSOR;
+        hbrBackground: THBRUSH;
+        lpszMenuName: LPCWSTR;
+        lpszClassName: LPCWSTR;
+    end;
+    PWNDCLASSW = ^TWNDCLASSW;
+
+
+    (* Message structure *)
+    TMSG = record
+        hwnd: THWND;
+        message: UINT;
+        wParam: TWPARAM;
+        lParam: TLPARAM;
+        time: DWORD;
+        pt: TPOINT;
+{$IFdef _MAC}
+        lPrivate: DWORD;
+{$ENDIF}
+    end;
+    PMSG = ^TMSG;
+
+    (* Struct pointed to by WM_GETMINMAXINFO lParam *)
+    TMINMAXINFO = record
+        ptReserved: TPOINT;
+        ptMaxSize: TPOINT;
+        ptMaxPosition: TPOINT;
+        ptMinTrackSize: TPOINT;
+        ptMaxTrackSize: TPOINT;
+    end;
+    PMINMAXINFO = ^TMINMAXINFO;
+
+    (* lParam of WM_COPYDATA message points to...  *)
+    TCOPYDATASTRUCT = record
+        dwData: ULONG_PTR;
+        cbData: DWORD;
+        lpData {cbData}: pointer;
+    end;
+    PCOPYDATASTRUCT = ^TCOPYDATASTRUCT;
+
+{$IF(WINVER >= $0400)}
+    TMDINEXTMENU = record
+        hmenuIn: THMENU;
+        hmenuNext: THMENU;
+        hwndNext: THWND;
+    end;
+    PMDINEXTMENU = ^TMDINEXTMENU;
+{$ENDIF}(* WINVER >= $0400 *)
+
+{$IF (_WIN32_WINNT >= $0502)}
+    TPOWERBROADCAST_SETTING = record
+        PowerSetting: TGUID;
+        DataLength: DWORD;
+        Data: PUCHAR;
+    end;
+    PPOWERBROADCAST_SETTING = ^TPOWERBROADCAST_SETTING;
+{$ENDIF}// (_WIN32_WINNT >= $0502)
+
+
+    (* WM_WINDOWPOSCHANGING/CHANGED struct pointed to by lParam *)
+    TWINDOWPOS = record
+        hwnd: THWND;
+        hwndInsertAfter: THWND;
+        x: integer;
+        y: integer;
+        cx: integer;
+        cy: integer;
+        flags: UINT;
+    end;
+    PWINDOWPOS = ^TWINDOWPOS;
+
+    (* WM_NCCALCSIZE parameter structure *)
+    TNCCALCSIZE_PARAMS = record
+        rgrc: array [0..2] of TRECT;
+        lppos: PWINDOWPOS;
+    end;
+    PNCCALCSIZE_PARAMS = ^TNCCALCSIZE_PARAMS;
+
+
+  {$IF(_WIN32_WINNT >= $0400)}
+    TTRACKMOUSEEVENT = record
+        cbSize: DWORD;
+        dwFlags: DWORD;
+        hwndTrack: THWND;
+        dwHoverTime: DWORD;
+    end;
+    PTRACKMOUSEEVENT = ^TTRACKMOUSEEVENT;
+ {$ENDIF}(* _WIN32_WINNT >= $0400 *)
+
+
+
+
+    TACCEL = record
+{$ifndef _MAC}
+        fVirt: byte;               (* Also called the flags field *)
+        key: word;
+        cmd: word;
+{$ELSE}
+        fVirt: word;               (* Also called the flags field *)
+        key: word;
+        cmd: DWORD;
+{$ENDIF}
+    end;
+    PACCEL = ^TACCEL;
+
+    TPAINTSTRUCT = record
+        hdc: THDC;
+        fErase: longbool;
+        rcPaint: TRECT;
+        fRestore: longbool;
+        fIncUpdate: longbool;
+        rgbReserved: array [0..31] of byte;
+    end;
+    PPAINTSTRUCT = ^TPAINTSTRUCT;
+
+    TCREATESTRUCTA = record
+        lpCreateParams: pointer;
+        hInstance: THINSTANCE;
+        hMenu: THMENU;
+        hwndParent: THWND;
+        cy: integer;
+        cx: integer;
+        y: integer;
+        x: integer;
+        style: LONG;
+        lpszName: LPCSTR;
+        lpszClass: LPCSTR;
+        dwExStyle: DWORD;
+    end;
+
+    TCREATESTRUCTW = record
+        lpCreateParams: pointer;
+        hInstance: THINSTANCE;
+        hMenu: THMENU;
+        hwndParent: THWND;
+        cy: integer;
+        cx: integer;
+        y: integer;
+        x: integer;
+        style: LONG;
+        lpszName: LPCWSTR;
+        lpszClass: LPCWSTR;
+        dwExStyle: DWORD;
+    end;
+
+
+    TWINDOWPLACEMENT = record
+        length: UINT;
+        flags: UINT;
+        showCmd: UINT;
+        ptMinPosition: TPOINT;
+        ptMaxPosition: TPOINT;
+        rcNormalPosition: TRECT;
+{$IFdef _MAC}
+        rcDevice: TRECT;
+{$ENDIF}
+    end;
+
+    PWINDOWPLACEMENT = ^TWINDOWPLACEMENT;
+
+
+{$IF(WINVER >= $0400)}
+    TNMHDR = record
+        hwndFrom: THWND;
+        idFrom: UINT_PTR;
+        code: UINT;         // NM_ code
+    end;
+    PNMHDR = ^TNMHDR;
+
+    TSTYLESTRUCT = record
+        styleOld: DWORD;
+        styleNew: DWORD;
+    end;
+    PSTYLESTRUCT = ^TSTYLESTRUCT;
+{$ENDIF}(* WINVER >= $0400 *)
+
+
+
+
+    (* MEASUREITEMSTRUCT for ownerdraw *)
+    TMEASUREITEMSTRUCT = record
+        CtlType: UINT;
+        CtlID: UINT;
+        itemID: UINT;
+        itemWidth: UINT;
+        itemHeight: UINT;
+        itemData: ULONG_PTR;
+    end;
+    PMEASUREITEMSTRUCT = ^TMEASUREITEMSTRUCT;
+
+    (* DRAWITEMSTRUCT for ownerdraw *)
+    TDRAWITEMSTRUCT = record
+        CtlType: UINT;
+        CtlID: UINT;
+        itemID: UINT;
+        itemAction: UINT;
+        itemState: UINT;
+        hwndItem: THWND;
+        hDC: THDC;
+        rcItem: TRECT;
+        itemData: ULONG_PTR;
+    end;
+    PDRAWITEMSTRUCT = ^TDRAWITEMSTRUCT;
+
+    (* DELETEITEMSTRUCT for ownerdraw *)
+    TDELETEITEMSTRUCT = record
+        CtlType: UINT;
+        CtlID: UINT;
+        itemID: UINT;
+        hwndItem: THWND;
+        itemData: ULONG_PTR;
+    end;
+    PDELETEITEMSTRUCT = ^TDELETEITEMSTRUCT;
+
+    (* COMPAREITEMSTUCT for ownerdraw sorting *)
+    TCOMPAREITEMSTRUCT = record
+        CtlType: UINT;
+        CtlID: UINT;
+        hwndItem: THWND;
+        itemID1: UINT;
+        itemData1: ULONG_PTR;
+        itemID2: UINT;
+        itemData2: ULONG_PTR;
+        dwLocaleId: DWORD;
+    end;
+    PCOMPAREITEMSTRUCT = ^TCOMPAREITEMSTRUCT;
+
+{$IF(_WIN32_WINNT >= $0501)}
+    TBSMINFO = record
+        cbSize: UINT;
+        hdesk: THDESK;
+        hwnd: THWND;
+        luid: TLUID;
+    end;
+    PBSMINFO = ^TBSMINFO;
+{$ENDIF}(* _WIN32_WINNT >= $0501 *)
+
+  {$IF(WINVER >= $0500)}
+    THDEVNOTIFY = pointer;
+    PHDEVNOTIFY = ^THDEVNOTIFY;
+  {$IF (_WIN32_WINNT >= $0502)}
+    THPOWERNOTIFY = pointer;
+    PHPOWERNOTIFY = ^THPOWERNOTIFY;
+ {$ENDIF}// (_WIN32_WINNT >= $0502)
+ {$ENDIF}(* WINVER >= $0500 *)
+
+  {$IF(WINVER >= $0500)}
+    TFLASHWINFO = record
+        cbSize: UINT;
+        hwnd: THWND;
+        dwFlags: DWORD;
+        uCount: UINT;
+        dwTimeout: DWORD;
+    end;
+    PFLASHWINFO = ^TFLASHWINFO;
+{$ENDIF}(* WINVER >= $0500 *)
+
+      {$IF(_WIN32_WINNT >= $0500)}
+    (* Layered Window Update information *)
+    TUPDATELAYEREDWINDOWINFO = record
+        cbSize: DWORD;
+        hdcDst: THDC;
+        pptDst: PPOINT;
+        psize: PSIZE;
+        hdcSrc: THDC;
+        pptSrc: PPOINT;
+        crKey: TCOLORREF;
+        pblend: PBLENDFUNCTION;
+        dwFlags: DWORD;
+        prcDirty: PRECT;
+    end;
+    PUPDATELAYEREDWINDOWINFO = ^TUPDATELAYEREDWINDOWINFO;
+{$ENDIF}(* _WIN32_WINNT >= $0500 *)
+
+{$IF(_WIN32_WINNT >= $0501)}
+    TPREGISTERCLASSNAMEW = function(ClassName: LPCWSTR): boolean; stdcall;
+
+{$ENDIF}(* _WIN32_WINNT >= $0501 *)
+
+
+(*
+ * WARNING:
+ * The following structures must NOT be DWORD padded because they are
+ * followed by strings, etc that do not have to be DWORD aligned.
+ *)
+ {$Z2}
+    // include <pshpack2.h>
+
+
+    (* original NT 32 bit dialog template: *)
+    TDLGTEMPLATE = record
+        style: DWORD;
+        dwExtendedStyle: DWORD;
+        cdit: word;
+        x: short;
+        y: short;
+        cx: short;
+        cy: short;
+    end;
+    PDLGTEMPLATEA = ^TDLGTEMPLATE;
+    PCDLGTEMPLATEA = ^TDLGTEMPLATE;
+
+    PDLGTEMPLATEW = ^TDLGTEMPLATE;
+    PCDLGTEMPLATEW = ^TDLGTEMPLATE;
+
+
+    (* 32 bit Dialog item template. *)
+    TDLGITEMTEMPLATE = record
+        style: DWORD;
+        dwExtendedStyle: DWORD;
+        x: short;
+        y: short;
+        cx: short;
+        cy: short;
+        id: word;
+    end;
+    PDLGITEMTEMPLATEA = ^TDLGITEMTEMPLATE;
+    PDLGITEMTEMPLATEW = ^TDLGITEMTEMPLATE;
+
+ {$Z4}
+    // include <poppack.h> (* Resume normal packing *)
+
+    TDIALOG_CONTROL_DPI_CHANGE_BEHAVIORS = (
+        DCDC_DEFAULT = $0000,
+        DCDC_DISABLE_FONT_UPDATE = $0001,
+        DCDC_DISABLE_RELAYOUT = $0002);
+    PDIALOG_CONTROL_DPI_CHANGE_BEHAVIORS = ^TDIALOG_CONTROL_DPI_CHANGE_BEHAVIORS;
+
+    TDIALOG_DPI_CHANGE_BEHAVIORS = (
+        DDC_DEFAULT = $0000,
+        DDC_DISABLE_ALL = $0001,
+        DDC_DISABLE_RESIZE = $0002,
+        DDC_DISABLE_CONTROL_RELAYOUT = $0004);
+    PDIALOG_DPI_CHANGE_BEHAVIORS = ^TDIALOG_DPI_CHANGE_BEHAVIORS;
+
+
+
+
+{$IF (_WIN32_WINNT >=$0400)}
+
+    TMOUSEINPUT = record
+        dx: LONG;
+        dy: LONG;
+        mouseData: DWORD;
+        dwFlags: DWORD;
+        time: DWORD;
+        dwExtraInfo: ULONG_PTR;
+    end;
+    PMOUSEINPUT = ^TMOUSEINPUT;
+
+    TKEYBDINPUT = record
+        wVk: word;
+        wScan: word;
+        dwFlags: DWORD;
+        time: DWORD;
+        dwExtraInfo: ULONG_PTR;
+    end;
+    PKEYBDINPUT = ^TKEYBDINPUT;
+
+
+    THARDWAREINPUT = record
+        uMsg: DWORD;
+        wParamL: word;
+        wParamH: word;
+    end;
+    PHARDWAREINPUT = ^THARDWAREINPUT;
+
+
+
+    TINPUT = record
+        _type: DWORD;
+
+        case integer of
+
+            0: (mi: TMOUSEINPUT);
+            1: (ki: TKEYBDINPUT);
+            2: (hi: THARDWAREINPUT);
+    end;
+    PINPUT = ^TINPUT;
+
+{$ENDIF}// (_WIN32_WINNT > =$0400)
+
+{$IF(WINVER >= $0601)}
+
+    (* Touch Input defines and functions *)
+
+    (* Touch input handle *)
+    THTOUCHINPUT = THANDLE;
+
+    TTOUCHINPUT = record
+        x: LONG;
+        y: LONG;
+        hSource: THANDLE;
+        dwID: DWORD;
+        dwFlags: DWORD;
+        dwMask: DWORD;
+        dwTime: DWORD;
+        dwExtraInfo: ULONG_PTR;
+        cxContact: DWORD;
+        cyContact: DWORD;
+    end;
+    PTOUCHINPUT = ^TTOUCHINPUT;
+    PCTOUCHINPUT = ^TTOUCHINPUT;
+ {$ENDIF}(* WINVER >= $0601 *)
+
+
+{$IF(WINVER >= $0602)}
+    TPOINTER_INPUT_TYPE = (
+        PT_POINTER = 1,   // Generic pointer
+        PT_TOUCH = 2,   // Touch
+        PT_PEN = 3,   // Pen
+        PT_MOUSE = 4,   // Mouse
+{$IF(WINVER >= $0603)}
+        PT_TOUCHPAD = 5   // Touchpad
+{$ENDIF}(* WINVER >= $0603 *));
+
+
+    TPOINTER_FLAGS = UINT32;
+
+    TPOINTER_BUTTON_CHANGE_TYPE = (
+        POINTER_CHANGE_NONE,
+        POINTER_CHANGE_FIRSTBUTTON_DOWN,
+        POINTER_CHANGE_FIRSTBUTTON_UP,
+        POINTER_CHANGE_SECONDBUTTON_DOWN,
+        POINTER_CHANGE_SECONDBUTTON_UP,
+        POINTER_CHANGE_THIRDBUTTON_DOWN,
+        POINTER_CHANGE_THIRDBUTTON_UP,
+        POINTER_CHANGE_FOURTHBUTTON_DOWN,
+        POINTER_CHANGE_FOURTHBUTTON_UP,
+        POINTER_CHANGE_FIFTHBUTTON_DOWN,
+        POINTER_CHANGE_FIFTHBUTTON_UP);
+
+    TPOINTER_INFO = record
+        pointerType: TPOINTER_INPUT_TYPE;
+        pointerId: UINT32;
+        frameId: UINT32;
+        pointerFlags: TPOINTER_FLAGS;
+        sourceDevice: THANDLE;
+        hwndTarget: THWND;
+        ptPixelLocation: TPOINT;
+        ptHimetricLocation: TPOINT;
+        ptPixelLocationRaw: TPOINT;
+        ptHimetricLocationRaw: TPOINT;
+        dwTime: DWORD;
+        historyCount: UINT32;
+        InputData: INT32;
+        dwKeyStates: DWORD;
+        PerformanceCount: UINT64;
+        ButtonChangeType: TPOINTER_BUTTON_CHANGE_TYPE;
+    end;
+    PPOINTER_INFO = ^TPOINTER_INFO;
+
+
+    TTOUCH_FLAGS = UINT32;
+    TTOUCH_MASK = UINT32;
+
+    TPOINTER_TOUCH_INFO = record
+        pointerInfo: TPOINTER_INFO;
+        touchFlags: TTOUCH_FLAGS;
+        touchMask: TTOUCH_MASK;
+        rcContact: TRECT;
+        rcContactRaw: TRECT;
+        orientation: UINT32;
+        pressure: UINT32;
+    end;
+
+    PPOINTER_TOUCH_INFO = ^TPOINTER_TOUCH_INFO;
+
+    TPEN_FLAGS = UINT32;
+    TPEN_MASK = UINT32;
+
+    TPOINTER_PEN_INFO = record
+        pointerInfo: TPOINTER_INFO;
+        penFlags: TPEN_FLAGS;
+        penMask: TPEN_MASK;
+        pressure: UINT32;
+        rotation: UINT32;
+        tiltX: INT32;
+        tiltY: INT32;
+    end;
+
+    PPOINTER_PEN_INFO = ^TPOINTER_PEN_INFO;
+
+
+    TPOINTER_FEEDBACK_MODE = (
+        POINTER_FEEDBACK_DEFAULT = 1,
+        // The injected pointer input feedback may get suppressed by the end-user settings in the Pen and Touch control panel.
+        POINTER_FEEDBACK_INDIRECT = 2,  // The injected pointer input feedback overrides the end-user settings in the Pen and Touch control panel.
+        POINTER_FEEDBACK_NONE = 3      // No touch visualizations.
+        );
+
+
+
+    TUSAGE_PROPERTIES = record
+        level: USHORT;
+        page: USHORT;
+        usage: USHORT;
+        logicalMinimum: INT32;
+        logicalMaximum: INT32;
+        _unit: USHORT;
+        exponent: USHORT;
+        Count: byte;
+        physicalMinimum: INT32;
+        physicalMaximum: INT32;
+    end;
+    PUSAGE_PROPERTIES = ^TUSAGE_PROPERTIES;
+
+    TPOINTER_TYPE_INFO = record
+        _type: TPOINTER_INPUT_TYPE;
+        case integer of
+            0: (touchInfo: TPOINTER_TOUCH_INFO);
+            1: (penInfo: TPOINTER_PEN_INFO);
+    end;
+    PPOINTER_TYPE_INFO = ^TPOINTER_TYPE_INFO;
+
+    TINPUT_INJECTION_VALUE = record
+        page: USHORT;
+        usage: USHORT;
+        Value: INT32;
+        index: USHORT;
+    end;
+    PINPUT_INJECTION_VALUE = ^TINPUT_INJECTION_VALUE;
+
+{$IF (NTDDI_VERSION >= NTDDI_WIN10_RS5)}
+    THSYNTHETICPOINTERDEVICE = THANDLE;
+
+
+{$ENDIF}// NTDDI_VERSION >= NTDDI_WIN10_RS5
+
+
+
+
+    TTOUCH_HIT_TESTING_PROXIMITY_EVALUATION = record
+        score: UINT16;
+        adjustedPoint: TPOINT;
+    end;
+    PTOUCH_HIT_TESTING_PROXIMITY_EVALUATION = ^TTOUCH_HIT_TESTING_PROXIMITY_EVALUATION;
+
+    (* WM_TOUCHHITTESTING structure *)
+
+    TTOUCH_HIT_TESTING_INPUT = record
+        pointerId: UINT32;
+        point: TPOINT;
+        boundingBox: TRECT;
+        nonOccludedBoundingBox: TRECT;
+        orientation: UINT32;
+    end;
+    PTOUCH_HIT_TESTING_INPUT = ^TTOUCH_HIT_TESTING_INPUT;
+
+
+    TFEEDBACK_TYPE = (
+        FEEDBACK_TOUCH_CONTACTVISUALIZATION = 1,
+        FEEDBACK_PEN_BARRELVISUALIZATION = 2,
+        FEEDBACK_PEN_TAP = 3,
+        FEEDBACK_PEN_DOUBLETAP = 4,
+        FEEDBACK_PEN_PRESSANDHOLD = 5,
+        FEEDBACK_PEN_RIGHTTAP = 6,
+        FEEDBACK_TOUCH_TAP = 7,
+        FEEDBACK_TOUCH_DOUBLETAP = 8,
+        FEEDBACK_TOUCH_PRESSANDHOLD = 9,
+        FEEDBACK_TOUCH_RIGHTTAP = 10,
+        FEEDBACK_GESTURE_PRESSANDTAP = 11,
+        FEEDBACK_MAX = $FFFFFFFF);
+
+
+
+{$ENDIF}(* WINVER >= $0602 *)
+
+{$IF(WINVER >= $0603)}
+
+    TINPUT_TRANSFORM = record
+        case integer of
+            0: (
+                _11, _12, _13, _14: single;
+                _21, _22, _23, _24: single;
+                _31, _32, _33, _34: single;
+                _41, _42, _43, _44: single);
+
+            1: (m: array[0..3, 0..3] of single);
+    end;
+    PINPUT_TRANSFORM = ^TINPUT_TRANSFORM;
+
+
+ {$ENDIF}(* WINVER >= $0603 *)
+
+
+{$IF(_WIN32_WINNT >= $0500)}
+    TLASTINPUTINFO = record
+        cbSize: UINT;
+        dwTime: DWORD;
+    end;
+    PLASTINPUTINFO = ^TLASTINPUTINFO;
+
+ {$ENDIF}(* _WIN32_WINNT >= $0500 *)
+
+
+{$IF(WINVER >= $0400)}
+    TTPMPARAMS = record
+        cbSize: UINT;     (* Size of structure *)
+        rcExclude: TRECT;  (* Screen coordinates of rectangle to exclude when positioning *)
+    end;
+    PTPMPARAMS = ^TTPMPARAMS;
+
+
+
+   {$ENDIF}(* WINVER >= $0400 *)
+
+{$IF(WINVER >= $0500)}
+    TMENUINFO = record
+        cbSize: DWORD;
+        fMask: DWORD;
+        dwStyle: DWORD;
+        cyMax: UINT;
+        hbrBack: THBRUSH;
+        dwContextHelpID: DWORD;
+        dwMenuData: ULONG_PTR;
+    end;
+    PMENUINFO = ^TMENUINFO;
+    PCMENUINFO = ^TMENUINFO;
+
+
+    TMENUGETOBJECTINFO = record
+        dwFlags: DWORD;
+        uPos: UINT;
+        hmenu: THMENU;
+        riid: Pointer;
+        pvObj: Pointer;
+    end;
+    PMENUGETOBJECTINFO = ^TMENUGETOBJECTINFO;
+{$ENDIF}(* WINVER >= $0500 *)
+
+
+    TMENUITEMINFOA = record
+        cbSize: UINT;
+        fMask: UINT;
+        fType: UINT;         // used if MIIM_TYPE (4.0) or MIIM_FTYPE (>4.0)
+        fState: UINT;        // used if MIIM_STATE
+        wID: UINT;           // used if MIIM_ID
+        hSubMenu: THMENU;      // used if MIIM_SUBMENU
+        hbmpChecked: THBITMAP;   // used if MIIM_CHECKMARKS
+        hbmpUnchecked: THBITMAP; // used if MIIM_CHECKMARKS
+        dwItemData: ULONG_PTR;   // used if MIIM_DATA
+        dwTypeData: LPSTR;    // used if MIIM_TYPE (4.0) or MIIM_STRING (>4.0)
+        cch: UINT;           // used if MIIM_TYPE (4.0) or MIIM_STRING (>4.0)
+{$IF(WINVER >= $0500)}
+        hbmpItem: THBITMAP;      // used if MIIM_BITMAP
+{$ENDIF}(* WINVER >= $0500 *)
+    end;
+    PMENUITEMINFOA = ^TMENUITEMINFOA;
+
+    TMENUITEMINFOW = record
+        cbSize: UINT;
+        fMask: UINT;
+        fType: UINT;         // used if MIIM_TYPE (4.0) or MIIM_FTYPE (>4.0)
+        fState: UINT;        // used if MIIM_STATE
+        wID: UINT;           // used if MIIM_ID
+        hSubMenu: THMENU;      // used if MIIM_SUBMENU
+        hbmpChecked: THBITMAP;   // used if MIIM_CHECKMARKS
+        hbmpUnchecked: THBITMAP; // used if MIIM_CHECKMARKS
+        dwItemData: ULONG_PTR;   // used if MIIM_DATA
+        dwTypeData: LPWSTR;    // used if MIIM_TYPE (4.0) or MIIM_STRING (>4.0)
+        cch: UINT;           // used if MIIM_TYPE (4.0) or MIIM_STRING (>4.0)
+{$IF(WINVER >= $0500)}
+        hbmpItem: THBITMAP;      // used if MIIM_BITMAP
+{$ENDIF}(* WINVER >= $0500 *)
+    end;
+    PMENUITEMINFOW = ^TMENUITEMINFOW;
+
+    PCMENUITEMINFOA = ^TMENUITEMINFOA;
+    PCMENUITEMINFOW = ^TMENUITEMINFOW;
+
+
+ {$IF(WINVER >= $0400)}
+
+    // Drag-and-drop support
+    // Obsolete - use OLE instead
+
+    TDROPSTRUCT = record
+        hwndSource: THWND;
+        hwndSink: THWND;
+        wFmt: DWORD;
+        dwData: ULONG_PTR;
+        ptDrop: TPOINT;
+        dwControlData: DWORD;
+    end;
+    PDROPSTRUCT = ^TDROPSTRUCT;
+
+
+{$ENDIF}(* WINVER >= $0400 *)
+
+
+    TDRAWTEXTPARAMS = record
+        cbSize: UINT;
+        iTabLength: integer;
+        iLeftMargin: integer;
+        iRightMargin: integer;
+        uiLengthDrawn: UINT;
+    end;
+    PDRAWTEXTPARAMS = ^TDRAWTEXTPARAMS;
+
+
+{$IF(WINVER >= $0400)}
+
+
+    THELPINFO = record     (* Structure pointed to by lParam of WM_HELP *)
+        cbSize: UINT;             (* Size in bytes of this struct  *)
+        iContextType: integer;       (* Either HELPINFO_WINDOW or HELPINFO_MENUITEM *)
+        iCtrlId: integer;            (* Control Id or a Menu item Id. *)
+        hItemHandle: THANDLE;        (* hWnd of control or hMenu.     *)
+        dwContextId: DWORD_PTR;      (* Context Id associated with this item *)
+        MousePos: TPOINT;           (* Mouse Position in screen co-ordinates *)
+    end;
+    PHELPINFO = ^THELPINFO;
+
+
+{$ENDIF}(* WINVER >= $0400 *)
+  {$IF(WINVER >= $0400)}
+
+    TMSGBOXCALLBACK = procedure(lpHelpInfo: PHELPINFO);
+
+    TMSGBOXPARAMSA = record
+        cbSize: UINT;
+        hwndOwner: THWND;
+        hInstance: THINSTANCE;
+        lpszText: LPCSTR;
+        lpszCaption: LPCSTR;
+        dwStyle: DWORD;
+        lpszIcon: LPCSTR;
+        dwContextHelpId: DWORD_PTR;
+        lpfnMsgBoxCallback: TMSGBOXCALLBACK;
+        dwLanguageId: DWORD;
+    end;
+    PMSGBOXPARAMSA = ^TMSGBOXPARAMSA;
+
+    TMSGBOXPARAMSW = record
+        cbSize: UINT;
+        hwndOwner: THWND;
+        hInstance: THINSTANCE;
+        lpszText: LPCWSTR;
+        lpszCaption: LPCWSTR;
+        dwStyle: DWORD;
+        lpszIcon: LPCWSTR;
+        dwContextHelpId: DWORD_PTR;
+        lpfnMsgBoxCallback: TMSGBOXCALLBACK;
+        dwLanguageId: DWORD;
+    end;
+    PMSGBOXPARAMSW = ^TMSGBOXPARAMSW;
+
+{$ENDIF}(* WINVER >= $0400 *)
+
+    (* Menu item resource format *)
+    TMENUITEMTEMPLATEHEADER = record
+        versionNumber: word;
+        offset: word;
+    end;
+    PMENUITEMTEMPLATEHEADER = ^TMENUITEMTEMPLATEHEADER;
+
+    TMENUITEMTEMPLATE = record        // version 0
+        mtOption: word;
+        mtID: word;
+        mtString: PWCHAR;
+    end;
+    PMENUITEMTEMPLATE = ^TMENUITEMTEMPLATE;
+
+    TICONINFO = record
+        fIcon: longbool;
+        xHotspot: DWORD;
+        yHotspot: DWORD;
+        hbmMask: THBITMAP;
+        hbmColor: THBITMAP;
+    end;
+    PICONINFO = ^TICONINFO;
+
+ {$IF(WINVER >= $0400)}
+    (* Icon/Cursor header *)
+    TCURSORSHAPE = record
+        xHotSpot: integer;
+        yHotSpot: integer;
+        cx: integer;
+        cy: integer;
+        cbWidth: integer;
+        Planes: byte;
+        BitsPixel: byte;
+    end;
+    PCURSORSHAPE = ^TCURSORSHAPE;
+{$ENDIF}(* WINVER >= $0400 *)
+
+{$IF(_WIN32_WINNT >= $0600)}
+    TICONINFOEXA = record
+        cbSize: DWORD;
+        fIcon: longbool;
+        xHotspot: DWORD;
+        yHotspot: DWORD;
+        hbmMask: THBITMAP;
+        hbmColor: THBITMAP;
+        wResID: word;
+        szModName: array[0..MAX_PATH - 1] of char;
+        szResName: array[0..MAX_PATH - 1] of char;
+    end;
+    PICONINFOEXA = ^TICONINFOEXA;
+
+    TICONINFOEXW = record
+        cbSize: DWORD;
+        fIcon: longbool;
+        xHotspot: DWORD;
+        yHotspot: DWORD;
+        hbmMask: THBITMAP;
+        hbmColor: THBITMAP;
+        wResID: word;
+        szModName: array [0..MAX_PATH - 1] of WCHAR;
+        szResName: array [0..MAX_PATH - 1] of WCHAR;
+    end;
+    PICONINFOEXW = ^TICONINFOEXW;
+
+{$ENDIF}(* _WIN32_WINNT >= $0600 *)
+
+
+
+
+{$IF(WINVER >= $0604)}
+    (* EM_ENABLEFEATURE options *)
+    TEDIT_CONTROL_FEATURE = (
+        EDIT_CONTROL_FEATURE_ENTERPRISE_DATA_PROTECTION_PASTE_SUPPORT = 0,
+        EDIT_CONTROL_FEATURE_PASTE_NOTIFICATIONS = 1);
+{$ENDIF}(* WINVER >= $0604 *)
+
+
+
+{$IF(WINVER >= $0400)}
+
+    TSCROLLINFO = record
+        cbSize: UINT;
+        fMask: UINT;
+        nMin: integer;
+        nMax: integer;
+        nPage: UINT;
+        nPos: integer;
+        nTrackPos: integer;
+    end;
+    PSCROLLINFO = ^TSCROLLINFO;
+    PCSCROLLINFO = ^TSCROLLINFO;
+{$ENDIF}(* WINVER >= $0400 *)
+
+
+
+    TMDICREATESTRUCTA = record
+        szClass: LPCSTR;
+        szTitle: LPCSTR;
+        hOwner: THANDLE;
+        x: integer;
+        y: integer;
+        cx: integer;
+        cy: integer;
+        style: DWORD;
+        lParam: LPARAM;        (* app-defined stuff *)
+    end;
+    PMDICREATESTRUCTA = ^TMDICREATESTRUCTA;
+
+    TMDICREATESTRUCTW = record
+        szClass: LPCWSTR;
+        szTitle: LPCWSTR;
+        hOwner: THANDLE;
+        x: integer;
+        y: integer;
+        cx: integer;
+        cy: integer;
+        style: DWORD;
+        lParam: TLPARAM;        (* app-defined stuff *)
+    end;
+    PMDICREATESTRUCTW = ^TMDICREATESTRUCTW;
+
+    TCLIENTCREATESTRUCT = record
+        hWindowMenu: THANDLE;
+        idFirstChild: UINT;
+    end;
+    PCLIENTCREATESTRUCT = ^TCLIENTCREATESTRUCT;
+
+
+    (****** Help support ********************************************************)
+
+
+    THELPPOLY = DWORD;
+
+    TMULTIKEYHELPA = record
+{$ifndef DARWIN}
+        mkSize: DWORD;
+{$ELSE}
+        mkSize: word;
+{$ENDIF}
+        mkKeylist: char;
+        szKeyphrase: PChar;
+    end;
+    PMULTIKEYHELPA = ^TMULTIKEYHELPA;
+
+    TMULTIKEYHELPW = record
+{$ifndef DARWIN}
+        mkSize: DWORD;
+{$ELSE}
+        mkSize: word;
+{$ENDIF}
+        mkKeylist: WCHAR;
+        szKeyphrase: PWCHAR;
+    end;
+    PMULTIKEYHELPW = ^TMULTIKEYHELPW;
+
+
+    THELPWININFOA = record
+        wStructSize: integer;
+        x: integer;
+        y: integer;
+        dx: integer;
+        dy: integer;
+        wMax: integer;
+        rgchMember: array[0..1] of char;
+    end;
+    PHELPWININFOA = ^THELPWININFOA;
+
+    THELPWININFOW = record
+        wStructSize: integer;
+        x: integer;
+        y: integer;
+        dx: integer;
+        dy: integer;
+        wMax: integer;
+        rgchMember: array[0..1] of WCHAR;
+    end;
+    PHELPWININFOW = ^THELPWININFOW;
+
+
+
+
+{$IF(WINVER >= $0602)}
+    TTOUCHPREDICTIONPARAMETERS = record
+        cbSize: UINT;
+        dwLatency: UINT;       // Latency in millisecs
+        dwSampleTime: UINT;    // Sample time in millisecs (used to deduce velocity)
+        bUseHWTimeStamp: UINT; // Use H/W TimeStamps
+    end;
+    PTOUCHPREDICTIONPARAMETERS = ^TTOUCHPREDICTIONPARAMETERS;
+{$ENDIF}(* WINVER >= $0602 *)
+
+
+
+{$IF(WINVER >= $0500)}
+{$IF (NTDDI_VERSION >= NTDDI_WIN10_RS4)}
+    THANDEDNESS = (
+        HANDEDNESS_LEFT = 0,
+        HANDEDNESS_RIGHT);
+    PHANDEDNESS = ^THANDEDNESS;
+{$ENDIF}// NTDDI_VERSION >= NTDDI_WIN10_RS4
+{$ENDIF}(* WINVER >= $0500 *)
+
+
+
+    TNONCLIENTMETRICSA = record
+        cbSize: UINT;
+        iBorderWidth: integer;
+        iScrollWidth: integer;
+        iScrollHeight: integer;
+        iCaptionWidth: integer;
+        iCaptionHeight: integer;
+        lfCaptionFont: TLOGFONTA;
+        iSmCaptionWidth: integer;
+        iSmCaptionHeight: integer;
+        lfSmCaptionFont: TLOGFONTA;
+        iMenuWidth: integer;
+        iMenuHeight: integer;
+        lfMenuFont: TLOGFONTA;
+        lfStatusFont: TLOGFONTA;
+        lfMessageFont: TLOGFONTA;
+{$IF(WINVER >= $0600)}
+        iPaddedBorderWidth: integer;
+{$ENDIF}(* WINVER >= $0600 *)
+    end;
+    PNONCLIENTMETRICSA = ^TNONCLIENTMETRICSA;
+
+    TNONCLIENTMETRICSW = record
+        cbSize: UINT;
+        iBorderWidth: integer;
+        iScrollWidth: integer;
+        iScrollHeight: integer;
+        iCaptionWidth: integer;
+        iCaptionHeight: integer;
+        lfCaptionFont: TLOGFONTW;
+        iSmCaptionWidth: integer;
+        iSmCaptionHeight: integer;
+        lfSmCaptionFont: TLOGFONTW;
+        iMenuWidth: integer;
+        iMenuHeight: integer;
+        lfMenuFont: TLOGFONTW;
+        lfStatusFont: TLOGFONTW;
+        lfMessageFont: TLOGFONTW;
+{$IF(WINVER >= $0600)}
+        iPaddedBorderWidth: integer;
+{$ENDIF}(* WINVER >= $0600 *)
+    end;
+    PNONCLIENTMETRICSW = ^TNONCLIENTMETRICSW;
+
+
+    TMINIMIZEDMETRICS = record
+        cbSize: UINT;
+        iWidth: integer;
+        iHorzGap: integer;
+        iVertGap: integer;
+        iArrange: integer;
+    end;
+    PMINIMIZEDMETRICS = ^TMINIMIZEDMETRICS;
+
+
+    TICONMETRICSA = record
+        cbSize: UINT;
+        iHorzSpacing: integer;
+        iVertSpacing: integer;
+        iTitleWrap: integer;
+        lfFont: TLOGFONTA;
+    end;
+    PICONMETRICSA = ^TICONMETRICSA;
+
+    TICONMETRICSW = record
+        cbSize: UINT;
+        iHorzSpacing: integer;
+        iVertSpacing: integer;
+        iTitleWrap: integer;
+        lfFont: TLOGFONTW;
+    end;
+    PICONMETRICSW = ^TICONMETRICSW;
+
+
+    TANIMATIONINFO = record
+        cbSize: UINT;
+        iMinAnimate: integer;
+    end;
+    PANIMATIONINFO = ^TANIMATIONINFO;
+
+    TSERIALKEYSA = record
+        cbSize: UINT;
+        dwFlags: DWORD;
+        lpszActivePort: LPSTR;
+        lpszPort: LPSTR;
+        iBaudRate: UINT;
+        iPortState: UINT;
+        iActive: UINT;
+    end;
+    PSERIALKEYSA = ^TSERIALKEYSA;
+
+    TSERIALKEYSW = record
+        cbSize: UINT;
+        dwFlags: DWORD;
+        lpszActivePort: LPWSTR;
+        lpszPort: LPWSTR;
+        iBaudRate: UINT;
+        iPortState: UINT;
+        iActive: UINT;
+    end;
+    PSERIALKEYSW = ^TSERIALKEYSW;
+
+
+
+
+    THIGHCONTRASTA = record
+        cbSize: UINT;
+        dwFlags: DWORD;
+        lpszDefaultScheme: LPSTR;
+    end;
+    PHIGHCONTRASTA = ^THIGHCONTRASTA;
+
+    THIGHCONTRASTW = record
+        cbSize: UINT;
+        dwFlags: DWORD;
+        lpszDefaultScheme: LPWSTR;
+    end;
+    PHIGHCONTRASTW = ^THIGHCONTRASTW;
+
+
+
+
+    (* Accessibility support *)
+    TFILTERKEYS = record
+        cbSize: UINT;
+        dwFlags: DWORD;
+        iWaitMSec: DWORD;            // Acceptance Delay
+        iDelayMSec: DWORD;           // Delay Until Repeat
+        iRepeatMSec: DWORD;          // Repeat Rate
+        iBounceMSec: DWORD;          // Debounce Time
+    end;
+    PFILTERKEYS = ^TFILTERKEYS;
+
+    TSTICKYKEYS = record
+        cbSize: UINT;
+        dwFlags: DWORD;
+    end;
+    PSTICKYKEYS = ^TSTICKYKEYS;
+
+
+    TMOUSEKEYS = record
+        cbSize: UINT;
+        dwFlags: DWORD;
+        iMaxSpeed: DWORD;
+        iTimeToMaxSpeed: DWORD;
+        iCtrlSpeed: DWORD;
+        dwReserved1: DWORD;
+        dwReserved2: DWORD;
+    end;
+    PMOUSEKEYS = ^TMOUSEKEYS;
+
+
+    TACCESSTIMEOUT = record
+        cbSize: UINT;
+        dwFlags: DWORD;
+        iTimeOutMSec: DWORD;
+    end;
+    PACCESSTIMEOUT = ^TACCESSTIMEOUT;
+
+
+    TSOUNDSENTRYA = record
+        cbSize: UINT;
+        dwFlags: DWORD;
+        iFSTextEffect: DWORD;
+        iFSTextEffectMSec: DWORD;
+        iFSTextEffectColorBits: DWORD;
+        iFSGrafEffect: DWORD;
+        iFSGrafEffectMSec: DWORD;
+        iFSGrafEffectColor: DWORD;
+        iWindowsEffect: DWORD;
+        iWindowsEffectMSec: DWORD;
+        lpszWindowsEffectDLL: LPSTR;
+        iWindowsEffectOrdinal: DWORD;
+    end;
+    PSOUNDSENTRYA = ^TSOUNDSENTRYA;
+
+    TSOUNDSENTRYW = record
+        cbSize: UINT;
+        dwFlags: DWORD;
+        iFSTextEffect: DWORD;
+        iFSTextEffectMSec: DWORD;
+        iFSTextEffectColorBits: DWORD;
+        iFSGrafEffect: DWORD;
+        iFSGrafEffectMSec: DWORD;
+        iFSGrafEffectColor: DWORD;
+        iWindowsEffect: DWORD;
+        iWindowsEffectMSec: DWORD;
+        lpszWindowsEffectDLL: LPWSTR;
+        iWindowsEffectOrdinal: DWORD;
+    end;
+    PSOUNDSENTRYW = ^TSOUNDSENTRYW;
+
+
+
+    TTOGGLEKEYS = record
+        cbSize: UINT;
+        dwFlags: DWORD;
+    end;
+    PTOGGLEKEYS = ^TTOGGLEKEYS;
+
+{$IF(_WIN32_WINNT >= $0600)}
+    TAUDIODESCRIPTION = record
+        cbSize: UINT;   // sizeof(AudioDescriptionType)
+        Enabled: longbool;  // On/Off
+        Locale: TLCID;   // locale ID for language
+    end;
+    PAUDIODESCRIPTION = ^TAUDIODESCRIPTION;
+{$ENDIF}(* _WIN32_WINNT >= $0600 *)
+
+
+    TMONITORINFO = record
+        cbSize: DWORD;
+        rcMonitor: TRECT;
+        rcWork: TRECT;
+        dwFlags: DWORD;
+    end;
+    PMONITORINFO = ^TMONITORINFO;
+
+
+    TMONITORINFOEXA = record
+        cbSize: DWORD;
+        rcMonitor: TRECT;
+        rcWork: TRECT;
+        dwFlags: DWORD;
+        szDevice: array [0..CCHDEVICENAME - 1] of char;
+    end;
+    PMONITORINFOEXA = ^TMONITORINFOEXA;
+
+    TMONITORINFOEXW = record
+        cbSize: DWORD;
+        rcMonitor: TRECT;
+        rcWork: TRECT;
+        dwFlags: DWORD;
+        szDevice: array [0..CCHDEVICENAME - 1] of WCHAR;
+    end;
+    PMONITORINFOEXW = ^TMONITORINFOEXW;
+
+
+
+
+    TMONITORENUMPROC = function(hMonitor: THMONITOR; hdcMonitor: THDC; lprcMontior: LPRECT; dwData: TLPARAM): longbool; stdcall;
+
+
+
+
+    (* WinEvents - Active Accessibility hooks *)
+
+
+
+    TWINEVENTPROC = procedure(hWinEventHook: THWINEVENTHOOK; event: DWORD; hwnd: THWND; idObject: LONG; idChild: LONG;
+        idEventThread: DWORD; dwmsEventTime: DWORD); stdcall;
+
+
+
+
+    TGUITHREADINFO = record
+        cbSize: DWORD;
+        flags: DWORD;
+        hwndActive: THWND;
+        hwndFocus: THWND;
+        hwndCapture: THWND;
+        hwndMenuOwner: THWND;
+        hwndMoveSize: THWND;
+        hwndCaret: THWND;
+        rcCaret: TRECT;
+    end;
+    PGUITHREADINFO = ^TGUITHREADINFO;
+
+
+
+    (* Information about the global cursor. *)
+    TCURSORINFO = record
+        cbSize: DWORD;
+        flags: DWORD;
+        hCursor: THCURSOR;
+        ptScreenPos: TPOINT;
+    end;
+    PCURSORINFO = ^TCURSORINFO;
+
+    (* Window information snapshot *)
+    TWINDOWINFO = record
+        cbSize: DWORD;
+        rcWindow: TRECT;
+        rcClient: TRECT;
+        dwStyle: DWORD;
+        dwExStyle: DWORD;
+        dwWindowStatus: DWORD;
+        cxWindowBorders: UINT;
+        cyWindowBorders: UINT;
+        atomWindowType: TATOM;
+        wCreatorVersion: word;
+    end;
+    PWINDOWINFO = ^TWINDOWINFO;
+
+    (* Titlebar information. *)
+    TTITLEBARINFO = record
+        cbSize: DWORD;
+        rcTitleBar: TRECT;
+        rgstate: array[0..CCHILDREN_TITLEBAR] of DWORD;
+    end;
+    PTITLEBARINFO = ^TTITLEBARINFO;
+
+  {$IF(WINVER >= $0600)}
+    TTITLEBARINFOEX = record
+        cbSize: DWORD;
+        rcTitleBar: TRECT;
+        rgstate: array[0..CCHILDREN_TITLEBAR] of DWORD;
+        rgrect: array [0..CCHILDREN_TITLEBAR] of TRECT;
+    end;
+    PTITLEBARINFOEX = ^TTITLEBARINFOEX;
+{$ENDIF}(* WINVER >= $0600 *)
+
+
+
+
+    (* Menubar information *)
+    TMENUBARINFO = record
+        cbSize: DWORD;
+        rcBar: TRECT;          // rect of bar, popup, item
+        hMenu: THMENU;         // real menu handle of bar, popup
+        hwndMenu: THWND;       // hwnd of item submenu if one
+        fBarFocused: 0..1;  // bar, popup has the focus
+        fFocused: 0..1;     // item has the focus
+    end;
+    PMENUBARINFO = ^TMENUBARINFO;
+
+
+
+    (* Scrollbar information *)
+    TSCROLLBARINFO = record
+        cbSize: DWORD;
+        rcScrollBar: TRECT;
+        dxyLineButton: integer;
+        xyThumbTop: integer;
+        xyThumbBottom: integer;
+        reserved: integer;
+        rgstate: array [0..CCHILDREN_SCROLLBAR] of DWORD;
+    end;
+    PSCROLLBARINFO = ^TSCROLLBARINFO;
+
+    (* Combobox information *)
+    TCOMBOBOXINFO = record
+        cbSize: DWORD;
+        rcItem: TRECT;
+        rcButton: TRECT;
+        stateButton: DWORD;
+        hwndCombo: THWND;
+        hwndItem: THWND;
+        hwndList: THWND;
+    end;
+    PCOMBOBOXINFO = ^TCOMBOBOXINFO;
+
+
+
+
+    (* Alt-Tab Switch window information. *)
+    TALTTABINFO = record
+        cbSize: DWORD;
+        cItems: integer;
+        cColumns: integer;
+        cRows: integer;
+        iColFocus: integer;
+        iRowFocus: integer;
+        cxItem: integer;
+        cyItem: integer;
+        ptStart: TPOINT;
+    end;
+    PALTTABINFO = ^TALTTABINFO;
+
+   {$IF(_WIN32_WINNT >= $0501)}
+
+    (* Raw Input Messages.  *)
+
+    THRAWINPUT = THANDLE;
+
+
+    (* WM_INPUT wParam *)
+
+
+    (* Raw Input data header *)
+    TRAWINPUTHEADER = record
+        dwType: DWORD;
+        dwSize: DWORD;
+        hDevice: THANDLE;
+        wParam: TWPARAM;
+    end;
+    PRAWINPUTHEADER = ^TRAWINPUTHEADER;
+
+    (* Raw format of the mouse input *)
+    TRAWMOUSE = record
+    (*
+     * Indicator flags.
+     *)
+        usFlags: USHORT;
+
+    (*
+     * The transition state of the mouse buttons.
+     *)
+        case integer of
+            0: (ulButtons: ULONG;
+
+(*
+     * The raw state of the mouse buttons.
+     *)
+                ulRawButtons: ULONG;
+
+    (*
+     * The signed relative or absolute motion in the X direction.
+     *)
+                lLastX: LONG;
+
+    (*
+     * The signed relative or absolute motion in the Y direction.
+     *)
+                lLastY: LONG;
+
+    (*
+     * Device-specific additional information for the event.
+     *)
+                ulExtraInformation: ULONG;
+
+
+            );
+            1: (
+                usButtonFlags: USHORT;
+                usButtonData: USHORT;
+            );
+    end;
+    PRAWMOUSE = ^TRAWMOUSE;
+
+    (* Raw format of the keyboard input *)
+    TRAWKEYBOARD = record
+        (* The "make" scan code (key depression). *)
+        MakeCode: USHORT;
+
+    (*
+     * The flags field indicates a "break" (key release) and other
+     * miscellaneous scan code information defined in ntddkbd.h.
+     *)
+        Flags: USHORT;
+
+        Reserved: USHORT;
+
+    (*
+     * Windows message compatible information
+     *)
+        VKey: USHORT;
+        uMessage: UINT;
+
+    (*
+     * Device-specific additional information for the event.
+     *)
+        ExtraInformation: ULONG;
+
+
+    end;
+    PRAWKEYBOARD = ^TRAWKEYBOARD;
+
+    (* Raw format of the input from Human Input Devices *)
+    TRAWHID = record
+        dwSizeHid: DWORD;    // byte size of each report
+        dwCount: DWORD;      // number of input packed
+        bRawData: PBYTE;
+    end;
+    PRAWHID = ^TRAWHID;
+
+    (* RAWINPUT data structure. *)
+
+    TRAWINPUT = record
+        header: TRAWINPUTHEADER;
+        Data: record
+            case integer of
+                1: (mouse: TRAWMOUSE);
+                2: (keyboard: TRAWKEYBOARD);
+                3: (hid: TRAWHID);
+        end;
+    end;
+    PRAWINPUT = ^TRAWINPUT;
+
+
+
+    TRID_DEVICE_INFO_MOUSE = record
+        dwId: DWORD;
+        dwNumberOfButtons: DWORD;
+        dwSampleRate: DWORD;
+        fHasHorizontalWheel: longbool;
+    end;
+    PRID_DEVICE_INFO_MOUSE = ^TRID_DEVICE_INFO_MOUSE;
+
+    TRID_DEVICE_INFO_KEYBOARD = record
+        dwType: DWORD;
+        dwSubType: DWORD;
+        dwKeyboardMode: DWORD;
+        dwNumberOfFunctionKeys: DWORD;
+        dwNumberOfIndicators: DWORD;
+        dwNumberOfKeysTotal: DWORD;
+    end;
+    PRID_DEVICE_INFO_KEYBOARD = ^TRID_DEVICE_INFO_KEYBOARD;
+
+    TRID_DEVICE_INFO_HID = record
+        dwVendorId: DWORD;
+        dwProductId: DWORD;
+        dwVersionNumber: DWORD;
+        (* Top level collection UsagePage and Usage *)
+        usUsagePage: USHORT;
+        usUsage: USHORT;
+    end;
+    PRID_DEVICE_INFO_HID = ^TRID_DEVICE_INFO_HID;
+
+    TRID_DEVICE_INFO = record
+        cbSize: DWORD;
+        dwType: DWORD;
+        case integer of
+            0: (mouse: TRID_DEVICE_INFO_MOUSE);
+            1: (keyboard: TRID_DEVICE_INFO_KEYBOARD);
+            2: (hid: TRID_DEVICE_INFO_HID);
+
+    end;
+    PRID_DEVICE_INFO = ^TRID_DEVICE_INFO;
+
+
+
+
+    (* Raw Input request APIs *)
+    TRAWINPUTDEVICE = record
+        usUsagePage: USHORT; // Toplevel collection UsagePage
+        usUsage: USHORT;     // Toplevel collection Usage
+        dwFlags: DWORD;
+        hwndTarget: THWND;    // Target hwnd. NULL = follows keyboard focus
+    end;
+    PRAWINPUTDEVICE = ^TRAWINPUTDEVICE;
+
+    PCRAWINPUTDEVICE = ^TRAWINPUTDEVICE;
+
+
+
+
+    TRAWINPUTDEVICELIST = record
+        hDevice: THANDLE;
+        dwType: DWORD;
+    end;
+    PRAWINPUTDEVICELIST = ^TRAWINPUTDEVICELIST;
+
+
+{$ENDIF}(* _WIN32_WINNT >= $0501 *)
+
+{$IF(WINVER >= $0602)}
+
+    TPOINTER_DEVICE_TYPE = (
+        POINTER_DEVICE_TYPE_INTEGRATED_PEN = $00000001,
+        POINTER_DEVICE_TYPE_EXTERNAL_PEN = $00000002,
+        POINTER_DEVICE_TYPE_TOUCH = $00000003,
+{$IF(WINVER >= $0603)}
+        POINTER_DEVICE_TYPE_TOUCH_PAD = $00000004,
+{$ENDIF}(* WINVER >= $0603 *)
+        POINTER_DEVICE_TYPE_MAX = $FFFFFFFF);
+
+    TPOINTER_DEVICE_INFO = record
+        displayOrientation: DWORD;
+        device: THANDLE;
+        pointerDeviceType: TPOINTER_DEVICE_TYPE;
+        monitor: THMONITOR;
+        startingCursorId: ULONG;
+        maxActiveContacts: USHORT;
+        productString: array[0..POINTER_DEVICE_PRODUCT_STRING_MAX - 1] of WCHAR;
+    end;
+
+    PPOINTER_DEVICE_INFO = ^TPOINTER_DEVICE_INFO;
+
+    TPOINTER_DEVICE_PROPERTY = record
+        logicalMin: INT32;
+        logicalMax: INT32;
+        physicalMin: INT32;
+        physicalMax: INT32;
+        _unit: UINT32;
+        unitExponent: UINT32;
+        usagePageId: USHORT;
+        usageId: USHORT;
+    end;
+
+    PPOINTER_DEVICE_PROPERTY = ^TPOINTER_DEVICE_PROPERTY;
+
+    TPOINTER_DEVICE_CURSOR_TYPE = (
+        POINTER_DEVICE_CURSOR_TYPE_UNKNOWN = $00000000,
+        POINTER_DEVICE_CURSOR_TYPE_TIP = $00000001,
+        POINTER_DEVICE_CURSOR_TYPE_ERASER = $00000002,
+        POINTER_DEVICE_CURSOR_TYPE_MAX = $FFFFFFFF);
+
+    TPOINTER_DEVICE_CURSOR_INFO = record
+        cursorId: UINT32;
+        cursor: TPOINTER_DEVICE_CURSOR_TYPE;
+    end;
+    PPOINTER_DEVICE_CURSOR_INFO = ^TPOINTER_DEVICE_CURSOR_INFO;
+
+{$ENDIF}(* WINVER >= $0602 *)
+
+
+{$IF(WINVER >= $0601)}
+
+    TCHANGEFILTERSTRUCT = record
+        cbSize: DWORD;
+        ExtStatus: DWORD;
+    end;
+    PCHANGEFILTERSTRUCT = ^TCHANGEFILTERSTRUCT;
+{$ENDIF}(* WINVER >= $0601 *)
+
+
+{$IF(WINVER >= $0601)}
+
+    (* Gesture defines and functions *)
+
+    (* Gesture information handle *)
+    THGESTUREINFO = THANDLE;
+
+(*
+ * Gesture information structure
+ *   - Pass the HGESTUREINFO received in the WM_GESTURE message lParam into the
+ *     GetGestureInfo function to retrieve this information.
+ *   - If cbExtraArgs is non-zero, pass the HGESTUREINFO received in the WM_GESTURE
+ *     message lParam into the GetGestureExtraArgs function to retrieve extended
+ *     argument information.
+ *)
+    TGESTUREINFO = record
+        cbSize: UINT;                    // size, in bytes, of this structure (including variable length Args field)
+        dwFlags: DWORD;                  // see GF_* flags
+        dwI0: DWORD;                     // gesture ID, see GID_* defines
+        hwndTarget: THWND;                // handle to window targeted by this gesture
+        ptsLocation: TPOINTS;             // current location of this gesture
+        dwInstanceID: DWORD;             // internally used
+        dwSequenceID: DWORD;             // internally used
+        ullArguments: ULONGLONG;        // arguments for gestures whose arguments fit in 8 BYTES
+        cbExtraArgs: UINT;               // size, in bytes, of extra arguments, if any, that accompany this gesture
+    end;
+    PGESTUREINFO = ^TGESTUREINFO;
+    PCGESTUREINFO = ^TGESTUREINFO;
+
+
+(*
+ * Gesture notification structure
+ *   - The WM_GESTURENOTIFY message lParam contains a pointer to this structure.
+ *   - The WM_GESTURENOTIFY message notifies a window that gesture recognition is
+ *     in progress and a gesture will be generated if one is recognized under the
+ *     current gesture settings.
+ *)
+    TGESTURENOTIFYSTRUCT = record
+        cbSize: UINT;                    // size, in bytes, of this structure
+        dwFlags: DWORD;                  // unused
+        hwndTarget: THWND;                // handle to window targeted by the gesture
+        ptsLocation: TPOINTS;             // starting location
+        dwInstanceID: DWORD;             // internally used
+    end;
+    PGESTURENOTIFYSTRUCT = ^TGESTURENOTIFYSTRUCT;
+
+
+
+(*
+ * Gesture configuration structure
+ *   - Used in SetGestureConfig and GetGestureConfig
+ *   - Note that any setting not included in either GESTURECONFIG.dwWant or
+ *     GESTURECONFIG.dwBlock will use the parent window's preferences or
+ *     system defaults.
+ *)
+    TGESTURECONFIG = record
+        dwID: DWORD;                     // gesture ID
+        dwWant: DWORD;                   // settings related to gesture ID that are to be turned on
+        dwBlock: DWORD;                  // settings related to gesture ID that are to be turned off
+    end;
+    PGESTURECONFIG = ^TGESTURECONFIG;
+{$ENDIF}(* WINVER >= $0601 *)
+
+  {$IF(WINVER >= $0601)}
+
+    (* Identifiers for message input source device type. *)
+    TINPUT_MESSAGE_DEVICE_TYPE = (
+        IMDT_UNAVAILABLE = $00000000,       // not specified
+        IMDT_KEYBOARD = $00000001,       // from keyboard
+        IMDT_MOUSE = $00000002,       // from mouse
+        IMDT_TOUCH = $00000004,       // from touch
+        IMDT_PEN = $00000008,       // from pen
+{$IF(WINVER >= $0603)}
+        IMDT_TOUCHPAD = $00000010      // from touchpad
+{$ENDIF}(* WINVER >= $0603 *)
+        );
+
+    TINPUT_MESSAGE_ORIGIN_ID = (
+        IMO_UNAVAILABLE = $00000000,  // not specified
+        IMO_HARDWARE = $00000001,  // from a hardware device or injected by a UIAccess app
+        IMO_INJECTED = $00000002,  // injected via SendInput() by a non-UIAccess app
+        IMO_SYSTEM = $00000004  // injected by the system
+        );
+    PINPUT_MESSAGE_ORIGIN_ID = ^TINPUT_MESSAGE_ORIGIN_ID;
+
+    (* Input source structure. *)
+    TINPUT_MESSAGE_SOURCE = record
+        deviceType: TINPUT_MESSAGE_DEVICE_TYPE;
+        originId: TINPUT_MESSAGE_ORIGIN_ID;
+    end;
+
+ {$ENDIF}(* WINVER >= $0601 *)
+
+ {$IF(WINVER >= $0601)}
+
+    (* AutoRotation state structure *)
+    TAR_STATE = (
+        AR_ENABLED = $0,
+        AR_DISABLED = $1,
+        AR_SUPPRESSED = $2,
+        AR_REMOTESESSION = $4,
+        AR_MULTIMON = $8,
+        AR_NOSENSOR = $10,
+        AR_NOT_SUPPORTED = $20,
+        AR_DOCKED = $40,
+        AR_LAPTOP = $80);
+    PAR_STATE = ^TAR_STATE;
+
+
+
+
+(*
+ * Orientation preference structure. This is used by applications to specify
+ * their orientation preferences to windows.
+ *)
+    TORIENTATION_PREFERENCE = (
+        ORIENTATION_PREFERENCE_NONE = $0,
+        ORIENTATION_PREFERENCE_LANDSCAPE = $1,
+        ORIENTATION_PREFERENCE_PORTRAIT = $2,
+        ORIENTATION_PREFERENCE_LANDSCAPE_FLIPPED = $4,
+        ORIENTATION_PREFERENCE_PORTRAIT_FLIPPED = $8);
+
+
+{$ENDIF}(* WINVER >= $0601 *)
+
+    { tvout.h }
+
+    TVIDEOPARAMETERS = record
+        Guid: TGUID;                         // GUID for this structure
+        dwOffset: ULONG;                     // leave it 0 for now.
+        dwCommand: ULONG;                    // VP_COMMAND_*            SET or GET
+        dwFlags: ULONG;                      // bitfield, defined below SET or GET
+        dwMode: ULONG;                       // bitfield, defined below SET or GET
+        dwTVStandard: ULONG;                 // bitfield, defined below SET or GET
+        dwAvailableModes: ULONG;             // bitfield, defined below GET
+        dwAvailableTVStandard: ULONG;        // bitfield, defined below GET
+        dwFlickerFilter: ULONG;              // value                   SET or GET
+        dwOverScanX: ULONG;                  // value                   SET or GET
+        dwOverScanY: ULONG;                  //                         SET or GET
+        dwMaxUnscaledX: ULONG;               // value                   SET or GET
+        dwMaxUnscaledY: ULONG;               //                         SET or GET
+        dwPositionX: ULONG;                  // value                   SET or GET
+        dwPositionY: ULONG;                  //                         SET or GET
+        dwBrightness: ULONG;                 // value                   SET or GET
+        dwContrast: ULONG;                   // value                   SET or GET
+        dwCPType: ULONG;                     // copy protection type    SET or GET
+        dwCPCommand: ULONG;                  // VP_CP_CMD_
+        dwCPStandard: ULONG;                 // what TV standards CP is available on. GET
+        dwCPKey: ULONG;
+        bCP_APSTriggerBits: ULONG;           // (a dword for alignment) SET(bits 0 and 1 valid).
+        bOEMCopyProtection: array [0..256 - 1] of UCHAR;      // oem specific copy protection data SET or GET
+    end;
+    PVIDEOPARAMETERS = ^TVIDEOPARAMETERS;
+
+
+
+function wvsprintfA(out lpOutput: LPSTR; lpFmt: LPCSTR; arglist: va_list): integer;
+    stdcall; external USER32_DLL;
+function wvsprintfW(out lpOutput: LPWSTR; lpFmt: LPCWSTR; arglist: va_list): integer;
+    stdcall; external USER32_DLL;
+function wsprintfA(out lpOut: LPSTR; lpFmt: LPCSTR; const args: array of const): integer;
+    cdecl; external USER32_DLL;
+function wsprintfW(out lpOut: LPWSTR; lpFmt: LPCWSTR; const args: array of const): integer;
+    cdecl; external USER32_DLL;
+function LoadKeyboardLayoutA(pwszKLID: LPCSTR; Flags: UINT): THKL; stdcall; external USER32_DLL;
+function LoadKeyboardLayoutW(pwszKLID: LPCWSTR; Flags: UINT): THKL; stdcall; external USER32_DLL;
+
+{$IF(WINVER >= $0400)}
+function ActivateKeyboardLayout(hkl: THKL; Flags: UINT): THKL; stdcall; external USER32_DLL;
+{$ELSE}
+function ActivateKeyboardLayout(hkl: THKL; Flags: UINT): longbool; stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0400 *)
+
+{$IF(WINVER >= $0400)}
+function ToUnicodeEx(wVirtKey: UINT; wScanCode: UINT; const lpKeyState{arraysize 256}: PBYTE; out pwszBuff{cchBuff}: LPWSTR;
+    cchBuff: integer; wFlags: UINT; dwhkl: THKL): integer;
+    stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0400 *)
+
+function UnloadKeyboardLayout(hkl: THKL): longbool; stdcall; external USER32_DLL;
+function GetKeyboardLayoutNameA(out pwszKLID{KL_NAMELENGTH}: LPSTR): longbool; stdcall; external USER32_DLL;
+function GetKeyboardLayoutNameW(out pwszKLID{KL_NAMELENGTH}: LPWSTR): longbool; stdcall; external USER32_DLL;
+
+{$IF(WINVER >= $0400)}
+function GetKeyboardLayoutList(nBuff: integer; out lpList{nBuff, return}: PHKL): integer;
+    stdcall; external USER32_DLL;
+function GetKeyboardLayout(idThread: DWORD): THKL; stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0400 *)
+
+{$IF(WINVER >= $0500)}
+function GetMouseMovePointsEx(cbSize: UINT; lppt: PMOUSEMOVEPOINT; out lpptBuf{nBufPoints}: PMOUSEMOVEPOINT;
+    nBufPoints: integer; resolution: DWORD): integer;
+    stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0500 *)
+
+function CreateDesktopA(lpszDesktop: LPCSTR; lpszDevice: LPCSTR; pDevmode: PDEVMODEA; dwFlags: DWORD;
+    dwDesiredAccess: TACCESS_MASK; lpsa: PSECURITY_ATTRIBUTES): THDESK; stdcall;
+    external USER32_DLL;
+
+
+function CreateDesktopW(lpszDesktop: LPCWSTR; lpszDevice: LPCWSTR; pDevmode: PDEVMODEW; dwFlags: DWORD;
+    dwDesiredAccess: TACCESS_MASK; lpsa: PSECURITY_ATTRIBUTES): THDESK; stdcall;
+    external USER32_DLL;
+
+function CreateDesktopExA(lpszDesktop: LPCSTR; lpszDevice: LPCSTR; pDevmode: PDEVMODEA; dwFlags: DWORD;
+    dwDesiredAccess: TACCESS_MASK; lpsa: PSECURITY_ATTRIBUTES; ulHeapSize: ULONG; pvoid: pointer): THDESK; stdcall; external USER32_DLL;
+
+function CreateDesktopExW(lpszDesktop: LPCWSTR; lpszDevice: LPCWSTR; pDevmode: PDEVMODEW; dwFlags: DWORD;
+    dwDesiredAccess: TACCESS_MASK; lpsa: PSECURITY_ATTRIBUTES; ulHeapSize: ULONG; pvoid: pointer): HDESK; stdcall; external USER32_DLL;
+
+function OpenDesktopA(lpszDesktop: LPCSTR; dwFlags: DWORD; fInherit: longbool; dwDesiredAccess: TACCESS_MASK): THDESK;
+    stdcall; external USER32_DLL;
+function OpenDesktopW(lpszDesktop: LPCWSTR; dwFlags: DWORD; fInherit: longbool; dwDesiredAccess: TACCESS_MASK): THDESK;
+    stdcall; external USER32_DLL;
+
+
+function OpenInputDesktop(dwFlags: DWORD; fInherit: longbool; dwDesiredAccess: TACCESS_MASK): THDESK;
+    stdcall; external USER32_DLL;
+function EnumDesktopsA(hwinsta: THWINSTA; lpEnumFunc: TDESKTOPENUMPROCA; lParam: TLPARAM): longbool;
+    stdcall; external USER32_DLL;
+function EnumDesktopsW(hwinsta: THWINSTA; lpEnumFunc: TDESKTOPENUMPROCW; lParam: TLPARAM): longbool;
+    stdcall; external USER32_DLL;
+
+function EnumDesktopWindows(hDesktop: THDESK; lpfn: TWNDENUMPROC; lParam: TLPARAM): longbool;
+    stdcall; external USER32_DLL;
+
+function SwitchDesktop(hDesktop: THDESK): longbool; stdcall; external USER32_DLL;
+function SetThreadDesktop(hDesktop: THDESK): longbool; stdcall; external USER32_DLL;
+function CloseDesktop(hDesktop: THDESK): longbool; stdcall; external USER32_DLL;
+function GetThreadDesktop(dwThreadId: DWORD): THDESK; stdcall; external USER32_DLL;
+function CreateWindowStationA(lpwinsta: LPCSTR; dwFlags: DWORD; dwDesiredAccess: TACCESS_MASK; lpsa: PSECURITY_ATTRIBUTES = nil): THWINSTA;
+    stdcall; external USER32_DLL;
+function CreateWindowStationW(lpwinsta: LPCWSTR; dwFlags: DWORD; dwDesiredAccess: TACCESS_MASK; lpsa: PSECURITY_ATTRIBUTES = nil): THWINSTA;
+    stdcall; external USER32_DLL;
+
+function OpenWindowStationA(lpszWinSta: LPCSTR; fInherit: longbool; dwDesiredAccess: TACCESS_MASK): THWINSTA; stdcall; external USER32_DLL;
+function OpenWindowStationW(lpszWinSta: LPCWSTR; fInherit: longbool; dwDesiredAccess: TACCESS_MASK): THWINSTA; stdcall; external USER32_DLL;
+
+function EnumWindowStationsA(lpEnumFunc: TWINSTAENUMPROCA; lParam: TLPARAM): longbool;
+    stdcall; external USER32_DLL;
+
+function EnumWindowStationsW(lpEnumFunc: TWINSTAENUMPROCW; lParam: TLPARAM): longbool;
+    stdcall; external USER32_DLL;
+
+function CloseWindowStation(hWinSta: THWINSTA): longbool; stdcall; external USER32_DLL;
+function SetProcessWindowStation(hWinSta: THWINSTA): longbool; stdcall; external USER32_DLL;
+function GetProcessWindowStation(): THWINSTA; stdcall; external USER32_DLL;
+function SetUserObjectSecurity(hObj: HANDLE; pSIRequested: PSECURITY_INFORMATION; pSID: PSECURITY_DESCRIPTOR): longbool;
+    stdcall; external USER32_DLL;
+
+function GetUserObjectSecurity(hObj: THANDLE; pSIRequested: PSECURITY_INFORMATION; out pSID {nLength}: TSECURITY_DESCRIPTOR;
+    nLength: DWORD; out lpnLengthNeeded: DWORD): longbool;
+    stdcall; external USER32_DLL;
+
+function GetUserObjectInformationA(hObj: THANDLE; nIndex: integer; out pvInfo{nLength}: Pointer; nLength: DWORD;
+    out lpnLengthNeeded: DWORD): longbool; stdcall; external USER32_DLL;
+
+function GetUserObjectInformationW(hObj: THANDLE; nIndex: integer; out pvInfo{nLength}: Pointer; nLength: DWORD;
+    out lpnLengthNeeded: DWORD): longbool; stdcall; external USER32_DLL;
+
+function SetUserObjectInformationA(hObj: THANDLE; nIndex: integer; pvInfo{nLength}: pointer; nLength: DWORD): longbool;
+    stdcall; external USER32_DLL;
+
+function SetUserObjectInformationW(hObj: THANDLE; nIndex: integer; pvInfo{nLength}: pointer; nLength: DWORD): longbool;
+    stdcall; external USER32_DLL;
+
+function IsHungAppWindow(hwnd: THWND): longbool; stdcall; external USER32_DLL;
+
+
+{$IF(WINVER >= $0501)}
+procedure DisableProcessWindowsGhosting(); stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0501 *)
+function RegisterWindowMessageA(lpString: LPCSTR): UINT; stdcall; external USER32_DLL;
+function RegisterWindowMessageW(lpString: LPCWSTR): UINT; stdcall; external USER32_DLL;
+{$IF(_WIN32_WINNT >= $0400)}
+function TrackMouseEvent(var lpEventTrack: TTRACKMOUSEEVENT): longbool; stdcall; external USER32_DLL;
+{$ENDIF}(* _WIN32_WINNT >= $0400 *)
+
+
+
+{$IF(WINVER >= $0400)}
+function DrawEdge(hdc: THDC; var qrc: TRECT; edge: UINT; grfFlags: UINT): longbool;
+    stdcall; external USER32_DLL;
+function DrawFrameControl(hdc: THDC; var qrc: TRECT; uType: UINT; uState: UINT): longbool;
+    stdcall; external USER32_DLL;
+function DrawCaption(hwnd: THWND; hdc: THDC; const lprect: PRECT; flags: UINT): longbool;
+    stdcall; external USER32_DLL;
+function DrawAnimatedRects(hwnd: THWND; idAni: integer; const lprcFrom: PRECT; const lprcTo: PRECT): longbool; stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0400 *)
+
+
+(* Message Function Templates *)
+
+function GetMessageA(out lpMsg: TMSG; hWnd: THWND; wMsgFilterMin: UINT; wMsgFilterMax: UINT): longbool;
+    stdcall; external USER32_DLL;
+function GetMessageW(out lpMsg: TMSG; hWnd: THWND; wMsgFilterMin: UINT; wMsgFilterMax: UINT): longbool;
+    stdcall; external USER32_DLL;
+function TranslateMessage(const lpMsg: PMSG): longbool; stdcall; external USER32_DLL;
+function DispatchMessageA(const lpMsg: PMSG): LRESULT; stdcall; external USER32_DLL;
+function DispatchMessageW(const lpMsg: PMSG): LRESULT; stdcall; external USER32_DLL;
+function SetMessageQueue(cMessagesMax: integer): longbool; stdcall; external USER32_DLL;
+function PeekMessageA(out lpMsg: TMSG; hWnd: THWND; wMsgFilterMin: UINT; wMsgFilterMax: UINT; wRemoveMsg: UINT): longbool;
+    stdcall; external USER32_DLL;
+function PeekMessageW(out lpMsg: TMSG; hWnd: THWND; wMsgFilterMin: UINT; wMsgFilterMax: UINT; wRemoveMsg: UINT): longbool;
+    stdcall; external USER32_DLL;
+function RegisterHotKey(hWnd: THWND; id: integer; fsModifiers: UINT; vk: UINT): longbool;
+    stdcall; external USER32_DLL;
+function UnregisterHotKey(hWnd: THWND; id: integer): longbool; stdcall; external USER32_DLL;
+function ExitWindowsEx(uFlags: UINT; dwReason: DWORD): longbool; stdcall; external USER32_DLL;
+function SwapMouseButton(fSwap: longbool): longbool; stdcall; external USER32_DLL;
+function GetMessagePos(): DWORD; stdcall; external USER32_DLL;
+function GetMessageTime(): LONG; stdcall; external USER32_DLL;
+function GetMessageExtraInfo(): LPARAM; stdcall; external USER32_DLL;
+
+{$IF(_WIN32_WINNT >= $0602)}
+function GetUnpredictedMessagePos(): DWORD; stdcall; external USER32_DLL;
+{$ENDIF}(* _WIN32_WINNT >= $0602 *)
+
+{$IF(_WIN32_WINNT >= $0501)}
+function IsWow64Message(): longbool; stdcall; external USER32_DLL;
+{$ENDIF}(* _WIN32_WINNT >= $0501 *)
+
+{$IF(WINVER >= $0400)}
+function SetMessageExtraInfo(lParam: TLPARAM): TLPARAM; stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0400 *)
+
+function SendMessageA(hWnd: THWND; Msg: UINT; wParam: TWPARAM; lParam: TLPARAM): LRESULT; stdcall;
+    external USER32_DLL;
+function SendMessageW(hWnd: THWND; Msg: UINT; wParam: TWPARAM; lParam: TLPARAM): LRESULT; stdcall;
+    external USER32_DLL;
+function SendMessageTimeoutA(hWnd: THWND; Msg: UINT; wParam: TWPARAM; lParam: TLPARAM; fuFlags: UINT; uTimeout: UINT;
+    out lpdwResult: DWORD_PTR): LRESULT; stdcall; external USER32_DLL;
+function SendMessageTimeoutW(hWnd: THWND; Msg: UINT; wParam: TWPARAM; lParam: TLPARAM; fuFlags: UINT; uTimeout: UINT;
+    out lpdwResult: DWORD_PTR): LRESULT; stdcall; external USER32_DLL;
+function SendNotifyMessageA(hWnd: THWND; Msg: UINT; wParam: TWPARAM; lParam: TLPARAM): longbool;
+    stdcall; external USER32_DLL;
+function SendNotifyMessageW(hWnd: THWND; Msg: UINT; wParam: TWPARAM; lParam: TLPARAM): longbool;
+    stdcall; external USER32_DLL;
+function SendMessageCallbackA(hWnd: THWND; Msg: UINT; wParam: TWPARAM; lParam: TLPARAM; lpResultCallBack: TSENDASYNCPROC;
+    dwData: ULONG_PTR): longbool;
+    stdcall; external USER32_DLL;
+function SendMessageCallbackW(hWnd: THWND; Msg: UINT; wParam: TWPARAM; lParam: TLPARAM; lpResultCallBack: TSENDASYNCPROC;
+    dwData: ULONG_PTR): longbool;
+    stdcall; external USER32_DLL;
+
+{$IF(_WIN32_WINNT >= $0501)}
+function BroadcastSystemMessageExA(flags: DWORD; var lpInfo: DWORD; Msg: UINT; wParam: TWPARAM; lParam: TLPARAM;
+    out pbsmInfo: TBSMINFO): long; stdcall; external USER32_DLL;
+function BroadcastSystemMessageExW(flags: DWORD; var lpInfo: DWORD; Msg: UINT; wParam: TWPARAM; lParam: TLPARAM;
+    out pbsmInfo: TBSMINFO): long; stdcall; external USER32_DLL;
+{$ENDIF}(* _WIN32_WINNT >= $0501 *)
+
+{$IF(WINVER >= $0400)}
+
+{$IF defined(_WIN32_WINNT)}
+function BroadcastSystemMessageA(flags: DWORD; var lpInfo: DWORD; Msg: UINT; wParam: TWPARAM; lParam: TLPARAM): long;
+    stdcall; external USER32_DLL;
+function BroadcastSystemMessageW(flags: DWORD; var lpInfo: DWORD; Msg: UINT; wParam: TWPARAM; lParam: TLPARAM): long;
+    stdcall; external USER32_DLL;
+{$ELSEIF  defined(_WIN32_WINDOWS)}
+// The Win95 version isn't A/W decorated
+function BroadcastSystemMessage(flags: DWORD; var lpInfo: DWORD; Msg: UINT; wParam: TWPARAM; lParam: TLPARAM): long; stdcall; external USER32_DLL;
+{$ENDIF}
+
+{$ENDIF}(* WINVER >= $0400 *)
+
+// RegisterDeviceNotification
+{$IF(WINVER >= $0500)}
+function RegisterDeviceNotificationA(hRecipient: THANDLE; NotificationFilter: pointer; Flags: DWORD): THDEVNOTIFY; stdcall; external USER32_DLL;
+function RegisterDeviceNotificationW(hRecipient: THANDLE; NotificationFilter: pointer; Flags: DWORD): THDEVNOTIFY; stdcall; external USER32_DLL;
+function UnregisterDeviceNotification(Handle: THDEVNOTIFY): longbool; stdcall; external USER32_DLL;
+
+{$IF (_WIN32_WINNT >= $0502)}
+function RegisterPowerSettingNotification(hRecipient: THANDLE; PowerSettingGuid: PCGUID; Flags: DWORD): THPOWERNOTIFY;
+    stdcall; external USER32_DLL;
+function UnregisterPowerSettingNotification(Handle: THPOWERNOTIFY): longbool; stdcall; external USER32_DLL;
+function RegisterSuspendResumeNotification(hRecipient: THANDLE; Flags: DWORD): THPOWERNOTIFY; stdcall;
+    external USER32_DLL;
+function UnregisterSuspendResumeNotification(Handle: THPOWERNOTIFY): longbool; stdcall; external USER32_DLL;
+{$ENDIF}// (_WIN32_WINNT >= $0502)
+{$ENDIF}(* WINVER >= $0500 *)
+
+function PostMessageA(hWnd: THWND; Msg: UINT; wParam: TWPARAM; lParam: TLPARAM): longbool;
+    stdcall; external USER32_DLL;
+function PostMessageW(hWnd: THWND; Msg: UINT; wParam: TWPARAM; lParam: TLPARAM): longbool;
+    stdcall; external USER32_DLL;
+function PostThreadMessageA(idThread: DWORD; Msg: UINT; wParam: TWPARAM; lParam: TLPARAM): longbool;
+    stdcall; external USER32_DLL;
+function PostThreadMessageW(idThread: DWORD; Msg: UINT; wParam: TWPARAM; lParam: TLPARAM): longbool;
+    stdcall; external USER32_DLL;
+function AttachThreadInput(idAttach: DWORD; idAttachTo: DWORD; fAttach: longbool): longbool;
+    stdcall; external USER32_DLL;
+function ReplyMessage(lResult: TLRESULT): longbool; stdcall; external USER32_DLL;
+function WaitMessage(): longbool; stdcall; external USER32_DLL;
+function WaitForInputIdle(hProcess: THANDLE; dwMilliseconds: DWORD): DWORD; stdcall; external USER32_DLL;
+function DefWindowProcA(hWnd: THWND; Msg: UINT; wParam: TWPARAM; lParam: TLPARAM): TLRESULT;
+    stdcall; external USER32_DLL;
+function DefWindowProcW(hWnd: THWND; Msg: UINT; wParam: TWPARAM; lParam: TLPARAM): TLRESULT;
+    stdcall; external USER32_DLL;
+procedure PostQuitMessage(nExitCode: integer); stdcall; external USER32_DLL;
+function CallWindowProcA(lpPrevWndFunc: TWNDPROC; hWnd: THWND; Msg: UINT; wParam: TWPARAM; lParam: TLPARAM): TLRESULT;
+    stdcall; external USER32_DLL;
+function CallWindowProcW(lpPrevWndFunc: TWNDPROC; hWnd: THWND; Msg: UINT; wParam: TWPARAM; lParam: TLPARAM): TLRESULT;
+    stdcall; external USER32_DLL;
+function InSendMessage(): longbool; stdcall; external USER32_DLL;
+
+{$IF(WINVER >= $0500)}
+function InSendMessageEx(lpReserved: pointer): DWORD; stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0500 *)
+
+function GetDoubleClickTime(): UINT; stdcall; external USER32_DLL;
+function SetDoubleClickTime(TimeSpan: UINT): longbool; stdcall; external USER32_DLL;
+function RegisterClassA(const lpWndClass: PWNDCLASSA): TATOM; stdcall; external USER32_DLL;
+function RegisterClassW(const lpWndClass: PWNDCLASSW): TATOM; stdcall; external USER32_DLL;
+function UnregisterClassA(lpClassName: LPCSTR; hInstance: THINSTANCE): longbool; stdcall; external USER32_DLL;
+function UnregisterClassW(lpClassName: LPCWSTR; hInstance: THINSTANCE): longbool; stdcall; external USER32_DLL;
+function GetClassInfoA(hInstance: THINSTANCE; lpClassName: LPCSTR; out lpWndClass: TWNDCLASSA): longbool;
+    stdcall; external USER32_DLL;
+function GetClassInfoW(hInstance: THINSTANCE; lpClassName: LPCWSTR; out lpWndClass: TWNDCLASSW): longbool;
+    stdcall; external USER32_DLL;
+
+{$IF(WINVER >= $0400)}
+function RegisterClassExA(const Arg1: PWNDCLASSEXA): TATOM; stdcall; external USER32_DLL;
+function RegisterClassExW(const Arg1: PWNDCLASSEXW): TATOM; stdcall; external USER32_DLL;
+function GetClassInfoExA(hInstance: THINSTANCE; lpszClass: LPCSTR; out lpwcx: TWNDCLASSEXA): longbool;
+    stdcall; external USER32_DLL;
+function GetClassInfoExW(hInstance: THINSTANCE; lpszClass: LPCWSTR; out lpwcx: TWNDCLASSEXW): longbool;
+    stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0400 *)
+
+function CreateWindowExA(dwExStyle: DWORD; lpClassName: LPCSTR; lpWindowName: LPCSTR; dwStyle: DWORD; X: integer;
+    Y: integer; nWidth: integer; nHeight: integer; hWndParent: THWND; hMenu: THMENU; hInstance: THINSTANCE; lpParam: pointer): THWND; stdcall;
+    external USER32_DLL;
+function CreateWindowExW(dwExStyle: DWORD; lpClassName: LPCWSTR; lpWindowName: LPCWSTR{PUnicodeString}; // test
+    dwStyle: DWORD; X: integer; Y: integer; nWidth: integer; nHeight: integer; hWndParent: THWND; hMenu: THMENU;
+    hInstance: THINSTANCE; lpParam: pointer): THWND; stdcall;
+    external USER32_DLL;
+function IsWindow(hWnd: THWND): longbool; stdcall; external USER32_DLL;
+function IsMenu(hMenu: THMENU): longbool; stdcall; external USER32_DLL;
+function IsChild(hWndParent: THWND; hWnd: THWND): longbool; stdcall; external USER32_DLL;
+function DestroyWindow(hWnd: THWND): longbool; stdcall; external USER32_DLL;
+function ShowWindow(hWnd: THWND; nCmdShow: integer): longbool; stdcall; external USER32_DLL;
+
+{$IF(WINVER >= $0500)}
+function AnimateWindow(hWnd: THWND; dwTime: DWORD; dwFlags: DWORD): longbool; stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0500 *)
+
+{$IF(_WIN32_WINNT >= $0500)}
+function UpdateLayeredWindow(hWnd: THWND; hdcDst: THDC; pptDst: PPOINT; psize: PSIZE; hdcSrc: THDC; pptSrc: PPOINT;
+    crKey: TCOLORREF; pblend: PBLENDFUNCTION; dwFlags: DWORD): longbool;
+    stdcall; external USER32_DLL;
+function UpdateLayeredWindowIndirect(hWnd: THWND; const pULWInfo: PUPDATELAYEREDWINDOWINFO): longbool;
+    stdcall; external USER32_DLL;
+{$IF(_WIN32_WINNT >= $0501)}
+function GetLayeredWindowAttributes(hwnd: THWND; out pcrKey: TCOLORREF; out pbAlpha: byte; out pdwFlags: DWORD): longbool;
+    stdcall; external USER32_DLL;
+function PrintWindow(hwnd: THWND; hdcBlt: THDC; nFlags: UINT): longbool; stdcall; external USER32_DLL;
+{$ENDIF}(* _WIN32_WINNT >= $0501 *)
+
+function SetLayeredWindowAttributes(hwnd: THWND; crKey: TCOLORREF; bAlpha: byte; dwFlags: DWORD): longbool; stdcall; external USER32_DLL;
+{$ENDIF}(* _WIN32_WINNT >= $0500 *)
+
+{$IF(WINVER >= $0400)}
+function ShowWindowAsync(hWnd: THWND; nCmdShow: integer): longbool; stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0400 *)
+
+function FlashWindow(hWnd: HWND; bInvert: longbool): longbool; stdcall; external USER32_DLL;
+
+{$IF(WINVER >= $0500)}
+function FlashWindowEx(pfwi: PFLASHWINFO): longbool; stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0500 *)
+
+function ShowOwnedPopups(hWnd: THWND; fShow: longbool): longbool; stdcall; external USER32_DLL;
+function OpenIcon(hWnd: THWND): longbool; stdcall; external USER32_DLL;
+function CloseWindow(hWnd: THWND): longbool; stdcall; external USER32_DLL;
+function MoveWindow(hWnd: THWND; X: integer; Y: integer; nWidth: integer; nHeight: integer; bRepaint: longbool): longbool;
+    stdcall; external USER32_DLL;
+function SetWindowPos(hWnd: THWND; hWndInsertAfter: THWND; X: integer; Y: integer; cx: integer; cy: integer; uFlags: UINT): longbool;
+    stdcall; external USER32_DLL;
+function GetWindowPlacement(hWnd: THWND; var lpwndpl: TWINDOWPLACEMENT): longbool; stdcall; external USER32_DLL;
+function SetWindowPlacement(hWnd: THWND; const lpwndpl: PWINDOWPLACEMENT): longbool;
+    stdcall; external USER32_DLL;
+
+{$IF(_WIN32_WINNT >= $0601)}
+function GetWindowDisplayAffinity(hWnd: HWND; out pdwAffinity: DWORD): longbool; stdcall; external USER32_DLL;
+function SetWindowDisplayAffinity(hWnd: THWND; dwAffinity: DWORD): longbool; stdcall; external USER32_DLL;
+{$ENDIF}(* _WIN32_WINNT >= $0601 *)
+
+function BeginDeferWindowPos(nNumWindows: integer): HDWP; stdcall; external USER32_DLL;
+function DeferWindowPos(hWinPosInfo: THDWP; hWnd: THWND; hWndInsertAfter: THWND; x: integer; y: integer; cx: integer;
+    cy: integer; uFlags: UINT): THDWP; stdcall; external USER32_DLL;
+function EndDeferWindowPos(hWinPosInfo: THDWP): longbool; stdcall; external USER32_DLL;
+function IsWindowVisible(hWnd: THWND): longbool; stdcall; external USER32_DLL;
+function IsIconic(hWnd: THWND): longbool; stdcall; external USER32_DLL;
+function AnyPopup(): longbool; stdcall; external USER32_DLL;
+function BringWindowToTop(hWnd: THWND): longbool; stdcall; external USER32_DLL;
+function IsZoomed(hWnd: THWND): longbool; stdcall; external USER32_DLL;
+function CreateDialogParamA(hInstance: THINSTANCE; lpTemplateName: LPCSTR; hWndParent: THWND; lpDialogFunc: TDLGPROC;
+    dwInitParam: TLPARAM): THWND; stdcall; external USER32_DLL;
+function CreateDialogParamW(hInstance: THINSTANCE; lpTemplateName: LPCWSTR; hWndParent: THWND; lpDialogFunc: TDLGPROC;
+    dwInitParam: TLPARAM): THWND; stdcall; external USER32_DLL;
+function CreateDialogIndirectParamA(hInstance: THINSTANCE; lpTemplate: PCDLGTEMPLATEA; hWndParent: THWND;
+    lpDialogFunc: TDLGPROC; dwInitParam: TLPARAM): THWND; stdcall; external USER32_DLL;
+function CreateDialogIndirectParamW(hInstance: THINSTANCE; lpTemplate: PCDLGTEMPLATEW; hWndParent: THWND;
+    lpDialogFunc: TDLGPROC; dwInitParam: TLPARAM): THWND; stdcall; external USER32_DLL;
+function DialogBoxParamA(hInstance: THINSTANCE; lpTemplateName: LPCSTR; hWndParent: THWND; lpDialogFunc: TDLGPROC;
+    dwInitParam: TLPARAM): INT_PTR; stdcall; external USER32_DLL;
+function DialogBoxParamW(hInstance: THINSTANCE; lpTemplateName: LPCWSTR; hWndParent: THWND; lpDialogFunc: TDLGPROC;
+    dwInitParam: TLPARAM): INT_PTR; stdcall; external USER32_DLL;
+function DialogBoxIndirectParamA(hInstance: THINSTANCE; hDialogTemplate: PCDLGTEMPLATEA; hWndParent: THWND;
+    lpDialogFunc: TDLGPROC; dwInitParam: TLPARAM): INT_PTR; stdcall; external USER32_DLL;
+function DialogBoxIndirectParamW(hInstance: THINSTANCE; hDialogTemplate: PCDLGTEMPLATEW; hWndParent: THWND;
+    lpDialogFunc: TDLGPROC; dwInitParam: TLPARAM): INT_PTR; stdcall; external USER32_DLL;
+function DialogBoxA(hInstance: THINSTANCE; lpTemplateName: LPCSTR; hWndParent: THWND; lpDialogFunc: TDLGPROC): INT_PTR;
+function DialogBoxW(hInstance: THINSTANCE; lpTemplateName: LPCWSTR; hWndParent: THWND; lpDialogFunc: TDLGPROC): INT_PTR;
+function DialogBoxIndirectA(hInstance: THINSTANCE; lpTemplate: PCDLGTEMPLATEA; hWndParent: THWND; lpDialogFunc: TDLGPROC): INT_PTR;
+function DialogBoxIndirectW(hInstance: THINSTANCE; lpTemplate: PCDLGTEMPLATEW; hWndParent: THWND; lpDialogFunc: TDLGPROC): INT_PTR;
+function EndDialog(hDlg: THWND; nResult: INT_PTR): longbool; stdcall; external USER32_DLL;
+function GetDlgItem(hDlg: THWND; nIDDlgItem: integer): THWND; stdcall; external USER32_DLL;
+function SetDlgItemInt(hDlg: THWND; nIDDlgItem: integer; uValue: UINT; bSigned: longbool): longbool; stdcall; external USER32_DLL;
+function GetDlgItemInt(hDlg: THWND; nIDDlgItem: integer; out lpTranslated: longbool; bSigned: longbool): UINT;
+    stdcall; external USER32_DLL;
+function SetDlgItemTextA(hDlg: THWND; nIDDlgItem: integer; lpString: LPCSTR): longbool; stdcall; external USER32_DLL;
+function SetDlgItemTextW(hDlg: THWND; nIDDlgItem: integer; lpString: LPCWSTR): longbool; stdcall; external USER32_DLL;
+function GetDlgItemTextA(hDlg: THWND; nIDDlgItem: integer; out lpString{cchMax}: LPSTR; cchMax: integer): UINT; stdcall;
+    external USER32_DLL; // _Ret_range_(0, cchMax)
+function GetDlgItemTextW(hDlg: THWND; nIDDlgItem: integer; out lpString {cchMax}: LPWSTR; cchMax: integer): UINT; stdcall;
+    external USER32_DLL; // _Ret_range_(0, cchMax)
+function CheckDlgButton(hDlg: THWND; nIDButton: integer; uCheck: UINT): longbool; stdcall; external USER32_DLL;
+function CheckRadioButton(hDlg: THWND; nIDFirstButton: integer; nIDLastButton: integer; nIDCheckButton: integer): longbool;
+    stdcall; external USER32_DLL;
+function IsDlgButtonChecked(hDlg: THWND; nIDButton: integer): UINT; stdcall; external USER32_DLL;
+function SendDlgItemMessageA(hDlg: THWND; nIDDlgItem: integer; Msg: UINT; wParam: TWPARAM; lParam: TLPARAM): LRESULT;
+    stdcall; external USER32_DLL;
+function SendDlgItemMessageW(hDlg: THWND; nIDDlgItem: integer; Msg: UINT; wParam: TWPARAM; lParam: TLPARAM): LRESULT;
+    stdcall; external USER32_DLL;
+function GetNextDlgGroupItem(hDlg: THWND; hCtl: THWND; bPrevious: longbool): THWND; stdcall; external USER32_DLL;
+function GetNextDlgTabItem(hDlg: THWND; hCtl: THWND; bPrevious: longbool): THWND; stdcall; external USER32_DLL;
+function GetDlgCtrlID(hWnd: THWND): integer; stdcall; external USER32_DLL;
+function GetDialogBaseUnits(): long; stdcall; external USER32_DLL;
+function DefDlgProcA(hDlg: THWND; Msg: UINT; wParam: TWPARAM; lParam: TLPARAM): LRESULT; stdcall; external USER32_DLL;
+function DefDlgProcW(hDlg: THWND; Msg: UINT; wParam: TWPARAM; lParam: TLPARAM): LRESULT; stdcall; external USER32_DLL;
+function SetDialogControlDpiChangeBehavior(hWnd: THWND; mask: TDIALOG_CONTROL_DPI_CHANGE_BEHAVIORS;
+    values: TDIALOG_CONTROL_DPI_CHANGE_BEHAVIORS): longbool; stdcall; external USER32_DLL;
+function GetDialogControlDpiChangeBehavior(hWnd: THWND): TDIALOG_CONTROL_DPI_CHANGE_BEHAVIORS; stdcall; external USER32_DLL;
+function SetDialogDpiChangeBehavior(hDlg: THWND; mask: TDIALOG_DPI_CHANGE_BEHAVIORS; values: TDIALOG_DPI_CHANGE_BEHAVIORS): longbool;
+    stdcall; external USER32_DLL;
+function GetDialogDpiChangeBehavior(hDlg: THWND): TDIALOG_DPI_CHANGE_BEHAVIORS; stdcall; external USER32_DLL;
+function CallMsgFilterA(lpMsg: PMSG; nCode: integer): longbool; stdcall; external USER32_DLL;
+function CallMsgFilterW(lpMsg: PMSG; nCode: integer): longbool; stdcall; external USER32_DLL;
+
+(* Clipboard Manager Functions *)
+function OpenClipboard(hWndNewOwner: THWND): longbool; stdcall; external USER32_DLL;
+function CloseClipboard(): longbool; stdcall; external USER32_DLL;
+
+{$IF(WINVER >= $0500)}
+function GetClipboardSequenceNumber(): DWORD; stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0500 *)
+
+function GetClipboardOwner(): THWND; stdcall; external USER32_DLL;
+function SetClipboardViewer(hWndNewViewer: THWND): THWND; stdcall; external USER32_DLL;
+function GetClipboardViewer(): THWND; stdcall; external USER32_DLL;
+function ChangeClipboardChain(hWndRemove: THWND; hWndNewNext: THWND): longbool; stdcall; external USER32_DLL;
+function SetClipboardData(uFormat: UINT; hMem: THANDLE): THANDLE; stdcall; external USER32_DLL;
+function GetClipboardData(uFormat: UINT): THANDLE; stdcall; external USER32_DLL;
+function RegisterClipboardFormatA(lpszFormat: LPCSTR): UINT; stdcall; external USER32_DLL;
+function RegisterClipboardFormatW(lpszFormat: LPCWSTR): UINT; stdcall; external USER32_DLL;
+function CountClipboardFormats(): integer; stdcall; external USER32_DLL;
+function EnumClipboardFormats(format: UINT): UINT; stdcall; external USER32_DLL;
+function GetClipboardFormatNameA(format: UINT; out lpszFormatName {cchMaxCount}: LPSTR; cchMaxCount: integer): integer;
+    stdcall; external USER32_DLL;
+function GetClipboardFormatNameW(format: UINT; outlpszFormatName {cchMaxCount}: LPWSTR; cchMaxCount: integer): integer;
+    stdcall; external USER32_DLL;
+function EmptyClipboard(): longbool; stdcall; external USER32_DLL;
+function IsClipboardFormatAvailable(format: UINT): longbool; stdcall; external USER32_DLL;
+function GetPriorityClipboardFormat(paFormatPriorityList {cFormats}: PUINT; cFormats: integer): integer; stdcall; external USER32_DLL;
+function GetOpenClipboardWindow(): THWND; stdcall; external USER32_DLL;
+
+{$IF(WINVER >= $0600)}
+function AddClipboardFormatListener(hwnd: THWND): longbool; stdcall; external USER32_DLL;
+function RemoveClipboardFormatListener(hwnd: THWND): longbool; stdcall; external USER32_DLL;
+function GetUpdatedClipboardFormats(out lpuiFormats{cFormats}: PUINT; cFormats: UINT; out pcFormatsOut: UINT): longbool;
+    stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0600 *)
+
+(* Character Translation Routines *)
+function CharToOemA(pSrc: LPCSTR; out pDst{strlen(pSrc) + 1)}: LPSTR): longbool; stdcall; external USER32_DLL;
+function CharToOemW(pSrc: LPCWSTR; out pDst{strlen(pSrc) + 1}: LPSTR): longbool; stdcall; external USER32_DLL;
+function OemToCharA(pSrc: LPCSTR; out pDst{strlen(pSrc) + 1}: LPSTR): longbool; stdcall; external USER32_DLL;
+function OemToCharW(pSrc: LPCSTR; out pDst{strlen(pSrc) + 1}: LPWSTR): longbool; stdcall; external USER32_DLL;
+function CharToOemBuffA(lpszSrc: LPCSTR; out lpszDst{cchDstLength}: LPSTR; cchDstLength: DWORD): longbool; stdcall; external USER32_DLL;
+function CharToOemBuffW(lpszSrc: LPCWSTR; out lpszDst{cchDstLength}: LPSTR; cchDstLength: DWORD): longbool; stdcall; external USER32_DLL;
+function OemToCharBuffA(lpszSrc: LPCSTR; out lpszDst{cchDstLength}: LPSTR; cchDstLength: DWORD): longbool; stdcall; external USER32_DLL;
+function OemToCharBuffW(lpszSrc: LPCSTR; out lpszDst{cchDstLength}: LPWSTR; cchDstLength: DWORD): longbool; stdcall; external USER32_DLL;
+function CharUpperA(var lpsz: LPSTR): LPSTR; stdcall; external USER32_DLL;
+function CharUpperW(var lpsz: LPWSTR): LPWSTR; stdcall; external USER32_DLL;
+function CharUpperBuffA(var lpsz {cchLength}: LPSTR; cchLength: DWORD): DWORD; stdcall; external USER32_DLL;
+function CharUpperBuffW(var lpsz {cchLength}: LPWSTR; cchLength: DWORD): DWORD; stdcall; external USER32_DLL;
+function CharLowerA(var lpsz: LPSTR): LPSTR; stdcall; external USER32_DLL;
+function CharLowerW(var lpsz: LPWSTR): LPWSTR; stdcall; external USER32_DLL;
+function CharLowerBuffA(var lpsz{cchLength}: LPSTR; cchLength: DWORD): DWORD; stdcall; external USER32_DLL;
+function CharLowerBuffW(var lpsz{cchLength}: LPWSTR; cchLength: DWORD): DWORD; stdcall; external USER32_DLL;
+function CharNextA(lpsz: LPCSTR): LPSTR; stdcall; external USER32_DLL;
+function CharNextW(lpsz: LPCWSTR): LPWSTR; stdcall; external USER32_DLL;
+function CharPrevA(lpszStart: LPCSTR; lpszCurrent: LPCSTR): LPSTR; stdcall; external USER32_DLL;
+function CharPrevW(lpszStart: LPCWSTR; lpszCurrent: LPCWSTR): LPWSTR; stdcall; external USER32_DLL;
+
+(* Compatibility defines for character translation routines *)
+function AnsiToOem(pSrc: LPCSTR; out pDst{strlen(pSrc) + 1)}: LPSTR): longbool; stdcall;
+function OemToAnsi(pSrc: LPCSTR; out pDst{strlen(pSrc) + 1}: LPSTR): longbool; stdcall;
+function AnsiToOemBuff(lpszSrc: LPCSTR; out lpszDst{cchDstLength}: LPSTR; cchDstLength: DWORD): longbool; stdcall;
+function OemToAnsiBuff(lpszSrc: LPCSTR; out lpszDst{cchDstLength}: LPSTR; cchDstLength: DWORD): longbool; stdcall;
+function AnsiUpper(var lpsz: LPSTR): LPSTR; stdcall;
+function AnsiUpperBuff(var lpsz {cchLength}: LPSTR; cchLength: DWORD): DWORD; stdcall;
+function AnsiLower(var lpsz: LPSTR): LPSTR; stdcall;
+function AnsiLowerBuff(var lpsz{cchLength}: LPSTR; cchLength: DWORD): DWORD; stdcall;
+function AnsiNext(lpsz: LPCSTR): LPSTR; stdcall;
+function AnsiPrev(lpszStart: LPCSTR; lpszCurrent: LPCSTR): LPSTR; stdcall;
+
+{$IF(WINVER >= $0400)}
+function CharNextExA(CodePage: word; lpCurrentChar: LPCSTR; dwFlags: DWORD): LPSTR; stdcall; external USER32_DLL;
+function CharPrevExA(CodePage: word; lpStart: LPCSTR; lpCurrentChar: LPCSTR; dwFlags: DWORD): LPSTR; stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0400 *)
+
+(* Language dependent Routines *)
+function IsCharAlphaA(ch: char): longbool; stdcall; external USER32_DLL;
+function IsCharAlphaW(ch: WCHAR): longbool; stdcall; external USER32_DLL;
+function IsCharAlphaNumericA(ch: char): longbool; stdcall; external USER32_DLL;
+function IsCharAlphaNumericW(ch: WCHAR): longbool; stdcall; external USER32_DLL;
+function IsCharUpperA(ch: char): longbool; stdcall; external USER32_DLL;
+function IsCharUpperW(ch: WCHAR): longbool; stdcall; external USER32_DLL;
+function IsCharLowerA(ch: AnsiCHAR): longbool; stdcall; external USER32_DLL;
+function IsCharLowerW(ch: WCHAR): longbool; stdcall; external USER32_DLL;
+function SetFocus(hWnd: THWND): THWND; stdcall; external USER32_DLL;
+function GetActiveWindow(): THWND; stdcall; external USER32_DLL;
+function GetFocus(): THWND; stdcall; external USER32_DLL;
+function GetKBCodePage(): UINT; stdcall; external USER32_DLL;
+function GetKeyState(nVirtKey: integer): SHORT; stdcall; external USER32_DLL;
+function GetAsyncKeyState(vKey: integer): SHORT; stdcall; external USER32_DLL;
+function GetKeyboardState(out lpKeyState{256}: PBYTE): longbool; stdcall; external USER32_DLL;
+function SetKeyboardState(lpKeyState{256}: PBYTE): longbool; stdcall; external USER32_DLL;
+function GetKeyNameTextA(lParam: LONG; out lpString{cchSize}: LPSTR; cchSize: integer): integer; stdcall; external USER32_DLL;
+function GetKeyNameTextW(lParam: LONG; out lpString {cchSize}: LPWSTR; cchSize: integer): integer; stdcall; external USER32_DLL;
+function GetKeyboardType(nTypeFlag: integer): integer; stdcall; external USER32_DLL;
+function ToAscii(uVirtKey: UINT; uScanCode: UINT; const lpKeyState{256}: PBYTE; out lpChar: LPWORD; uFlags: UINT): integer;
+    stdcall; external USER32_DLL;
+
+{$IF(WINVER >= $0400)}
+function ToAsciiEx(uVirtKey: UINT; uScanCode: UINT; const lpKeyState{256}: PBYTE; out lpChar: LPWORD; uFlags: UINT; dwhkl: THKL): integer;
+    stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0400 *)
+
+function ToUnicode(wVirtKey: UINT; wScanCode: UINT; const lpKeyState{256}: PBYTE; out pwszBuff{cchBuff}: LPWSTR;
+    cchBuff: integer; wFlags: UINT): integer; stdcall; external USER32_DLL;
+function OemKeyScan(wOemChar: word): DWORD; stdcall; external USER32_DLL;
+function VkKeyScanA(ch: AnsiCHAR): SHORT; stdcall; external USER32_DLL;
+function VkKeyScanW(ch: WCHAR): SHORT; stdcall; external USER32_DLL;
+
+{$IF(WINVER >= $0400)}
+function VkKeyScanExA(ch: AnsiCHAR; dwhkl: THKL): SHORT; stdcall; external USER32_DLL;
+function VkKeyScanExW(ch: WCHAR; dwhkl: THKL): SHORT; stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0400 *)
+procedure keybd_event(bVk: byte; bScan: byte; dwFlags: DWORD; dwExtraInfo: ULONG_PTR); stdcall; external USER32_DLL;
+procedure mouse_event(dwFlags: DWORD; dx: DWORD; dy: DWORD; dwData: DWORD; dwExtraInfo: ULONG_PTR);
+    stdcall; external USER32_DLL;
+
+{$IF _WIN32_WINNT >=$0400}
+function SendInput(cInputs: UINT;                   // number of input in the array
+    pInputs {array size cInputs}: PINPUT;  // array of inputs
+    cbSize: integer): UINT; stdcall; external USER32_DLL;                    // sizeof(INPUT)
+{$ENDIF}// (_WIN32_WINNT > =$0400)
+
+
+(* Conversion of touch input coordinates to pixels *)
+function TOUCH_COORD_TO_PIXEL(l: single): single;
+
+{$IF(WINVER >= $0601)}
+function GetTouchInputInfo(hTouchInput: THTOUCHINPUT;               // input event handle; from touch message lParam
+    cInputs: UINT;                          // number of elements in the array
+    out pInputs {cInputs}: PTOUCHINPUT;  // array of touch inputs
+    cbSize: integer): longbool; stdcall; external USER32_DLL;                         // sizeof(TOUCHINPUT)
+function CloseTouchInputHandle(hTouchInput: THTOUCHINPUT): longbool; stdcall; external USER32_DLL;
+// input event handle; from touch message lParam
+function RegisterTouchWindow(hwnd: THWND; ulFlags: ULONG): longbool; stdcall; external USER32_DLL;
+function UnregisterTouchWindow(hwnd: THWND): longbool; stdcall; external USER32_DLL;
+function IsTouchWindow(hwnd: THWND; out pulFlags: ULONG): longbool; stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0601 *)
+
+
+{$IF(WINVER >= $0602)}
+function InitializeTouchInjection(maxCount: UINT32; dwMode: DWORD): longbool; stdcall; external USER32_DLL;
+function InjectTouchInput(Count: UINT32; const contacts {count}: PPOINTER_TOUCH_INFO): longbool; stdcall; external USER32_DLL;
+function GetPointerType(pointerId: UINT32; out pointerType: TPOINTER_INPUT_TYPE): longbool; stdcall; external USER32_DLL;
+function GetPointerCursorId(pointerId: UINT32; out cursorId: UINT32): longbool; stdcall; external USER32_DLL;
+function GetPointerInfo(pointerId: UINT32; out pointerInfo: TPOINTER_INFO): longbool; stdcall; external USER32_DLL;
+function GetPointerInfoHistory(pointerId: UINT32; var entriesCount: UINT32; out pointerInfo {entriesCount}: PPOINTER_INFO): longbool;
+    stdcall; external USER32_DLL;
+function GetPointerFrameInfo(pointerId: UINT32; var pointerCount: UINT32; out pointerInfo {pointerCount}: PPOINTER_INFO): longbool;
+    stdcall; external USER32_DLL;
+function GetPointerFrameInfoHistory(pointerId: UINT32; var entriesCount: UINT32; var pointerCount: UINT32;
+    out pointerInfo {entriesCount * pointerCount}: PPOINTER_INFO): longbool; stdcall; external USER32_DLL;
+function GetPointerTouchInfo(pointerId: UINT32; out touchInfo: TPOINTER_TOUCH_INFO): longbool; stdcall; external USER32_DLL;
+function GetPointerTouchInfoHistory(pointerId: UINT32; var entriesCount: UINT32; out touchInfo {entriesCount}: PPOINTER_TOUCH_INFO): longbool;
+    stdcall; external USER32_DLL;
+function GetPointerFrameTouchInfo(pointerId: UINT32; var pointerCount: UINT32; out touchInfo {pointerCount}: PPOINTER_TOUCH_INFO): longbool;
+    stdcall; external USER32_DLL;
+function GetPointerFrameTouchInfoHistory(pointerId: UINT32; var entriesCount: UINT32; var pointerCount: UINT32;
+    out touchInfo {entriesCount * pointerCount}: PPOINTER_TOUCH_INFO): longbool; stdcall; external USER32_DLL;
+function GetPointerPenInfo(pointerId: UINT32; out penInfo: TPOINTER_PEN_INFO): longbool; stdcall; external USER32_DLL;
+function GetPointerPenInfoHistory(pointerId: UINT32; var entriesCount: UINT32; out penInfo{entriesCount}: PPOINTER_PEN_INFO): longbool;
+    stdcall; external USER32_DLL;
+function GetPointerFramePenInfo(pointerId: UINT32; var pointerCount: UINT32; out penInfo{pointerCount}: PPOINTER_PEN_INFO): longbool;
+    stdcall; external USER32_DLL;
+function GetPointerFramePenInfoHistory(pointerId: UINT32; var entriesCount: UINT32; var pointerCount: UINT32;
+    out penInfo{entriesCount * pointerCount}: PPOINTER_PEN_INFO): longbool; stdcall; external USER32_DLL;
+function SkipPointerFrameMessages(pointerId: UINT32): longbool; stdcall; external USER32_DLL;
+function RegisterPointerInputTarget(hwnd: THWND; pointerType: TPOINTER_INPUT_TYPE): longbool; stdcall; external USER32_DLL;
+function UnregisterPointerInputTarget(hwnd: THWND; pointerType: TPOINTER_INPUT_TYPE): longbool; stdcall; external USER32_DLL;
+function RegisterPointerInputTargetEx(hwnd: THWND; pointerType: TPOINTER_INPUT_TYPE; fObserve: longbool): longbool;
+    stdcall; external USER32_DLL;
+function UnregisterPointerInputTargetEx(hwnd: THWND; pointerType: TPOINTER_INPUT_TYPE): longbool; stdcall; external USER32_DLL;
+
+{$IF (NTDDI_VERSION >= NTDDI_WIN10_RS5)}
+function CreateSyntheticPointerDevice(pointerType: TPOINTER_INPUT_TYPE; maxCount: ULONG; mode: TPOINTER_FEEDBACK_MODE): THSYNTHETICPOINTERDEVICE;
+    stdcall; external USER32_DLL;
+function InjectSyntheticPointerInput(device: THSYNTHETICPOINTERDEVICE; const pointerInfo {count}: PPOINTER_TYPE_INFO; Count: UINT32): longbool;
+    stdcall; external USER32_DLL;
+procedure DestroySyntheticPointerDevice(device: THSYNTHETICPOINTERDEVICE); stdcall; external USER32_DLL;
+{$ENDIF}// NTDDI_VERSION >= NTDDI_WIN10_RS5
+
+function EnableMouseInPointer(fEnable: longbool): longbool; stdcall; external USER32_DLL;
+function IsMouseInPointerEnabled(): longbool; stdcall; external USER32_DLL;
+
+{$IF WDK_NTDDI_VERSION >= NTDDI_WIN10_RS3}
+function EnableMouseInPointerForThread(): longbool; stdcall; external USER32_DLL;
+{$ENDIF}
+
+function RegisterTouchHitTestingWindow(hwnd: THWND; Value: ULONG): longbool; stdcall; external USER32_DLL;
+function EvaluateProximityToRect(const controlBoundingBox: PRECT; const pHitTestingInput: PTOUCH_HIT_TESTING_INPUT;
+    out pProximityEval: TTOUCH_HIT_TESTING_PROXIMITY_EVALUATION): longbool; stdcall; external USER32_DLL;
+function EvaluateProximityToPolygon(numVertices: UINT32; const controlPolygon{numVertices}: PPOINT;
+    const pHitTestingInput: PTOUCH_HIT_TESTING_INPUT; out pProximityEval: TTOUCH_HIT_TESTING_PROXIMITY_EVALUATION): longbool;
+    stdcall; external USER32_DLL;
+function PackTouchHitTestingProximityEvaluation(const pHitTestingInput: PTOUCH_HIT_TESTING_INPUT;
+    const pProximityEval: PTOUCH_HIT_TESTING_PROXIMITY_EVALUATION): LRESULT; stdcall; external USER32_DLL;
+function GetWindowFeedbackSetting(hwnd: THWND; feedback: TFEEDBACK_TYPE; dwFlags: DWORD; var pSize: UINT32;
+    out config {pSize}: Pointer): longbool; stdcall; external USER32_DLL;
+function SetWindowFeedbackSetting(hwnd: THWND; feedback: TFEEDBACK_TYPE; dwFlags: DWORD; size: UINT32;
+    const configuration{size}: Pointer): longbool; stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0602 *)
+
+
+{$IF(WINVER >= $0603)}
+function GetPointerInputTransform(pointerId: UINT32; historyCount: UINT32; out inputTransform {historyCount}: PINPUT_TRANSFORM): longbool;
+    stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0603 *)
+
+{$IF(_WIN32_WINNT >= $0500)}
+function GetLastInputInfo(out plii: TLASTINPUTINFO): longbool; stdcall; external USER32_DLL;
+{$ENDIF}(* _WIN32_WINNT >= $0500 *)
+
+function MapVirtualKeyExA(uCode: UINT; uMapType: UINT; dwhkl: THKL): UINT; stdcall; external USER32_DLL;
+function MapVirtualKeyExW(uCode: UINT; uMapType: UINT; dwhkl: THKL): UINT; stdcall; external USER32_DLL;
+function GetInputState(): longbool; stdcall; external USER32_DLL;
+function GetQueueStatus(flags: UINT): DWORD; stdcall; external USER32_DLL;
+function GetCapture(): THWND; stdcall; external USER32_DLL;
+function SetCapture(hWnd: THWND): THWND; stdcall; external USER32_DLL;
+function ReleaseCapture(): longbool; stdcall; external USER32_DLL;
+function MsgWaitForMultipleObjects(nCount: DWORD; const pHandles{nCount}: PHANDLE; fWaitAll: longbool; dwMilliseconds: DWORD;
+    dwWakeMask: DWORD): DWORD; stdcall; external USER32_DLL;
+function MsgWaitForMultipleObjectsEx(nCount: DWORD; const pHandles{nCount}: PHANDLE; dwMilliseconds: DWORD;
+    dwWakeMask: DWORD; dwFlags: DWORD): DWORD; stdcall; external USER32_DLL;
+
+(* Windows Functions *)
+function SetTimer(hWnd: THWND; nIDEvent: UINT_PTR; uElapse: UINT; lpTimerFunc: TTIMERPROC): UINT_PTR; stdcall; external USER32_DLL;
+
+{$IF(WINVER >= $0601)}
+function SetCoalescableTimer(hWnd: THWND; nIDEvent: UINT_PTR; uElapse: UINT; lpTimerFunc: TTIMERPROC; uToleranceDelay: ULONG): UINT_PTR;
+    stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0601 *)
+
+function KillTimer(hWnd: THWND; uIDEvent: UINT_PTR): longbool; stdcall; external USER32_DLL;
+function IsWindowUnicode(hWnd: THWND): longbool; stdcall; external USER32_DLL;
+function EnableWindow(hWnd: THWND; bEnable: longbool): longbool; stdcall; external USER32_DLL;
+function IsWindowEnabled(hWnd: THWND): longbool; stdcall; external USER32_DLL;
+function LoadAcceleratorsA(hInstance: THINSTANCE; lpTableName: LPCSTR): THACCEL; stdcall; external USER32_DLL;
+function LoadAcceleratorsW(hInstance: THINSTANCE; lpTableName: LPCWSTR): THACCEL; stdcall; external USER32_DLL;
+function CreateAcceleratorTableA(paccel{cAccel}: LPACCEL; cAccel: integer): THACCEL; stdcall; external USER32_DLL;
+function CreateAcceleratorTableW(paccel{cAccel}: LPACCEL; cAccel: integer): THACCEL; stdcall; external USER32_DLL;
+function DestroyAcceleratorTable(hAccel: THACCEL): longbool; stdcall; external USER32_DLL;
+function CopyAcceleratorTableA(hAccelSrc: THACCEL; out lpAccelDst {cAccelEntries}: LPACCEL; cAccelEntries: integer): integer;
+    stdcall; external USER32_DLL;
+function CopyAcceleratorTableW(hAccelSrc: THACCEL; out lpAccelDst{cAccelEntries}: LPACCEL; cAccelEntries: integer): integer;
+    stdcall; external USER32_DLL;
+function TranslateAcceleratorA(hWnd: THWND; hAccTable: THACCEL; lpMsg: PMSG): integer; stdcall; external USER32_DLL;
+function TranslateAcceleratorW(hWnd: THWND; hAccTable: THACCEL; lpMsg: PMSG): integer; stdcall; external USER32_DLL;
+function GetSystemMetrics(nIndex: integer): integer; stdcall; external USER32_DLL;
+
+{$IF(WINVER >= $0605)}
+function GetSystemMetricsForDpi(nIndex: integer; dpi: UINT): integer; stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0605 *)
+
+function LoadMenuA(hInstance: THINSTANCE; lpMenuName: LPCSTR): THMENU; stdcall; external USER32_DLL;
+function LoadMenuW(hInstance: THINSTANCE; lpMenuName: LPCWSTR): THMENU; stdcall; external USER32_DLL;
+function LoadMenuIndirectA(const lpMenuTemplate: PMENUTEMPLATEA): THMENU; stdcall; external USER32_DLL;
+function LoadMenuIndirectW(const lpMenuTemplate: PMENUTEMPLATEW): THMENU; stdcall; external USER32_DLL;
+function GetMenu(hWnd: THWND): THMENU; stdcall; external USER32_DLL;
+function SetMenu(hWnd: THWND; hMenu: THMENU): longbool; stdcall; external USER32_DLL;
+function ChangeMenuA(hMenu: THMENU; cmd: UINT; lpszNewItem: LPCSTR; cmdInsert: UINT; flags: UINT): longbool; stdcall; external USER32_DLL;
+function ChangeMenuW(hMenu: THMENU; cmd: UINT; lpszNewItem: LPCWSTR; cmdInsert: UINT; flags: UINT): longbool; stdcall; external USER32_DLL;
+function HiliteMenuItem(hWnd: THWND; hMenu: THMENU; uIDHiliteItem: UINT; uHilite: UINT): longbool; stdcall; external USER32_DLL;
+function GetMenuStringA(hMenu: THMENU; uIDItem: UINT; out lpString{cchMax}: LPSTR; cchMax: integer; flags: UINT): integer;
+    stdcall; external USER32_DLL;
+function GetMenuStringW(hMenu: THMENU; uIDItem: UINT; out lpString{cchMax}: LPWSTR; cchMax: integer; flags: UINT): integer;
+    stdcall; external USER32_DLL;
+function GetMenuState(hMenu: THMENU; uId: UINT; uFlags: UINT): UINT; stdcall; external USER32_DLL;
+function DrawMenuBar(hWnd: THWND): longbool; stdcall; external USER32_DLL;
+function GetSystemMenu(hWnd: THWND; bRevert: longbool): THMENU; stdcall; external USER32_DLL;
+function CreateMenu(): THMENU; stdcall; external USER32_DLL;
+function CreatePopupMenu(): THMENU; stdcall; external USER32_DLL;
+function DestroyMenu(hMenu: THMENU): longbool; stdcall; external USER32_DLL;
+function CheckMenuItem(hMenu: THMENU; uIDCheckItem: UINT; uCheck: UINT): DWORD; stdcall; external USER32_DLL;
+function EnableMenuItem(hMenu: THMENU; uIDEnableItem: UINT; uEnable: UINT): longbool; stdcall; external USER32_DLL;
+function GetSubMenu(hMenu: THMENU; nPos: integer): THMENU; stdcall; external USER32_DLL;
+function GetMenuItemID(hMenu: THMENU; nPos: integer): UINT; stdcall; external USER32_DLL;
+function GetMenuItemCount(hMenu: THMENU): integer; stdcall; external USER32_DLL;
+function InsertMenuA(hMenu: THMENU; uPosition: UINT; uFlags: UINT; uIDNewItem: UINT_PTR; lpNewItem: LPCSTR): longbool; stdcall; external USER32_DLL;
+function InsertMenuW(hMenu, uPosition: UINT; uFlags: UINT; uIDNewItem: UINT_PTR; lpNewItem: LPCWSTR): longbool; stdcall; external USER32_DLL;
+function AppendMenuA(hMenu: THMENU; uFlags: UINT; uIDNewItem: UINT_PTR; lpNewItem: LPCSTR): longbool; stdcall; external USER32_DLL;
+function AppendMenuW(hMenu: THMENU; uFlags: UINT; uIDNewItem: UINT_PTR; lpNewItem: LPCWSTR): longbool; stdcall; external USER32_DLL;
+function ModifyMenuA(hMnu: THMENU; uPosition: UINT; uFlags: UINT; uIDNewItem: UINT_PTR; lpNewItem: LPCSTR): longbool; stdcall; external USER32_DLL;
+function ModifyMenuW(hMnu: THMENU; uPosition: UINT; uFlags: UINT; uIDNewItem: UINT_PTR; lpNewItem: LPCWSTR): longbool; stdcall; external USER32_DLL;
+function RemoveMenu(hMenu: THMENU; uPosition: UINT; uFlags: UINT): longbool; stdcall; external USER32_DLL;
+function DeleteMenu(hMenu: THMENU; uPosition: UINT; uFlags: UINT): longbool; stdcall; external USER32_DLL;
+function SetMenuItemBitmaps(hMenu: THMENU; uPosition: UINT; uFlags: UINT; hBitmapUnchecked: THBITMAP; hBitmapChecked: THBITMAP): longbool;
+    stdcall; external USER32_DLL;
+function GetMenuCheckMarkDimensions(): LONG; stdcall; external USER32_DLL;
+function TrackPopupMenu(hMenu: THMENU; uFlags: UINT; x: integer; y: integer; nReserved: integer; hWnd: THWND; const prcRect: PRECT): longbool;
+    stdcall; external USER32_DLL;
+function MapVirtualKeyA(uCode: UINT; uMapType: UINT): UINT; stdcall; external USER32_DLL;
+function MapVirtualKeyW(uCode: UINT; uMapType: UINT): UINT; stdcall; external USER32_DLL;
+
+{$IF(_WIN32_WINNT >= $0601)}
+function CalculatePopupWindowPosition(const anchorPoint: PPOINT; const windowSize: PSIZE;
+    (* TPM_XXX values *) flags: UINT; excludeRect: PRECT; out popupWindowPosition: TRECT): longbool; stdcall; external USER32_DLL;
+{$ENDIF}(* _WIN32_WINNT >= $0601 *)
+
+{$IF(WINVER >= $0500)}
+function GetMenuInfo(hMenu: THMENU; var lpcmi: TMENUINFO): longbool; stdcall; external USER32_DLL;
+function SetMenuInfo(hMenu: THMENU; lpcmi: PMENUINFO): longbool; stdcall; external USER32_DLL;
+function EndMenu(): longbool; stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0500 *)
+
+function InsertMenuItemA(hmenu: THMENU; item: UINT; fByPosition: longbool; lpmi: PMENUITEMINFOA): longbool;
+    stdcall; external USER32_DLL;
+function InsertMenuItemW(hmenu: THMENU; item: UINT; fByPosition: longbool; lpmi: PMENUITEMINFOW): longbool;
+    stdcall; external USER32_DLL;
+function GetMenuItemInfoA(hmenu: THMENU; item: UINT; fByPosition: longbool; var lpmii: TMENUITEMINFOA): longbool;
+    stdcall; external USER32_DLL;
+function GetMenuItemInfoW(hmenu: THMENU; item: UINT; fByPosition: longbool; var lpmii: TMENUITEMINFOW): longbool;
+    stdcall; external USER32_DLL;
+function SetMenuItemInfoA(hmenu: THMENU; item: UINT; fByPositon: longbool; lpmii: PMENUITEMINFOA): longbool;
+    stdcall; external USER32_DLL;
+function SetMenuItemInfoW(hmenu: THMENU; item: UINT; fByPositon: longbool; lpmii: PMENUITEMINFOW): longbool;
+    stdcall; external USER32_DLL;
+function GetMenuDefaultItem(hMenu: THMENU; fByPos: UINT; gmdiFlags: UINT): UINT; stdcall; external USER32_DLL;
+function SetMenuDefaultItem(hMenu: THMENU; uItem: UINT; fByPos: UINT): longbool; stdcall; external USER32_DLL;
+function GetMenuItemRect(hWnd: THWND; hMenu: THMENU; uItem: UINT; out lprcItem: TRECT): longbool; stdcall; external USER32_DLL;
+function MenuItemFromPoint(hWnd: THWND; hMenu: THMENU; ptScreen: TPOINT): integer; stdcall; external USER32_DLL;
+
+{$IF(WINVER >= $0400)}
+function DragObject(hwndParent: THWND; hwndFrom: THWND; fmt: UINT; Data: ULONG_PTR; hcur: THCURSOR): DWORD; stdcall;
+    external USER32_DLL;
+function DragDetect(hwnd: THWND; pt: TPOINT): longbool; stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0400 *)
+
+function DrawIcon(hDC: THDC; X: integer; Y: integer; hIcon: THICON): longbool; stdcall; external USER32_DLL;
+function DrawTextA(hdc: THDC; lpchText: LPCSTR; cchText: integer; var lprc: TRECT; format: UINT): integer;
+    stdcall; external USER32_DLL;
+function DrawTextW(hdc: THDC; lpchText: LPCWSTR; cchText: integer; var lprc: TRECT; format: UINT): integer;
+    stdcall; external USER32_DLL;
+
+{$IF(WINVER >= $0400)}
+function DrawTextExA(hdc: THDC; lpchText: LPSTR; cchText: integer; var lprc: TRECT; format: UINT; lpdtp: PDRAWTEXTPARAMS): integer;
+    stdcall; external USER32_DLL;
+function DrawTextExW(hdc: THDC; lpchText: LPWSTR; cchText: integer; var lprc: TRECT; format: UINT; lpdtp: PDRAWTEXTPARAMS): integer;
+    stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0400 *)
+
+function GrayStringA(hDC: THDC; hBrush: THBRUSH; lpOutputFunc: TGRAYSTRINGPROC; lpData: TLPARAM; nCount: integer;
+    X: integer; Y: integer; nWidth: integer; nHeight: integer): longbool; stdcall; external USER32_DLL;
+function GrayStringW(hDC: THDC; hBrush: THBRUSH; lpOutputFunc: TGRAYSTRINGPROC; lpData: TLPARAM; nCount: integer;
+    X: integer; Y: integer; nWidth: integer; nHeight: integer): longbool; stdcall; external USER32_DLL;
+
+{$IF(WINVER >= $0400)}
+function DrawStateA(hdc: THDC; hbrFore: THBRUSH; qfnCallBack: TDRAWSTATEPROC; lData: TLPARAM; wData: TWPARAM;
+    x: integer; y: integer; cx: integer; cy: integer; uFlags: UINT): longbool; stdcall; external USER32_DLL;
+function DrawStateW(hdc: THDC; hbrFore: THBRUSH; qfnCallBack: TDRAWSTATEPROC; lData: TLPARAM; wData: TWPARAM;
+    x: integer; y: integer; cx: integer; cy: integer; uFlags: UINT): longbool; stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0400 *)
+
+function TabbedTextOutA(hdc: THDC; x: integer; y: integer; lpString{chCount}: LPCSTR; chCount: integer;
+    nTabPositions: integer; const lpnTabStopPositions {nTabPositions}: PINT; nTabOrigin: integer): LONG; stdcall; external USER32_DLL;
+function TabbedTextOutW(hdc: THDC; x: integer; y: integer; lpString{chCount}: LPCWSTR; chCount: integer;
+    nTabPositions: integer; const lpnTabStopPositions{nTabPositions}: PINT; nTabOrigin: integer): LONG; stdcall; external USER32_DLL;
+function GetTabbedTextExtentA(hdc: THDC; lpString{chCount}: LPCSTR; chCount: integer; nTabPositions: integer;
+    const lpnTabStopPositions{nTabPositions}: PINT): DWORD; stdcall; external USER32_DLL;
+function GetTabbedTextExtentW(hdc: THDC; lpString{chCount}: LPCWSTR; chCount: integer; nTabPositions: integer;
+    const lpnTabStopPositions{nTabPositions}: PINT): DWORD; stdcall; external USER32_DLL;
+function UpdateWindow(hWnd: THWND): longbool; stdcall; external USER32_DLL;
+function SetActiveWindow(hWnd: THWND): THWND; stdcall; external USER32_DLL;
+function GetForegroundWindow(): THWND; stdcall; external USER32_DLL;
+
+{$IF(WINVER >= $0400)}
+function PaintDesktop(hdc: THDC): longbool; stdcall; external USER32_DLL;
+procedure SwitchToThisWindow(hwnd: THWND; fUnknown: longbool); stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0400 *)
+
+function SetForegroundWindow(hWnd: THWND): longbool; stdcall; external USER32_DLL;
+
+{$IF(_WIN32_WINNT >= $0500)}
+function AllowSetForegroundWindow(dwProcessId: DWORD): longbool; stdcall; external USER32_DLL;
+
+function LockSetForegroundWindow(uLockCode: UINT): longbool; stdcall; external USER32_DLL;
+{$ENDIF}(* _WIN32_WINNT >= $0500 *)
+
+function WindowFromDC(hDC: THDC): HWND; stdcall; external USER32_DLL;
+function GetDC(hWnd: THWND): THDC; stdcall; external USER32_DLL;
+function GetDCEx(hWnd: THWND; hrgnClip: THRGN; flags: DWORD): THDC; stdcall; external USER32_DLL;
+function GetWindowDC(hWnd: THWND): THDC; stdcall; external USER32_DLL;
+function ReleaseDC(hWnd: THWND; hDC: THDC): integer; stdcall; external USER32_DLL;
+function BeginPaint(hWnd: THWND; out lpPaint: TPAINTSTRUCT): THDC; stdcall; external USER32_DLL;
+function EndPaint(hWnd: THWND; const lpPaint: PPAINTSTRUCT): longbool; stdcall; external USER32_DLL;
+function GetUpdateRect(hWnd: THWND; out lpRect: TRECT; bErase: longbool): longbool; stdcall; external USER32_DLL;
+function GetUpdateRgn(hWnd: THWND; hRgn: THRGN; bErase: longbool): integer; stdcall; external USER32_DLL;
+function SetWindowRgn(hWnd: THWND; hRgn: THRGN; bRedraw: longbool): integer; stdcall; external USER32_DLL;
+function GetWindowRgn(hWnd: THWND; hRgn: THRGN): integer; stdcall; external USER32_DLL;
+
+{$IF(_WIN32_WINNT >= $0501)}
+function GetWindowRgnBox(hWnd: THWND; out lprc: TRECT): integer; stdcall; external USER32_DLL;
+
+{$ENDIF}(* _WIN32_WINNT >= $0501 *)
+function ExcludeUpdateRgn(hDC: THDC; hWnd: THWND): integer; stdcall; external USER32_DLL;
+function InvalidateRect(hWnd: THWND; const lpRect: PRECT; bErase: longbool): longbool; stdcall; external USER32_DLL;
+function ValidateRect(hWnd: THWND; const lpRect: PRECT): longbool; stdcall; external USER32_DLL;
+function InvalidateRgn(hWnd: THWND; hRgn: THRGN; bErase: longbool): longbool; stdcall; external USER32_DLL;
+function ValidateRgn(hWnd: THWND; hRgn: THRGN): longbool; stdcall; external USER32_DLL;
+function RedrawWindow(hWnd: THWND; const lprcUpdate: PRECT; hrgnUpdate: THRGN; flags: UINT): longbool; stdcall; external USER32_DLL;
+
+(* LockWindowUpdate API *)
+function LockWindowUpdate(hWndLock: THWND): longbool; stdcall; external USER32_DLL;
+function ScrollWindow(hWnd: THWND; XAmount: integer; YAmount: integer; const lpRect: PRECT; const lpClipRect: PRECT): longbool;
+    stdcall; external USER32_DLL;
+function ScrollDC(hDC: THDC; dx: integer; dy: integer; const lprcScroll: PRECT; const lprcClip: PRECT; hrgnUpdate: THRGN;
+    out lprcUpdate: TRECT): longbool; stdcall; external USER32_DLL;
+function ScrollWindowEx(hWnd: THWND; dx: integer; dy: integer; const prcScroll: PRECT; const prcClip: PRECT;
+    hrgnUpdate: THRGN; out prcUpdate: TRECT; flags: UINT): integer; stdcall; external USER32_DLL;
+function SetScrollPos(hWnd: THWND; nBar: integer; nPos: integer; bRedraw: longbool): integer; stdcall; external USER32_DLL;
+function GetScrollPos(hWnd: THWND; nBar: integer): integer; stdcall; external USER32_DLL;
+function SetScrollRange(hWnd: THWND; nBar: integer; nMinPos: integer; nMaxPos: integer; bRedraw: longbool): longbool;
+    stdcall; external USER32_DLL;
+function GetScrollRange(hWnd: THWND; nBar: integer; out lpMinPos: integer; out lpMaxPos: integer): longbool;
+    stdcall; external USER32_DLL;
+function ShowScrollBar(hWnd: THWND; wBar: integer; bShow: longbool): longbool; stdcall; external USER32_DLL;
+function EnableScrollBar(hWnd: THWND; wSBflags: UINT; wArrows: UINT): longbool; stdcall; external USER32_DLL;
+function SetPropA(hWnd: THWND; lpString: LPCSTR; hData: THANDLE): longbool; stdcall; external USER32_DLL;
+function SetPropW(hWnd: THWND; lpString: LPCWSTR; hData: THANDLE): longbool; stdcall; external USER32_DLL;
+function GetPropA(hWnd: THWND; lpString: LPCSTR): THANDLE; stdcall; external USER32_DLL;
+function GetPropW(hWnd: THWND; lpString: LPCWSTR): THANDLE; stdcall; external USER32_DLL;
+function RemovePropA(hWnd: THWND; lpString: LPCSTR): THANDLE; stdcall; external USER32_DLL;
+function RemovePropW(hWnd: THWND; lpString: LPCWSTR): THANDLE; stdcall; external USER32_DLL;
+function EnumPropsExA(hWnd: THWND; lpEnumFunc: TPROPENUMPROCEXA; lParam: LPARAM): integer; stdcall; external USER32_DLL;
+function EnumPropsExW(hWnd: THWND; lpEnumFunc: TPROPENUMPROCEXW; lParam: TLPARAM): integer; stdcall; external USER32_DLL;
+function EnumPropsA(hWnd: THWND; lpEnumFunc: TPROPENUMPROCA): integer; stdcall; external USER32_DLL;
+function EnumPropsW(hWnd: THWND; lpEnumFunc: TPROPENUMPROCW): integer; stdcall; external USER32_DLL;
+function SetWindowTextA(hWnd: THWND; lpString: LPCSTR): longbool; stdcall; external USER32_DLL;
+function SetWindowTextW(hWnd: THWND; lpString: LPCWSTR): longbool; stdcall; external USER32_DLL;
+function GetWindowTextA(hWnd: THWND; out lpString{nMaxCount}: LPSTR; nMaxCount: integer): integer;
+    stdcall; external USER32_DLL; // _Ret_range_(0, nMaxCount)
+function GetWindowTextW(hWnd: THWND; out lpString{nMaxCount}: LPWSTR; nMaxCount: integer): integer;
+    stdcall; external USER32_DLL; // _Ret_range_(0, nMaxCount)
+function GetWindowTextLengthA(hWnd: THWND): integer; stdcall; external USER32_DLL;
+function GetWindowTextLengthW(hWnd: THWND): integer; stdcall; external USER32_DLL;
+function GetClientRect(hWnd: THWND; out lpRect: TRECT): longbool; stdcall; external USER32_DLL;
+function GetWindowRect(hWnd: THWND; out lpRect: TRECT): longbool; stdcall; external USER32_DLL;
+function AdjustWindowRect(var lpRect: TRECT; dwStyle: DWORD; bMenu: longbool): longbool; stdcall; external USER32_DLL;
+function AdjustWindowRectEx(var lpRect: TRECT; dwStyle: DWORD; bMenu: longbool; dwExStyle: DWORD): longbool;
+    stdcall; external USER32_DLL;
+
+{$IF(WINVER >= $0605)}
+function AdjustWindowRectExForDpi(var lpRect: TRECT; dwStyle: DWORD; bMenu: longbool; dwExStyle: DWORD; dpi: UINT): longbool;
+    stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0605 *)
+
+{$IF(WINVER >= $0400)}
+function SetWindowContextHelpId(hwnd: THWND; dwContextHelpId: DWORD): longbool; stdcall; external USER32_DLL;
+function GetWindowContextHelpId(hwnd: THWND): DWORD; stdcall; external USER32_DLL;
+function SetMenuContextHelpId(hMenu: THMENU; dwContextHelpId: DWORD): longbool; stdcall; external USER32_DLL;
+function GetMenuContextHelpId(hMenu: THMENU): DWORD; stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0400 *)
+
+function MessageBoxA(hWnd: THWND; lpText: LPCSTR; lpCaption: LPCSTR; uType: UINT): integer; stdcall; external USER32_DLL;
+function MessageBoxW(hWnd: THWND; lpText: LPCWSTR; lpCaption: LPCWSTR; uType: UINT): integer; stdcall; external USER32_DLL;
+function MessageBoxExA(hWnd: THWND; lpText: LPCSTR; lpCaption: LPCSTR; uType: UINT; wLanguageId: word): integer;
+    stdcall; external USER32_DLL;
+function MessageBoxExW(hWnd: THWND; lpText: LPCWSTR; lpCaption: LPCWSTR; uType: UINT; wLanguageId: word): integer; stdcall; external USER32_DLL;
+
+{$IF(WINVER >= $0400)}
+function TrackPopupMenuEx(hMenu: THMENU; uFlags: UINT; x: integer; y: integer; hwnd: THWND; lptpm: PTPMPARAMS): longbool;
+    stdcall; external USER32_DLL;
+function MessageBoxIndirectA(const lpmbp: PMSGBOXPARAMSA): integer; stdcall; external USER32_DLL;
+function MessageBoxIndirectW(const lpmbp: PMSGBOXPARAMSW): integer; stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0400 *)
+
+function MessageBeep(uType: UINT): longbool; stdcall; external USER32_DLL;
+function ShowCursor(bShow: longbool): integer; stdcall; external USER32_DLL;
+function SetCursorPos(X: integer; Y: integer): longbool; stdcall; external USER32_DLL;
+
+{$IF(WINVER >= $0600)}
+function SetPhysicalCursorPos(X: integer; Y: integer): longbool; stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0600 *)
+
+function SetCursor(hCursor: THCURSOR): THCURSOR; stdcall; external USER32_DLL;
+function GetCursorPos(out lpPoint: TPOINT): longbool; stdcall; external USER32_DLL;
+
+{$IF(WINVER >= $0600)}
+function GetPhysicalCursorPos(out lpPoint: TPOINT): longbool; stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0600 *)
+
+
+function GetClipCursor(out lpRect: TRECT): longbool; stdcall; external USER32_DLL;
+function GetCursor(): THCURSOR; stdcall; external USER32_DLL;
+function CreateCaret(hWnd: THWND; hBitmap: THBITMAP; nWidth: integer; nHeight: integer): longbool; stdcall; external USER32_DLL;
+function GetCaretBlinkTime(): UINT; stdcall; external USER32_DLL;
+function SetCaretBlinkTime(uMSeconds: UINT): longbool; stdcall; external USER32_DLL;
+function DestroyCaret(): longbool; stdcall; external USER32_DLL;
+function HideCaret(hWnd: THWND): longbool; stdcall; external USER32_DLL;
+function ShowCaret(hWnd: THWND): longbool; stdcall; external USER32_DLL;
+function SetCaretPos(X: integer; Y: integer): longbool; stdcall; external USER32_DLL;
+function GetCaretPos(out lpPoint: TPOINT): longbool; stdcall; external USER32_DLL;
+function ClientToScreen(hWnd: THWND; var lpPoint: TPOINT): longbool; stdcall; external USER32_DLL;
+function ScreenToClient(hWnd: THWND; var lpPoint: TPOINT): longbool; stdcall; external USER32_DLL;
+
+{$IF(WINVER >= $0600)}
+function LogicalToPhysicalPoint(hWnd: THWND; var lpPoint: TPOINT): longbool; stdcall; external USER32_DLL;
+function PhysicalToLogicalPoint(hWnd: THWND; var lpPoint: TPOINT): longbool; stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0600 *)
+
+{$IF(WINVER >= $0603)}
+function LogicalToPhysicalPointForPerMonitorDPI(hWnd: THWND; var lpPoint: TPOINT): longbool; stdcall; external USER32_DLL;
+function PhysicalToLogicalPointForPerMonitorDPI(hWnd: THWND; var lpPoint: TPOINT): longbool; stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0603 *)
+
+function MapWindowPoints(hWndFrom: THWND; hWndTo: THWND; var lpPoints{cPoints}: PPOINT; cPoints: UINT): integer;
+    stdcall; external USER32_DLL;
+function WindowFromPoint(Point: TPOINT): THWND; stdcall; external USER32_DLL;
+
+{$IF(WINVER >= $0600)}
+function WindowFromPhysicalPoint(Point: TPOINT): THWND; stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0600 *)
+
+function ChildWindowFromPoint(hWndParent: THWND; Point: TPOINT): THWND; stdcall; external USER32_DLL;
+function ClipCursor(const lpRect: PRECT): longbool; stdcall; external USER32_DLL;
+
+{$IF(WINVER >= $0400)}
+function ChildWindowFromPointEx(hwnd: THWND; pt: TPOINT; flags: UINT): THWND; stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0400 *)
+
+function GetSysColor(nIndex: integer): DWORD; stdcall; external USER32_DLL;
+
+{$IF(WINVER >= $0400)}
+function GetSysColorBrush(nIndex: integer): THBRUSH; stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0400 *)
+
+function SetSysColors(cElements: integer; const lpaElements {cElements}: PINT; const lpaRgbValues {cElements}: PCOLORREF): longbool;
+    stdcall; external USER32_DLL;
+function DrawFocusRect(hDC: THDC; const lprc: PRECT): longbool; stdcall; external USER32_DLL;
+function FillRect(hDC: THDC; const lprc: PRECT; hbr: THBRUSH): integer; stdcall; external USER32_DLL;
+function FrameRect(hDC: THDC; const lprc: PRECT; hbr: THBRUSH): integer; stdcall; external USER32_DLL;
+function InvertRect(hDC: THDC; const lprc: PRECT): longbool; stdcall; external USER32_DLL;
+function SetRect(out lprc: TRECT; xLeft: integer; yTop: integer; xRight: integer; yBottom: integer): longbool;
+    stdcall; external USER32_DLL;
+function SetRectEmpty(out lprc: TRECT): longbool; stdcall; external USER32_DLL;
+function CopyRect(out lprcDst: TRECT; const lprcSrc: PRECT): longbool; stdcall; external USER32_DLL;
+function InflateRect(var lprc: TRECT; dx: integer; dy: integer): longbool; stdcall; external USER32_DLL;
+function IntersectRect(out lprcDst: TRECT; const lprcSrc1: PRECT; const lprcSrc2: PRECT): longbool; stdcall; external USER32_DLL;
+function UnionRect(out lprcDst: TRECT; const lprcSrc1: PRECT; const lprcSrc2: PRECT): longbool; stdcall; external USER32_DLL;
+function SubtractRect(out lprcDst: TRECT; const lprcSrc1: PRECT; const lprcSrc2: PRECT): longbool; stdcall; external USER32_DLL;
+function OffsetRect(var lprc: TRECT; dx: integer; dy: integer): longbool; stdcall; external USER32_DLL;
+function IsRectEmpty(const lprc: PRECT): longbool; stdcall; external USER32_DLL;
+function EqualRect(const lprc1: PRECT; const lprc2: PRECT): longbool; stdcall; external USER32_DLL;
+function PtInRect(const lprc: PRECT; pt: TPOINT): longbool; stdcall; external USER32_DLL;
+function GetWindowWord(hWnd: THWND; nIndex: integer): word; stdcall; external USER32_DLL;
+function SetWindowWord(hWnd: THWND; nIndex: integer; wNewWord: word): word; stdcall; external USER32_DLL;
+function GetWindowLongA(hWnd: THWND; nIndex: integer): LONG; stdcall; external USER32_DLL;
+function GetWindowLongW(hWnd: THWND; nIndex: integer): LONG; stdcall; external USER32_DLL;
+function SetWindowLongA(hWnd: THWND; nIndex: integer; dwNewLong: LONG): LONG; stdcall; external USER32_DLL;
+function SetWindowLongW(hWnd: THWND; nIndex: integer; dwNewLong: LONG): LONG; stdcall; external USER32_DLL;
+
+{$IFdef WIN64}
+function GetWindowLongPtrA(hWnd: THWND; nIndex: integer): LONG_PTR; stdcall; external USER32_DLL;
+function GetWindowLongPtrW(hWnd: THWND; nIndex: integer): LONG_PTR; stdcall; external USER32_DLL;
+function SetWindowLongPtrA(hWnd: THWND; nIndex: integer; dwNewLong: LONG_PTR): LONG_PTR; stdcall; external USER32_DLL;
+function SetWindowLongPtrW(hWnd: THWND; nIndex: integer; dwNewLong: LONG_PTR): LONG_PTR; stdcall; external USER32_DLL;
+{$ELSE}(* _WIN64 *)
+function GetWindowLongPtrA(hWnd: THWND; nIndex: integer): LONG_PTR; stdcall;
+function GetWindowLongPtrW(hWnd: THWND; nIndex: integer): LONG_PTR; stdcall;
+function SetWindowLongPtrA(hWnd: THWND; nIndex: integer; dwNewLong: LONG_PTR): LONG_PTR; stdcall;
+function SetWindowLongPtrW(hWnd: THWND; nIndex: integer; dwNewLong: LONG_PTR): LONG_PTR; stdcall;
+{$ENDIF}(* _WIN64 *)
+
+function GetClassWord(hWnd: THWND; nIndex: integer): word; stdcall; external USER32_DLL;
+function SetClassWord(hWnd: THWND; nIndex: integer; wNewWord: word): word; stdcall; external USER32_DLL;
+function GetClassLongA(hWnd: THWND; nIndex: integer): DWORD; stdcall; external USER32_DLL;
+function GetClassLongW(hWnd: THWND; nIndex: integer): DWORD; stdcall; external USER32_DLL;
+function SetClassLongA(hWnd: THWND; nIndex: integer; dwNewLong: LONG): DWORD; stdcall; external USER32_DLL;
+function SetClassLongW(hWnd: THWND; nIndex: integer; dwNewLong: LONG): DWORD; stdcall; external USER32_DLL;
+
+{$IFdef WIN64}
+function GetClassLongPtrA(hWnd: THWND; nIndex: integer): ULONG_PTR; stdcall; external USER32_DLL;
+function GetClassLongPtrW(hWnd: THWND; nIndex: integer): ULONG_PTR; stdcall; external USER32_DLL;
+function SetClassLongPtrA(hWnd: THWND; nIndex: integer; dwNewLong: LONG_PTR): ULONG_PTR; stdcall; external USER32_DLL;
+function SetClassLongPtrW(hWnd: THWND; nIndex: integer; dwNewLong: LONG_PTR): ULONG_PTR; stdcall; external USER32_DLL;
+{$ELSE}(* _WIN64 *)
+function GetClassLongPtrA(hWnd: THWND; nIndex: integer): ULONG_PTR; stdcall;
+function GetClassLongPtrW(hWnd: THWND; nIndex: integer): ULONG_PTR; stdcall;
+function SetClassLongPtrA(hWnd: THWND; nIndex: integer; dwNewLong: LONG): ULONG_PTR; stdcall;
+function SetClassLongPtrW(hWnd: THWND; nIndex: integer; dwNewLong: LONG): ULONG_PTR; stdcall;
+{$ENDIF}(* _WIN64 *)
+
+{$IF(WINVER >= $0500)}
+function GetProcessDefaultLayout(out pdwDefaultLayout: DWORD): longbool; stdcall; external USER32_DLL;
+function SetProcessDefaultLayout(dwDefaultLayout: DWORD): longbool; stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0500 *)
+
+function GetDesktopWindow(): THWND; stdcall; external USER32_DLL;
+function GetParent(hWnd: THWND): THWND; stdcall; external USER32_DLL;
+function SetParent(hWndChild: THWND; hWndNewParent: THWND): THWND; stdcall; external USER32_DLL;
+function EnumChildWindows(hWndParent: THWND; lpEnumFunc: TWNDENUMPROC; lParam: TLPARAM): longbool; stdcall; external USER32_DLL;
+function FindWindowA(lpClassName: LPCSTR; lpWindowName: LPCSTR): THWND; stdcall; external USER32_DLL;
+function FindWindowW(lpClassName: LPCWSTR; lpWindowName: LPCWSTR): THWND; stdcall; external USER32_DLL;
+
+{$IF(WINVER >= $0400)}
+function FindWindowExA(hWndParent: THWND; hWndChildAfter: THWND; lpszClass: LPCSTR; lpszWindow: LPCSTR): THWND;
+    stdcall; external USER32_DLL;
+function FindWindowExW(hWndParent: THWND; hWndChildAfter: THWND; lpszClass: LPCWSTR; lpszWindow: LPCWSTR): THWND;
+    stdcall; external USER32_DLL;
+function GetShellWindow(): THWND; stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0400 *)
+
+function RegisterShellHookWindow(hwnd: THWND): longbool; stdcall; external USER32_DLL;
+function DeregisterShellHookWindow(hwnd: THWND): longbool; stdcall; external USER32_DLL;
+function EnumWindows(lpEnumFunc: TWNDENUMPROC; lParam: TLPARAM): longbool; stdcall; external USER32_DLL;
+function EnumThreadWindows(dwThreadId: DWORD; lpfn: TWNDENUMPROC; lParam: TLPARAM): longbool; stdcall; external USER32_DLL;
+function GetClassNameA(hWnd: THWND; out lpClassName{nMaxCount}: LPSTR; nMaxCount: integer): integer; stdcall; external USER32_DLL;
+function GetClassNameW(hWnd: THWND; out lpClassName{nMaxCount}: LPWSTR; nMaxCount: integer): integer; stdcall; external USER32_DLL;
+function GetTopWindow(hWnd: THWND): THWND; stdcall; external USER32_DLL;
+function GetWindowThreadProcessId(hWnd: THWND; out lpdwProcessId: DWORD): DWORD; stdcall; external USER32_DLL;
+
+{$IF(_WIN32_WINNT >= $0501)}
+function IsGUIThread(bConvert: longbool): longbool; stdcall; external USER32_DLL;
+{$ENDIF}(* _WIN32_WINNT >= $0501 *)
+
+function GetLastActivePopup(hWnd: THWND): THWND; stdcall; external USER32_DLL;
+function GetWindow(hWnd: THWND; uCmd: UINT): THWND; stdcall; external USER32_DLL;
+function SetWindowsHookA(nFilterType: integer; pfnFilterProc: THOOKPROC): THHOOK; stdcall; external USER32_DLL; // THOOKPROC
+function SetWindowsHookW(nFilterType: integer; pfnFilterProc: THOOKPROC): THHOOK; stdcall; external USER32_DLL; // THOOKPROC
+function UnhookWindowsHook(nCode: integer; pfnFilterProc: THOOKPROC): longbool; stdcall; external USER32_DLL;
+function SetWindowsHookExA(idHook: integer; lpfn: THOOKPROC; hmod: THINSTANCE; dwThreadId: DWORD): THHOOK;
+    stdcall; external USER32_DLL;
+function SetWindowsHookExW(idHook: integer; lpfn: THOOKPROC; hmod: THINSTANCE; dwThreadId: DWORD): THHOOK;
+    stdcall; external USER32_DLL;
+function UnhookWindowsHookEx(hhk: THHOOK): longbool; stdcall; external USER32_DLL;
+function CallNextHookEx(hhk: THHOOK; nCode: integer; wParam: TWPARAM; lParam: TLPARAM): LRESULT; stdcall; external USER32_DLL;
+
+(* Macros for source-level compatibility with old functions. *)
+function DefHookProc(nCode: integer; wParam: TWPARAM; lParam: TLPARAM; phhk: THHOOK): LResult;
+
+{$IF(WINVER >= $0400)}
+function CheckMenuRadioItem(hmenu: THMENU; First: UINT; last: UINT; check: UINT; flags: UINT): longbool;
+    stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0400 *)
+
+(* Resource Loading Routines *)
+function LoadBitmapA(hInstance: THINSTANCE; lpBitmapName: LPCSTR): THBITMAP; stdcall; external USER32_DLL;
+function LoadBitmapW(hInstance: THINSTANCE; lpBitmapName: LPCWSTR): THBITMAP; stdcall; external USER32_DLL;
+function LoadCursorA(hInstance: THINSTANCE; lpCursorName: LPCSTR): THCURSOR; stdcall; external USER32_DLL;
+function LoadCursorW(hInstance: THINSTANCE; lpCursorName: LPCWSTR): THCURSOR; stdcall; external USER32_DLL;
+function LoadCursorFromFileA(lpFileName: LPCSTR): THCURSOR; stdcall; external USER32_DLL;
+function LoadCursorFromFileW(lpFileName: LPCWSTR): THCURSOR; stdcall; external USER32_DLL;
+function CreateCursor(hInst: THINSTANCE; xHotSpot: integer; yHotSpot: integer; nWidth: integer; nHeight: integer;
+    const pvANDPlane: pointer; const pvXORPlane: pointer): THCURSOR; stdcall; external USER32_DLL;
+function DestroyCursor(hCursor: THCURSOR): longbool; stdcall; external USER32_DLL;
+
+{$ifndef DARWIN}
+function CopyCursor(pcur: THCURSOR): THCURSOR;
+{$ELSE}
+function CopyCursor(hCursor: THCURSOR): THCURSOR; stdcall; external USER32_DLL;
+{$ENDIF}
+
+function SetSystemCursor(hcur: THCURSOR; id: DWORD): longbool; stdcall; external USER32_DLL;
+function LoadIconA(hInstance: THINSTANCE; lpIconName: LPCSTR): THICON; stdcall; external USER32_DLL;
+function LoadIconW(hInstance: THINSTANCE; lpIconName: LPCWSTR): THICON; stdcall; external USER32_DLL;
+function PrivateExtractIconsA(szFileName{MAX_PATH}: LPCSTR; nIconIndex: integer; cxIcon: integer; cyIcon: integer;
+    out phicon{nIcons}: PHICON; out piconid {nIcons}: PUINT; nIcons: UINT; flags: UINT): UINT;
+    stdcall; external USER32_DLL;
+function PrivateExtractIconsW(szFileName{MAX_PATH}: LPCWSTR; nIconIndex: integer; cxIcon: integer; cyIcon: integer;
+    out phicon{nIcons}: PHICON; out piconid{nIcons}: PUINT; nIcons: UINT; flags: UINT): UINT;
+    stdcall; external USER32_DLL;
+function CreateIcon(hInstance: THINSTANCE; nWidth: integer; nHeight: integer; cPlanes: byte; cBitsPixel: byte;
+    const lpbANDbits: PBYTE; const lpbXORbits: PBYTE): THICON; stdcall; external USER32_DLL;
+function DestroyIcon(hIcon: THICON): longbool; stdcall; external USER32_DLL;
+function LookupIconIdFromDirectory(presbits {sizeof(WORD) * 3}: PBYTE; fIcon: longbool): integer; stdcall; external USER32_DLL;
+
+{$IF(WINVER >= $0400)}
+function LookupIconIdFromDirectoryEx(presbits {sizeof(WORD) * 3}: PBYTE; fIcon: longbool; cxDesired: integer;
+    cyDesired: integer; Flags: UINT): integer; stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0400 *)
+
+function CreateIconFromResource(presbits {dwResSize}: PBYTE; dwResSize: DWORD; fIcon: longbool; dwVer: DWORD): THICON;
+    stdcall; external USER32_DLL;
+
+{$IF(WINVER >= $0400)}
+function CreateIconFromResourceEx(presbits{dwResSize}: PBYTE; dwResSize: DWORD; fIcon: longbool; dwVer: DWORD;
+    cxDesired: integer; cyDesired: integer; Flags: UINT): THICON; stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0400 *)
+
+{$IF(WINVER >= $0400)}
+function LoadImageA(hInst: THINSTANCE; Name: LPCSTR; _type: UINT; cx: integer; cy: integer; fuLoad: UINT): THANDLE; stdcall; external USER32_DLL;
+function LoadImageW(hInst: THINSTANCE; Name: LPCWSTR; _type: UINT; cx: integer; cy: integer; fuLoad: UINT): THANDLE; stdcall; external USER32_DLL;
+function CopyImage(h: THANDLE; _type: UINT; cx: integer; cy: integer; flags: UINT): THANDLE; stdcall; external USER32_DLL;
+function DrawIconEx(hdc: THDC; xLeft: integer; yTop: integer; hIcon: THICON; cxWidth: integer; cyWidth: integer;
+    istepIfAniCur: UINT; hbrFlickerFreeDraw: THBRUSH; diFlags: UINT): longbool; stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0400 *)
+
+function CreateIconIndirect(piconinfo: PICONINFO): THICON; stdcall; external USER32_DLL;
+function CopyIcon(hIcon: THICON): THICON; stdcall; external USER32_DLL;
+function GetIconInfo(hIcon: THICON; out piconinfo: PICONINFO): longbool; stdcall; external USER32_DLL;
+
+{$IF(_WIN32_WINNT >= $0600)}
+function GetIconInfoExA(hicon: THICON; var piconinfo: TICONINFOEXA): longbool; stdcall; external USER32_DLL;
+function GetIconInfoExW(hicon: THICON; var piconinfo: TICONINFOEXW): longbool; stdcall; external USER32_DLL;
+{$ENDIF}(* _WIN32_WINNT >= $0600 *)
+
+function LoadStringA(hInstance: THINSTANCE; uID: UINT; out lpBuffer{cchBufferMax, return + 1}: LPSTR; cchBufferMax: integer): integer;
+    stdcall; external USER32_DLL;
+function LoadStringW(hInstance: THINSTANCE; uID: UINT; out lpBuffer{cchBufferMax, return + 1}: LPWSTR; cchBufferMax: integer): integer;
+    stdcall; external USER32_DLL;
+
+(* Dialog Manager Routines *)
+function IsDialogMessageA(hDlg: HWND; lpMsg: PMSG): longbool; stdcall; external USER32_DLL;
+function IsDialogMessageW(hDlg: THWND; lpMsg: PMSG): longbool; stdcall; external USER32_DLL;
+function MapDialogRect(hDlg: THWND; var lpRect: TRECT): longbool; stdcall; external USER32_DLL;
+function DlgDirListA(hDlg: THWND; var lpPathSpec: LPSTR; nIDListBox: integer; nIDStaticPath: integer; uFileType: UINT): integer;
+    stdcall; external USER32_DLL;
+function DlgDirListW(hDlg: THWND; var lpPathSpec: LPWSTR; nIDListBox: integer; nIDStaticPath: integer; uFileType: UINT): integer;
+    stdcall; external USER32_DLL;
+function DlgDirSelectExA(hwndDlg: THWND; out lpString{chCount}: LPSTR; chCount: integer; idListBox: integer): longbool;
+    stdcall; external USER32_DLL;
+function DlgDirSelectExW(hwndDlg: THWND; out lpString{chCount}: LPWSTR; chCount: integer; idListBox: integer): longbool;
+    stdcall; external USER32_DLL;
+function DlgDirListComboBoxA(hDlg: THWND; var lpPathSpec: LPSTR; nIDComboBox: integer; nIDStaticPath: integer; uFiletype: UINT): integer;
+    stdcall; external USER32_DLL;
+function DlgDirListComboBoxW(hDlg: THWND; var lpPathSpec: LPWSTR; nIDComboBox: integer; nIDStaticPath: integer; uFiletype: UINT): integer;
+    stdcall; external USER32_DLL;
+function DlgDirSelectComboBoxExA(hwndDlg: HWND; out lpString{cchOut}: LPSTR; cchOut: integer; idComboBox: integer): longbool;
+    stdcall; external USER32_DLL;
+function DlgDirSelectComboBoxExW(hwndDlg: THWND; out lpString{cchOut}: LPWSTR; cchOut: integer; idComboBox: integer): longbool;
+    stdcall; external USER32_DLL;
+
+{$IF(WINVER >= $0400)}
+function SetScrollInfo(hwnd: THWND; nBar: integer; lpsi: PCSCROLLINFO; redraw: longbool): integer; stdcall; external USER32_DLL;
+function GetScrollInfo(hwnd: HWND; nBar: integer; var lpsi: TSCROLLINFO): longbool; stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0400 *)
+
+function DefFrameProcA(hWnd: THWND; hWndMDIClient: THWND; uMsg: UINT; wParam: TWPARAM; lParam: TLPARAM): LRESULT; stdcall;
+    external USER32_DLL;
+function DefFrameProcW(hWnd: THWND; hWndMDIClient: THWND; uMsg: UINT; wParam: TWPARAM; lParam: TLPARAM): LRESULT; stdcall;
+    external USER32_DLL;
+function DefMDIChildProcA(hWnd: THWND; uMsg: UINT; wParam: TWPARAM; lParam: TLPARAM): LRESULT; stdcall; external USER32_DLL;
+function DefMDIChildProcW(hWnd: THWND; uMsg: UINT; wParam: TWPARAM; lParam: TLPARAM): LRESULT; stdcall; external USER32_DLL;
+function TranslateMDISysAccel(hWndClient: THWND; lpMsg: PMSG): longbool; stdcall; external USER32_DLL;
+function ArrangeIconicWindows(hWnd: THWND): UINT; stdcall; external USER32_DLL;
+function CreateMDIWindowA(lpClassName: LPCSTR; lpWindowName: LPCSTR; dwStyle: DWORD; X: integer; Y: integer;
+    nWidth: integer; nHeight: integer; hWndParent: THWND; hInstance: THINSTANCE; lParam: TLPARAM): HWND;
+    stdcall; external USER32_DLL;
+function CreateMDIWindowW(lpClassName: LPCWSTR; lpWindowName: LPCWSTR; dwStyle: DWORD; X: integer; Y: integer;
+    nWidth: integer; nHeight: integer; hWndParent: THWND; hInstance: THINSTANCE; lParam: TLPARAM): HWND; stdcall; external USER32_DLL;
+
+{$IF(WINVER >= $0400)}
+function TileWindows(hwndParent: THWND; wHow: UINT; const lpRect: PRECT; cKids: UINT; const pKids{cKids}: PHWND): word;
+    stdcall; external USER32_DLL;
+function CascadeWindows(hwndParent: THWND; wHow: UINT; const lpRect: PRECT; cKids: UINT; const lpKids{cKids}: PHWND): word;
+    stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0400 *)
+
+(****** Help support ********************************************************)
+function WinHelpA(hWndMain: THWND; lpszHelp: LPCSTR; uCommand: UINT; dwData: ULONG_PTR): longbool; stdcall; external USER32_DLL;
+function WinHelpW(hWndMain: THWND; lpszHelp: LPCWSTR; uCommand: UINT; dwData: ULONG_PTR): longbool; stdcall; external USER32_DLL;
+
+{$IF(WINVER >= $0500)}
+function GetGuiResources(hProcess: THANDLE; uiFlags: DWORD): DWORD; stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0500 *)
+
+function ChangeDisplaySettingsA(lpDevMode: PDEVMODEA; dwFlags: DWORD): LONG; stdcall; external USER32_DLL;
+function ChangeDisplaySettingsW(lpDevMode: PDEVMODEW; dwFlags: DWORD): LONG; stdcall; external USER32_DLL;
+function ChangeDisplaySettingsExA(lpszDeviceName: LPCSTR; lpDevMode: PDEVMODEA; hwnd: THWND; dwflags: DWORD; lParam: pointer): LONG;
+    stdcall; external USER32_DLL;
+function ChangeDisplaySettingsExW(lpszDeviceName: LPCWSTR; lpDevMode: PDEVMODEW; hwnd: THWND; dwflags: DWORD; lParam: pointer): LONG;
+    stdcall; external USER32_DLL;
+function EnumDisplaySettingsA(lpszDeviceName: LPCSTR; iModeNum: DWORD; var lpDevMode: TDEVMODEA): longbool; stdcall; external USER32_DLL;
+function EnumDisplaySettingsW(lpszDeviceName: LPCWSTR; iModeNum: DWORD; var lpDevMode: TDEVMODEW): longbool; stdcall; external USER32_DLL;
+
+{$IF(WINVER >= $0500)}
+function EnumDisplaySettingsExA(lpszDeviceName: LPCSTR; iModeNum: DWORD; var lpDevMode: TDEVMODEA; dwFlags: DWORD): longbool;
+    stdcall; external USER32_DLL;
+function EnumDisplaySettingsExW(lpszDeviceName: LPCWSTR; iModeNum: DWORD; var lpDevMode: TDEVMODEW; dwFlags: DWORD): longbool;
+    stdcall; external USER32_DLL;
+function EnumDisplayDevicesA(lpDevice: LPCSTR; iDevNum: DWORD; var lpDisplayDevice: TDISPLAY_DEVICEA; dwFlags: DWORD): longbool;
+    stdcall; external USER32_DLL;
+function EnumDisplayDevicesW(lpDevice: LPCWSTR; iDevNum: DWORD; var lpDisplayDevice: TDISPLAY_DEVICEW; dwFlags: DWORD): longbool;
+    stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0500 *)
+
+{$IF(WINVER >= $0601)}
+function GetDisplayConfigBufferSizes(flags: UINT32; out numPathArrayElements: UINT32; out numModeInfoArrayElements: UINT32): LONG;
+    stdcall; external USER32_DLL;
+function SetDisplayConfig(numPathArrayElements: UINT32; pathArray {numPathArrayElements}: PDISPLAYCONFIG_PATH_INFO;
+    numModeInfoArrayElements: UINT32; modeInfoArray {numModeInfoArrayElements}: PDISPLAYCONFIG_MODE_INFO; flags: UINT32): LONG;
+    stdcall; external USER32_DLL;
+function QueryDisplayConfig(flags: UINT32; var numPathArrayElements: UINT32;
+    out pathArray{numPathArrayElements, numPathArrayElements}: PDISPLAYCONFIG_PATH_INFO; var numModeInfoArrayElements: UINT32;
+    out modeInfoArray{numModeInfoArrayElements, numModeInfoArrayElements}: PDISPLAYCONFIG_MODE_INFO;
+    out currentTopologyId: TDISPLAYCONFIG_TOPOLOGY_ID): LONG; stdcall; external USER32_DLL;
+function DisplayConfigGetDeviceInfo(var requestPacket: TDISPLAYCONFIG_DEVICE_INFO_HEADER): LONG; stdcall; external USER32_DLL;
+function DisplayConfigSetDeviceInfo(setPacket: PDISPLAYCONFIG_DEVICE_INFO_HEADER): LONG; stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0601 *)
+
+function SystemParametersInfoA(uiAction: UINT; uiParam: UINT; pvParam: pointer; fWinIni: UINT): longbool;
+    stdcall; external USER32_DLL;
+function SystemParametersInfoW(uiAction: UINT; uiParam: UINT; pvParam: pointer; fWinIni: UINT): longbool;
+    stdcall; external USER32_DLL;
+
+{$IF(WINVER >= $0605)}
+function SystemParametersInfoForDpi(uiAction: UINT; uiParam: UINT; pvParam: pointer; fWinIni: UINT; dpi: UINT): longbool;
+    stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0605 *)
+
+{$IF(_WIN32_WINNT >= $0600)}
+function SoundSentry(): longbool; stdcall; external USER32_DLL;
+{$ENDIF}(* _WIN32_WINNT >= $0600 *)
+
+
+(* Set debug level *)
+procedure SetDebugErrorLevel(dwLevel: DWORD); stdcall; external USER32_DLL;
+procedure SetLastErrorEx(dwErrCode: DWORD; dwType: DWORD); stdcall; external USER32_DLL;
+function InternalGetWindowText(hWnd: THWND; out pString{cchMaxCount, return + 1}: LPWSTR; cchMaxCount: integer): integer;
+    stdcall; external USER32_DLL;
+
+{$IF defined(WINNT)}
+function EndTask(hWnd: THWND; fShutDown: longbool; fForce: longbool): longbool;
+{$ENDIF}
+
+function CancelShutdown(): longbool; stdcall; external USER32_DLL;
+
+(* Multimonitor API. *)
+function MonitorFromPoint(pt: TPOINT; dwFlags: DWORD): THMONITOR; stdcall; external USER32_DLL;
+function MonitorFromRect(lprc: PRECT; dwFlags: DWORD): THMONITOR; stdcall; external USER32_DLL;
+function MonitorFromWindow(hwnd: THWND; dwFlags: DWORD): THMONITOR; stdcall; external USER32_DLL;
+function GetMonitorInfoA(hMonitor: THMONITOR; var lpmi: TMONITORINFO): longbool; stdcall; external USER32_DLL;
+function GetMonitorInfoW(hMonitor: THMONITOR; var lpmi: TMONITORINFO): longbool; stdcall; external USER32_DLL;
+function EnumDisplayMonitors(hdc: THDC; lprcClip: PRECT; lpfnEnum: TMONITORENUMPROC; dwData: TLPARAM): longbool;
+    stdcall; external USER32_DLL;
+
+(* WinEvents - Active Accessibility hooks *)
+procedure NotifyWinEvent(event: DWORD; hwnd: THWND; idObject: LONG; idChild: LONG); stdcall; external USER32_DLL;
+function SetWinEventHook(eventMin: DWORD; eventMax: DWORD; hmodWinEventProc: THMODULE; pfnWinEventProc: TWINEVENTPROC;
+    idProcess: DWORD; idThread: DWORD; dwFlags: DWORD): THWINEVENTHOOK; stdcall; external USER32_DLL;
+
+{$IF(_WIN32_WINNT >= $0501)}
+function IsWinEventHookInstalled(event: DWORD): longbool; stdcall; external USER32_DLL;
+{$ENDIF}(* _WIN32_WINNT >= $0501 *)
+
+function UnhookWinEvent(hWinEventHook: THWINEVENTHOOK): longbool; stdcall; external USER32_DLL;
+function GetGUIThreadInfo(idThread: DWORD; var pgui: TGUITHREADINFO): longbool; stdcall; external USER32_DLL;
+function BlockInput(fBlockIt: longbool): longbool; stdcall; external USER32_DLL;
+
+{$IF(_WIN32_WINNT >= $0600)}
+function SetProcessDPIAware(): longbool; stdcall; external USER32_DLL;
+function IsProcessDPIAware(): longbool; stdcall; external USER32_DLL;
+{$ENDIF}(* _WIN32_WINNT >= $0600 *)
+
+{$IF(WINVER >= $0605)}
+function SetThreadDpiAwarenessContext(dpiContext: TDPI_AWARENESS_CONTEXT): TDPI_AWARENESS_CONTEXT; stdcall; external USER32_DLL;
+function GetThreadDpiAwarenessContext(): TDPI_AWARENESS_CONTEXT; stdcall; external USER32_DLL;
+function GetWindowDpiAwarenessContext(hwnd: THWND): TDPI_AWARENESS_CONTEXT; stdcall; external USER32_DLL;
+function GetAwarenessFromDpiAwarenessContext(Value: TDPI_AWARENESS_CONTEXT): TDPI_AWARENESS; stdcall; external USER32_DLL;
+function GetDpiFromDpiAwarenessContext(Value: TDPI_AWARENESS_CONTEXT): UINT; stdcall; external USER32_DLL;
+function AreDpiAwarenessContextsEqual(dpiContextA: TDPI_AWARENESS_CONTEXT; dpiContextB: TDPI_AWARENESS_CONTEXT): longbool;
+    stdcall; external USER32_DLL;
+function IsValidDpiAwarenessContext(Value: TDPI_AWARENESS_CONTEXT): longbool; stdcall; external USER32_DLL;
+function GetDpiForWindow(hwnd: THWND): UINT; stdcall; external USER32_DLL;
+function GetDpiForSystem(): UINT; stdcall; external USER32_DLL;
+function GetSystemDpiForProcess(hProcess: THANDLE): UINT; stdcall; external USER32_DLL;
+function EnableNonClientDpiScaling(hwnd: THWND): longbool; stdcall; external USER32_DLL;
+function InheritWindowMonitor(hwnd: THWND; hwndInherit: THWND): longbool; stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0605 *)
+
+{$IF(WINVER >= $0605)}
+function SetProcessDpiAwarenessContext(Value: TDPI_AWARENESS_CONTEXT): longbool; stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0605 *)
+
+{$IF(WINVER >= $0606)}
+function SetThreadDpiHostingBehavior(Value: TDPI_HOSTING_BEHAVIOR): TDPI_HOSTING_BEHAVIOR; stdcall; external USER32_DLL;
+function GetThreadDpiHostingBehavior(): TDPI_HOSTING_BEHAVIOR; stdcall; external USER32_DLL;
+function GetWindowDpiHostingBehavior(hwnd: THWND): TDPI_HOSTING_BEHAVIOR; stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0606 *)
+
+function GetWindowModuleFileNameA(hwnd: THWND; out pszFileName{cchFileNameMax, return}: LPSTR; cchFileNameMax: UINT): UINT;
+    stdcall; external USER32_DLL;
+function GetWindowModuleFileNameW(hwnd: THWND; out pszFileName{cchFileNameMax, return}: LPWSTR; cchFileNameMax: UINT): UINT;
+    stdcall; external USER32_DLL;
+function GetCursorInfo(var pci: TCURSORINFO): longbool; stdcall; external USER32_DLL;
+function GetWindowInfo(hwnd: THWND; var pwi: TWINDOWINFO): longbool; stdcall; external USER32_DLL;
+function GetTitleBarInfo(hwnd: THWND; var pti: TTITLEBARINFO): longbool; stdcall; external USER32_DLL;
+function GetMenuBarInfo(hwnd: THWND; idObject: LONG; idItem: LONG; var pmbi: TMENUBARINFO): longbool; stdcall; external USER32_DLL;
+function GetScrollBarInfo(hwnd: THWND; idObject: LONG; var psbi: TSCROLLBARINFO): longbool; stdcall; external USER32_DLL;
+function GetComboBoxInfo(hwndCombo: THWND; var pcbi: TCOMBOBOXINFO): longbool; stdcall; external USER32_DLL;
+function GetAncestor(hwnd: THWND; gaFlags: UINT): THWND; stdcall; external USER32_DLL;
+
+(*
+ * This gets the REAL child window at the point.  If it is in the dead
+ * space of a group box, it will try a sibling behind it.  But static
+ * fields will get returned.  In other words, it is kind of a cross between
+ * ChildWindowFromPointEx and WindowFromPoint.
+ *)
+function RealChildWindowFromPoint(hwndParent: THWND; ptParentClientCoords: TPOINT): THWND; stdcall; external USER32_DLL;
+
+(*
+ * This gets the name of the window TYPE, not class.  This allows us to
+ * recognize ThunderButton32 et al.
+ *)
+function RealGetWindowClassA(hwnd: THWND; out ptszClassName{cchClassNameMax, return}: LPSTR; cchClassNameMax: UINT): UINT; stdcall;
+    external USER32_DLL;
+(*
+ * This gets the name of the window TYPE, not class.  This allows us to
+ * recognize ThunderButton32 et al.
+ *)
+function RealGetWindowClassW(hwnd: THWND; out ptszClassName{cchClassNameMax, return}: LPWSTR; cchClassNameMax: UINT): UINT; stdcall;
+    external USER32_DLL;
+
+function GetAltTabInfoA(hwnd: THWND; iItem: integer; var pati: PALTTABINFO; out pszItemText{cchItemText}: LPSTR; cchItemText: UINT): longbool;
+    stdcall; external USER32_DLL;
+function GetAltTabInfoW(hwnd: THWND; iItem: integer; var pati: TALTTABINFO; out pszItemText{cchItemText}: LPWSTR; cchItemText: UINT): longbool;
+    stdcall; external USER32_DLL;
+
+(*
+ * Listbox information.
+ * Returns the number of items per row.
+ *)
+function GetListBoxInfo(hwnd: THWND): DWORD; stdcall; external USER32_DLL;
+
+{$IF(_WIN32_WINNT >= $0500)}
+function LockWorkStation(): longbool; stdcall; external USER32_DLL;
+{$ENDIF}(* _WIN32_WINNT >= $0500 *)
+
+{$IF(_WIN32_WINNT >= $0500)}
+function UserHandleGrantAccess(hUserHandle: THANDLE; hJob: THANDLE; bGrant: longbool): longbool; stdcall; external USER32_DLL;
+{$ENDIF}(* _WIN32_WINNT >= $0500 *)
+
+{$IF(_WIN32_WINNT >= $0501)}
+function GetRawInputData(hRawInput: THRAWINPUT; uiCommand: UINT; out pData{pcbSize, return}: pointer; var pcbSize: UINT;
+    cbSizeHeader: UINT): UINT; stdcall; external USER32_DLL;
+function GetRawInputDeviceInfoA(hDevice: THANDLE; uiCommand: UINT; var pData {pcbSize, pcbSize}: pointer; var pcbSize: UINT): UINT;
+    stdcall; external USER32_DLL;
+function GetRawInputDeviceInfoW(hDevice: THANDLE; uiCommand: UINT; var pData {pcbSize, pcbSize}: pointer; var pcbSize: UINT): UINT;
+    stdcall; external USER32_DLL;
+
+(* Raw Input Bulk Read: GetRawInputBuffer *)
+function GetRawInputBuffer(out pData {pcbSize}: PRAWINPUT; var pcbSize: UINT; cbSizeHeader: UINT): UINT; stdcall; external USER32_DLL;
+function RegisterRawInputDevices(pRawInputDevices{uiNumDevices}: PCRAWINPUTDEVICE; uiNumDevices: UINT; cbSize: UINT): longbool;
+    stdcall; external USER32_DLL;
+function GetRegisteredRawInputDevices(out pRawInputDevices{puiNumDevices}: PRAWINPUTDEVICE; var puiNumDevices: UINT; cbSize: UINT): UINT;
+    stdcall; external USER32_DLL;
+function GetRawInputDeviceList(out pRawInputDeviceList{puiNumDevices}: PRAWINPUTDEVICELIST; var puiNumDevices: UINT; cbSize: UINT): UINT;
+    stdcall; external USER32_DLL;
+function DefRawInputProc(paRawInput{nInput}: PRAWINPUT; nInput: integer; cbSizeHeader: UINT): LRESULT; stdcall; external USER32_DLL;
+{$ENDIF}(* _WIN32_WINNT >= $0501 *)
+
+{$IF(WINVER >= $0602)}
+function GetPointerDevices(var deviceCount: UINT32; out pointerDevices {deviceCount}: PPOINTER_DEVICE_INFO): longbool;
+    stdcall; external USER32_DLL;
+function GetPointerDevice(device: THANDLE; out pointerDevice: TPOINTER_DEVICE_INFO): longbool; stdcall; external USER32_DLL;
+function GetPointerDeviceProperties(device: THANDLE; var propertyCount: UINT32;
+    out pointerProperties {propertyCount}: PPOINTER_DEVICE_PROPERTY): longbool; stdcall; external USER32_DLL;
+function RegisterPointerDeviceNotifications(window: THWND; notifyRange: longbool): longbool; stdcall; external USER32_DLL;
+function GetPointerDeviceRects(device: THANDLE; out pointerDeviceRect: TRECT; out displayRect: TRECT): longbool;
+    stdcall; external USER32_DLL;
+function GetPointerDeviceCursors(device: THANDLE; var cursorCount: UINT32; out deviceCursors{cursorCount}: PPOINTER_DEVICE_CURSOR_INFO): longbool;
+    stdcall; external USER32_DLL;
+function GetRawPointerDeviceData(pointerId: UINT32; historyCount: UINT32; propertiesCount: UINT32;
+    pProperties{propertiesCount}: PPOINTER_DEVICE_PROPERTY; out pValues{historyCount * propertiesCount}: PLONG): longbool;
+    stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0602 *)
+
+{$IF(WINVER >= $0600)}
+function ChangeWindowMessageFilter(message: UINT; dwFlag: DWORD): longbool; stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0600 *)
+
+{$IF(WINVER >= $0601)}
+function ChangeWindowMessageFilterEx(hwnd: THWND;                                        // Window
+    message: UINT;                                     // WM_ message
+    action: DWORD;                                     // Message filter action value
+    var pChangeFilterStruct: TCHANGEFILTERSTRUCT): longbool; stdcall; external USER32_DLL;      // Optional
+
+ (*
+ * Gesture argument helpers
+ *   - Angle should be a double in the range of -2pi to +2pi
+ *   - Argument should be an unsigned 16-bit value
+ *)
+function GID_ROTATE_ANGLE_TO_ARGUMENT(_arg_: double): USHORT;
+function GID_ROTATE_ANGLE_FROM_ARGUMENT(_arg_: USHORT): double;
+
+(*
+ * Gesture information retrieval
+ *   - HGESTUREINFO is received by a window in the lParam of a WM_GESTURE message.
+ *)
+function GetGestureInfo(hGestureInfo: THGESTUREINFO; out pGestureInfo: TGESTUREINFO): longbool; stdcall; external USER32_DLL;
+
+(*
+ * Gesture extra arguments retrieval
+ *   - HGESTUREINFO is received by a window in the lParam of a WM_GESTURE message.
+ *   - Size, in bytes, of the extra argument data is available in the cbExtraArgs
+ *     field of the GESTUREINFO structure retrieved using the GetGestureInfo function.
+ *)
+function GetGestureExtraArgs(hGestureInfo: THGESTUREINFO; cbExtraArgs: UINT; out pExtraArgs{cbExtraArgs}: PBYTE): longbool;
+    stdcall; external USER32_DLL;
+
+(*
+ * Gesture information handle management
+ *   - If an application processes the WM_GESTURE message, then once it is done
+ *     with the associated HGESTUREINFO, the application is responsible for
+ *     closing the handle using this function. Failure to do so may result in
+ *     process memory leaks.
+ *   - If the message is instead passed to DefWindowProc, or is forwarded using
+ *     one of the PostMessage or SendMessage class of API functions, the handle
+ *     is transfered with the message and need not be closed by the application.
+ *)
+function CloseGestureInfoHandle(hGestureInfo: THGESTUREINFO): longbool; stdcall; external USER32_DLL;
+
+function SetGestureConfig(hwnd: THWND;                                    // window for which configuration is specified
+    dwReserved: DWORD;                              // reserved, must be 0
+    cIDs: UINT;                                     // count of GESTURECONFIG structures
+    pGestureConfig {cIDs}: PGESTURECONFIG;    // array of GESTURECONFIG structures, dwIDs will be processed in the
+    // order specified and repeated occurances will overwrite previous ones
+    cbSize: UINT): longbool; stdcall; external USER32_DLL;                                    // sizeof(GESTURECONFIG)
+
+function GetGestureConfig(hwnd: THWND;                                     // window for which configuration is required
+    dwReserved: DWORD;                              // reserved, must be 0
+    dwFlags: DWORD;                                 // see GCF_* flags
+    pcIDs: PUINT;                                   // *pcIDs contains the size, in number of GESTURECONFIG structures,
+    // of the buffer pointed to by pGestureConfig
+    var pGestureConfig{pcIDs}: PGESTURECONFIG;
+    // pointer to buffer to receive the returned array of GESTURECONFIG structures
+    cbSize: UINT): longbool; stdcall; external USER32_DLL;                                   // sizeof(GESTURECONFIG)
+{$ENDIF}(* WINVER >= $0601 *)
+
+function ShutdownBlockReasonCreate(hWnd: THWND; pwszReason: LPCWSTR): longbool; stdcall; external USER32_DLL;
+function ShutdownBlockReasonQuery(hWnd: THWND; out pwszBuff{pcchBuff}: LPWSTR; var pcchBuff: DWORD): longbool;
+    stdcall; external USER32_DLL;
+function ShutdownBlockReasonDestroy(hWnd: THWND): longbool; stdcall; external USER32_DLL;
+
+{$IF(WINVER >= $0601)}
+(* API to determine the input source of the current messsage. *)
+function GetCurrentInputMessageSource(out inputMessageSource: TINPUT_MESSAGE_SOURCE): longbool; stdcall; external USER32_DLL;
+function GetCIMSSM(out inputMessageSource: TINPUT_MESSAGE_SOURCE): longbool; stdcall; external USER32_DLL;
+function GetAutoRotationState(out pState: TAR_STATE): longbool; stdcall; external USER32_DLL;
+function GetDisplayAutoRotationPreferences(out pOrientation: TORIENTATION_PREFERENCE): longbool; stdcall; external USER32_DLL;
+function GetDisplayAutoRotationPreferencesByProcessId(dwProcessId: DWORD; out pOrientation: TORIENTATION_PREFERENCE;
+    out fRotateScreen: longbool): longbool; stdcall; external USER32_DLL;
+function SetDisplayAutoRotationPreferences(orientation: TORIENTATION_PREFERENCE): longbool; stdcall; external USER32_DLL;
+function IsImmersiveProcess(hProcess: THANDLE): longbool; stdcall; external USER32_DLL;
+function SetProcessRestrictionExemption(fEnableExemption: longbool): longbool; stdcall; external USER32_DLL;
+{$ENDIF}(* WINVER >= $0601 *)
+
+function GET_APPCOMMAND_LPARAM(lParam: TLPARAM): short;
+function GET_DEVICE_LPARAM(lParam: TLPARAM): word;
+function GET_MOUSEORKEY_LPARAM(lParam: TLPARAM): word;
+function GET_FLAGS_LPARAM(lParam: TLPARAM): word;
+function GET_KEYSTATE_LPARAM(lParam: TLPARAM): word;
+
+implementation
+
+
+
+function IS_INTRESOURCE(_r: ULONG_PTR): boolean; inline;
+begin
+    Result := ((_r shr 16) = 0);
+end;
+
+
+
+function DialogBoxA(hInstance: THINSTANCE; lpTemplateName:(*LPCASTR *)LPCSTR; hWndParent: THWND; lpDialogFunc: TDLGPROC): INT_PTR; inline;
+begin
+    Result := DialogBoxParamA(hInstance, lpTemplateName, hWndParent, lpDialogFunc, 0);
+end;
+
+function DialogBoxW(hInstance: THINSTANCE; lpTemplateName: LPCWSTR; hWndParent: THWND; lpDialogFunc: TDLGPROC): INT_PTR; inline;
+begin
+    Result := DialogBoxParamW(hInstance, lpTemplateName, hWndParent, lpDialogFunc, 0);
+end;
+
+function DialogBoxIndirectA(hInstance: THINSTANCE; lpTemplate: PCDLGTEMPLATEA; hWndParent: THWND; lpDialogFunc: TDLGPROC): INT_PTR; inline;
+begin
+    Result := DialogBoxIndirectParamA(hInstance, lpTemplate, hWndParent, lpDialogFunc, 0);
+end;
+
+function DialogBoxIndirectW(hInstance: THINSTANCE; lpTemplate: PCDLGTEMPLATEW; hWndParent: THWND; lpDialogFunc: TDLGPROC): INT_PTR; inline;
+begin
+    Result := DialogBoxIndirectParamW(hInstance, lpTemplate, hWndParent, lpDialogFunc, 0);
+end;
+
+(* Compatibility defines for character translation routines *)
+function AnsiToOem(pSrc: LPCSTR; out pDst: LPSTR): longbool; stdcall;
+begin
+    Result := CharToOemA(pSrc, pDst);
+end;
+
+function OemToAnsi(pSrc: LPCSTR; out pDst: LPSTR): longbool; stdcall;
+begin
+    Result := OemToCharA(pSrc, pDst);
+end;
+
+function AnsiToOemBuff(lpszSrc: LPCSTR; out lpszDst: LPSTR; cchDstLength: DWORD): longbool; stdcall;
+begin
+    Result := CharToOemBuffA(lpszSrc, lpszDst, cchDstLength);
+end;
+
+function OemToAnsiBuff(lpszSrc: LPCSTR; out lpszDst: LPSTR; cchDstLength: DWORD): longbool; stdcall;
+begin
+    Result := OemToCharBuffA(lpszSrc, lpszDst, cchDstLength);
+end;
+
+function AnsiUpper(var lpsz: LPSTR): LPSTR; stdcall;
+begin
+    Result := CharUpperA(lpsz);
+end;
+
+function AnsiUpperBuff(var lpsz: LPSTR; cchLength: DWORD): DWORD; stdcall;
+begin
+    Result := CharUpperBuffA(lpsz, cchLength);
+end;
+
+function AnsiLower(var lpsz: LPSTR): LPSTR; stdcall;
+begin
+    Result := CharLowerA(lpsz);
+end;
+
+function AnsiLowerBuff(var lpsz: LPSTR; cchLength: DWORD): DWORD; stdcall;
+begin
+    Result := CharLowerBuffA(lpsz, cchLength);
+end;
+
+function AnsiNext(lpsz: LPCSTR): LPSTR; stdcall;
+begin
+    Result := CharNextA(lpsz);
+end;
+
+function AnsiPrev(lpszStart: LPCSTR; lpszCurrent: LPCSTR): LPSTR; stdcall;
+begin
+    Result := CharPrevA(lpszStart, lpszCurrent);
+
+end;
+
+(* Conversion of touch input coordinates to pixels *)
+function TOUCH_COORD_TO_PIXEL(l: single): single; inline;
+begin
+    Result := (l / 100);
+end;
+
+function GetWindowLongPtrA(hWnd: THWND; nIndex: integer): LONG_PTR; stdcall; inline;
+begin
+    Result := GetWindowLongA(hWnd, nIndex);
+end;
+
+function GetWindowLongPtrW(hWnd: THWND; nIndex: integer): LONG_PTR; stdcall; inline;
+begin
+    Result := GetWindowLongW(hWnd, nIndex);
+end;
+
+function SetWindowLongPtrA(hWnd: THWND; nIndex: integer; dwNewLong: LONG_PTR): LONG_PTR; stdcall; inline;
+begin
+    Result := SetWindowLongA(hWnd, nIndex, dwNewLong);
+end;
+
+function SetWindowLongPtrW(hWnd: THWND; nIndex: integer; dwNewLong: LONG_PTR): LONG_PTR; stdcall; inline;
+begin
+    Result := SetWindowLongW(hWnd, nIndex, dwNewLong);
+end;
+
+function GetClassLongPtrA(hWnd: THWND; nIndex: integer): ULONG_PTR; inline; stdcall;
+begin
+    Result := GetClassLongA(hWnd, nIndex);
+end;
+
+function GetClassLongPtrW(hWnd: THWND; nIndex: integer): ULONG_PTR; inline; stdcall;
+begin
+    Result := GetClassLongW(hWnd, nIndex);
+end;
+
+function SetClassLongPtrA(hWnd: THWND; nIndex: integer; dwNewLong: LONG): ULONG_PTR; inline; stdcall;
+begin
+    Result := SetClassLongA(hWnd, nIndex, dwNewLong);
+end;
+
+function SetClassLongPtrW(hWnd: THWND; nIndex: integer; dwNewLong: LONG): ULONG_PTR; inline; stdcall;
+begin
+    Result := SetClassLongW(hWnd, nIndex, dwNewLong);
+end;
+
+function DefHookProc(nCode: integer; wParam: TWPARAM; lParam: TLPARAM; phhk: THHOOK): LResult; inline;
+begin
+    Result := CallNextHookEx(phhk, nCode, wParam, lParam);
+end;
+
+function CopyCursor(pcur: THCURSOR): THCURSOR; inline;
+begin
+    Result := THCURSOR(CopyIcon(THICON(pcur)));
+end;
+
+function GID_ROTATE_ANGLE_TO_ARGUMENT(_arg_: double): USHORT;
+begin
+    Result := trunc((((_arg_) + 2.0 * 3.14159265) / (4.0 * 3.14159265)) * 65535.0);
+end;
+
+function GID_ROTATE_ANGLE_FROM_ARGUMENT(_arg_: USHORT): double;
+begin
+    Result := (((_arg_ / 65535.0) * 4.0 * 3.14159265) - 2.0 * 3.14159265);
+end;
+
+
+
+function GET_APPCOMMAND_LPARAM(lParam: TLPARAM): short; inline;
+begin
+    Result := short(HIWORD(lParam) and not FAPPCOMMAND_MASK);
+end;
+
+
+function GET_DEVICE_LPARAM(lParam: TLPARAM): word; inline;
+begin
+    Result := word(HIWORD(lParam) and FAPPCOMMAND_MASK);
+end;
+
+function GET_MOUSEORKEY_LPARAM(lParam: TLPARAM): word; inline;
+begin
+    Result := GET_DEVICE_LPARAM(lParam);
+end;
+
+function GET_FLAGS_LPARAM(lParam: TLPARAM): word; inline;
+begin
+    Result := (LOWORD(lParam));
+end;
+
+function GET_KEYSTATE_LPARAM(lParam: TLPARAM): word; inline;
+begin
+    Result := GET_FLAGS_LPARAM(lParam);
+end;
+
+
+{$IF(_WIN32_WINNT >= $0400)}
+function GET_WHEEL_DELTA_WPARAM(wParam: TWPARAM): USHORT;
+begin
+    Result := short(HIWORD(wParam));
+end;
+
+{$ENDIF}(* _WIN32_WINNT >= $0400 *)
+
+{$IF(_WIN32_WINNT >= $0500)}
+function GET_KEYSTATE_WPARAM(wParam: TWPARAM): word;
+begin
+    Result := (LOWORD(wParam));
+end;
+
+function GET_NCHITTEST_WPARAM(wParam: TWPARAM): short;
+begin
+    Result := short(LOWORD(wParam));
+end;
+
+function GET_XBUTTON_WPARAM(wParam: TWPARAM): word;
+begin
+    Result := (HIWORD(wParam));
+end;
+
+{$ENDIF}(* _WIN32_WINNT >= $0500 *)
+
+
+procedure ExitWindows(); inline;
+begin
+    ExitWindowsEx(EWX_LOGOFF, $FFFFFFFF);
+end;
+// from basetsd.h
+function HandleToULong(const h: THandle): ULONG;
+begin
+    Result := ulong(ULONG_PTR(h));
+end;
+
+function EnumTaskWindows(hTask: THANDLE; lpfn: TWNDENUMPROC; lParam: TLPARAM): longbool; inline;
+begin
+    Result := EnumThreadWindows(HandleToUlong(hTask), lpfn, lParam);
+end;
+
+
+
+function GetNextWindow(hWnd: THWND; wCmd: UINT): THWND;
+begin
+    Result := GetWindow(hWnd, wCmd);
+end;
+
+function GetSysModalWindow(Wnd: THWND): THWND;
+begin
+    Result := 0;
+end;
+
+function SetSysModalWindow(hWnd: THWnd): THWND;
+begin
+    Result := 0;
+end;
+
+
+function GetWindowTask(hWnd: THWND): THANDLE;
+var
+    lpdwProcessId: DWORD;
+begin
+    lpdwProcessId := 0;
+    Result := THANDLE(DWORD_PTR(GetWindowThreadProcessId(hWnd, lpdwProcessId)));
+end;
+
+function GET_SC_WPARAM(wParam: TWPARAM): integer;
+begin
+    Result := integer(wParam and $FFF0);
+end;
+
+
+{$IF(_WIN32_WINNT >= $0501)}
+(* Use this macro to get the input code from wParam. *)
+function GET_RAWINPUT_CODE_WPARAM(wParam: TWPARAM): byte; inline;
+begin
+    Result := (wParam and $ff);
+end;
+
+
+function RIDEV_EXMODE(mode: DWORD): DWORD; inline;
+begin
+    Result := (mode and RIDEV_EXMODEMASK);
+end;
+
+
+{$IF (_WIN32_WINNT >= $0601)}
+function GET_DEVICE_CHANGE_WPARAM(wParam: TWPARAM): word;
+begin
+    Result := (LOWORD(wParam));
+end;
+
+{$ELSEIF  (_WIN32_WINNT >= $0501)}
+function GET_DEVICE_CHANGE_LPARAM(lParam: TLPARAM): word;
+begin
+    Result := (LOWORD(lParam));
+end;
+
+{$ENDIF}(* (_WIN32_WINNT >= $0601) *)
+
+
+{$IFdef WIN64}
+function RAWINPUT_ALIGN(x: Pointer): Pointer;
+begin
+    Result := pointer((PtrUINT((x) + sizeof(QWORD) - 1)) and not (sizeof(QWORD) - 1));
+end;
+
+{$ELSE}// WIN32
+function RAWINPUT_ALIGN(x: Pointer): Pointer;
+begin
+    Result := pointer((PtrUINT((x) + sizeof(DWORD) - 1)) and not (sizeof(DWORD) - 1));
+end;
+
+{$ENDIF}// _WIN64
+
+function NEXTRAWINPUTBLOCK(ptr: PRAWINPUT): PRAWINPUT;
+begin
+    Result := PRAWINPUT(RAWINPUT_ALIGN(pointer(ULONG_PTR(PBYTE(ptr) + ptr^.header.dwSize))));
+end;
+
+{$ENDIF}(* _WIN32_WINNT >= $0501 *)
+
+
+(* Macros to retrieve information from pointer input message parameters *)
+function GET_POINTERID_WPARAM(wParam: TWPARAM): word; inline;
+begin
+    Result := (LOWORD(wParam));
+end;
+
+function IS_POINTER_FLAG_SET_WPARAM(wParam: TWPARAM; flag: DWORD): boolean; inline;
+begin
+    Result := ((DWORD(HIWORD(wParam)) and (flag)) = flag);
+end;
+
+function IS_POINTER_NEW_WPARAM(wParam: TWPARAM): boolean; inline;
+begin
+    Result := IS_POINTER_FLAG_SET_WPARAM(wParam, POINTER_MESSAGE_FLAG_NEW);
+end;
+
+function IS_POINTER_INRANGE_WPARAM(wParam: TWPARAM): boolean; inline;
+begin
+    Result := IS_POINTER_FLAG_SET_WPARAM(wParam, POINTER_MESSAGE_FLAG_INRANGE);
+end;
+
+function IS_POINTER_INCONTACT_WPARAM(wParam: TWPARAM): boolean; inline;
+begin
+    Result := IS_POINTER_FLAG_SET_WPARAM(wParam, POINTER_MESSAGE_FLAG_INCONTACT);
+end;
+
+function IS_POINTER_FIRSTBUTTON_WPARAM(wParam: TWPARAM): boolean; inline;
+begin
+    Result := IS_POINTER_FLAG_SET_WPARAM(wParam, POINTER_MESSAGE_FLAG_FIRSTBUTTON);
+end;
+
+function IS_POINTER_SECONDBUTTON_WPARAM(wParam: TWPARAM): boolean; inline;
+begin
+    Result := IS_POINTER_FLAG_SET_WPARAM(wParam, POINTER_MESSAGE_FLAG_SECONDBUTTON);
+end;
+
+function IS_POINTER_THIRDBUTTON_WPARAM(wParam: TWPARAM): boolean; inline;
+begin
+    Result := IS_POINTER_FLAG_SET_WPARAM(wParam, POINTER_MESSAGE_FLAG_THIRDBUTTON);
+end;
+
+function IS_POINTER_FOURTHBUTTON_WPARAM(wParam: TWPARAM): boolean; inline;
+begin
+    Result := IS_POINTER_FLAG_SET_WPARAM(wParam, POINTER_MESSAGE_FLAG_FOURTHBUTTON);
+end;
+
+function IS_POINTER_FIFTHBUTTON_WPARAM(wParam: TWPARAM): boolean; inline;
+begin
+    Result := IS_POINTER_FLAG_SET_WPARAM(wParam, POINTER_MESSAGE_FLAG_FIFTHBUTTON);
+end;
+
+function IS_POINTER_PRIMARY_WPARAM(wParam: TWPARAM): boolean; inline;
+begin
+    Result := IS_POINTER_FLAG_SET_WPARAM(wParam, POINTER_MESSAGE_FLAG_PRIMARY);
+end;
+
+function HAS_POINTER_CONFIDENCE_WPARAM(wParam: TWPARAM): boolean; inline;
+begin
+    Result := IS_POINTER_FLAG_SET_WPARAM(wParam, POINTER_MESSAGE_FLAG_CONFIDENCE);
+end;
+
+function IS_POINTER_CANCELED_WPARAM(wParam: TWPARAM): boolean; inline;
+begin
+    Result := IS_POINTER_FLAG_SET_WPARAM(wParam, POINTER_MESSAGE_FLAG_CANCELED);
+end;
+
+
+procedure POINTSTOPOINT(var pt: TPOINT; const pts: TPOINTS); inline;
+begin
+    pt.x := pts.x;
+    pt.y := pts.y;
+end;
+
+
+
+function POINTTOPOINTS(pt: TPOINT): TPOINTS; inline;
+begin
+    Result.x := pt.x;
+    Result.y := pt.y;
+end;
+
+function MAKEWPARAM(l: word; h: word): TWPARAM; inline;
+begin
+    Result := TWPARAM(DWORD(MAKELONG(l, h)));
+end;
+
+function MAKELPARAM(l: word; h: word): TLPARAM; inline;
+begin
+    Result := TLPARAM(DWORD(MAKELONG(l, h)));
+end;
+
+function MAKELRESULT(l: word; h: word): TLRESULT; inline;
+begin
+    Result := TLRESULT(DWORD(MAKELONG(l, h)));
+end;
+
+
+function PostAppMessageA(idThread: DWORD; wMsg: UINT; wParam: TWPARAM; lParam: TLPARAM): longbool; inline;
+begin
+    Result :=
+        PostThreadMessageA(DWORD(idThread), wMsg, wParam, lParam);
+end;
+
+function PostAppMessageW(idThread: DWORD; wMsg: UINT; wParam: TWPARAM; lParam: TLPARAM): longbool; inline;
+begin
+    Result :=
+        PostThreadMessageW(DWORD(idThread), wMsg, wParam, lParam);
+end;
+
+
+function CreateWindowA(lpClassName: LPCSTR; lpWindowName: LPCSTR; dwStyle: DWORD; x: integer; y: integer;
+    nWidth: integer; nHeight: integer; hWndParent: THWND; hMenu: THMENU; hInstance: THINSTANCE; lpParam: pointer): THWND; inline;
+begin
+    Result :=
+        CreateWindowExA(0, lpClassName, lpWindowName, dwStyle, x, y, nWidth, nHeight, hWndParent, hMenu, hInstance, lpParam);
+end;
+
+function CreateWindowW(lpClassName: LPCWSTR; lpWindowName: LPCWSTR; dwStyle: DWORD; x: integer; y: integer;
+    nWidth: integer; nHeight: integer; hWndParent: THWND; hMenu: THMENU; hInstance: THINSTANCE; lpParam: pointer): THWND; inline;
+begin
+    Result :=
+        CreateWindowExW(0, lpClassName, lpWindowName, dwStyle, x, y, nWidth, nHeight, hWndParent, hMenu, hInstance, lpParam);
+end;
+
+
+
+function CreateDialogA(hInstance: THINSTANCE; lpName: LPCSTR; hWndParent: THWND; lpDialogFunc: TDLGPROC): THWND; inline;
+begin
+    Result :=
+        CreateDialogParamA(hInstance, lpName, hWndParent, lpDialogFunc, 0);
+end;
+
+function CreateDialogW(hInstance: THINSTANCE; lpName: LPCWSTR; hWndParent: THWND; lpDialogFunc: TDLGPROC): THWND; inline;
+begin
+    Result :=
+        CreateDialogParamW(hInstance, lpName, hWndParent, lpDialogFunc, 0);
+end;
+
+
+function CreateDialogIndirectA(hInstance: THINSTANCE; lpTemplate: PCDLGTEMPLATEA; hWndParent: THWND; lpDialogFunc: TDLGPROC): THWND; inline;
+begin
+    Result :=
+        CreateDialogIndirectParamA(hInstance, lpTemplate, hWndParent, lpDialogFunc, 0);
+end;
+
+function CreateDialogIndirectW(hInstance: THINSTANCE; lpTemplate: PCDLGTEMPLATEW; hWndParent: THWND; lpDialogFunc: TDLGPROC): THWND; inline;
+begin
+    Result :=
+        CreateDialogIndirectParamW(hInstance, lpTemplate, hWndParent, lpDialogFunc, 0);
+
+end;
+
+
+end.

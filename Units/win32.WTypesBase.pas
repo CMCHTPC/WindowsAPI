@@ -105,7 +105,7 @@ type
     TSECURITY_ATTRIBUTES = record
         nLength: DWORD;
         lpSecurityDescriptor: Pointer;
-        bInheritHandle: boolean;
+        bInheritHandle: longbool;
     end;
     PSECURITY_ATTRIBUTES = ^TSECURITY_ATTRIBUTES;
 

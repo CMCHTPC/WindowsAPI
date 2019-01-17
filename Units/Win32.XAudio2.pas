@@ -27,13 +27,15 @@ unit Win32.XAudio2;
 
 
 
-{ Header Definition: 10.0.14393.0 }
+{ Header Definition: 10.0.17763.0 }
 
 {$IFDEF FPC}
 {$mode delphiunicode}{$H+}
 {$ENDIF}
 
-{$I Win32.WinAPI.inc}
+{$MACRO ON}
+//{$I Win32.WinAPI.inc}
+{$I Win32.SDKDDKVer.inc}
 
 interface
 
@@ -46,7 +48,7 @@ uses
 {$ENDIF}// (_WIN32_WINNT < _WIN32_WINNT_WIN8)
 
 
-{$IF  (DEFINED(WINAPI_PARTITION_APP) or DEFINED(WINAPI_PARTITION_TV_APP) or DEFINED(WINAPI_PARTITION_TV_TITLE))}
+//{$IF  (DEFINED(WINAPI_PARTITION_APP) or DEFINED(WINAPI_PARTITION_TV_APP) or DEFINED(WINAPI_PARTITION_TV_TITLE))}
 
 // Current name of the DLL shipped in the same SDK as this header.
 // The name reflects the current version
@@ -93,8 +95,7 @@ type
         nAvgBytesPerSec: DWORD;   { for buffer estimation }
         nBlockAlign: word;       { block size of data }
         wBitsPerSample: word;    { Number of bits per sample of mono data }
-        cbSize: word;            { The count in bytes of the size of
-                                    extra information (after cbSize) }
+        cbSize: word;            { The count in bytes of the size of extra information (after cbSize) }
     end;
 
 // All structures defined in this file use tight field packing
@@ -289,7 +290,8 @@ type
         BandPassFilter,                     // Attenuates frequencies outside a given range      (state-variable filter).
         HighPassFilter,                     // Attenuates frequencies below the cutoff frequency (state-variable filter).
         NotchFilter,                        // Attenuates frequencies inside a given range       (state-variable filter).
-        LowPassOnePoleFilter,               // Attenuates frequencies above the cutoff frequency (one-pole filter, XAUDIO2_FILTER_PARAMETERS.OneOverQ has no effect)
+        LowPassOnePoleFilter,
+        // Attenuates frequencies above the cutoff frequency (one-pole filter, XAUDIO2_FILTER_PARAMETERS.OneOverQ has no effect)
         HighPassOnePoleFilter               // Attenuates frequencies below the cutoff frequency (one-pole filter, XAUDIO2_FILTER_PARAMETERS.OneOverQ has no effect)
         );
     PXAUDIO2_FILTER_TYPE = ^TXAUDIO2_FILTER_TYPE;
@@ -932,13 +934,26 @@ type
  *
  *************************************************************************}
 
+{$DEFINE NTDDI_WIN10_RS5 := 10 }
+{$DEFINE NTDDI_VERSION := NTDDI_WIN10_RS5 }
 
+
+{$if NTDDI_VERSION >= NTDDI_WIN10_RS5}
+function XAudio2CreateWithVersionInfo(out ppXAudio2: IXAudio2; Flags: UINT32 = 0;
+    XAudio2Processor: TXAUDIO2_PROCESSOR = XAUDIO2_DEFAULT_PROCESSOR; ntddiVersion: DWORD = NTDDI_WIN10_RS5): HResult;
+    stdcall; external XAudio2_DLL;
+
+function XAudio2Create(out ppXAudio2: IXAudio2; Flags: UINT32 = 0;
+    XAudio2Processor: TXAUDIO2_PROCESSOR = XAUDIO2_DEFAULT_PROCESSOR): HRESULT; inline;
+{$else}
+// RS4 or older, or not a desktop app
 function XAudio2Create(out ppXAudio2: IXAudio2; Flags: UINT32 = 0; XAudio2Processor: TXAUDIO2_PROCESSOR = XAUDIO2_DEFAULT_PROCESSOR): HResult;
     stdcall; external XAudio2_DLL;
 // Undo the #pragma pack(push, 1) directive at the top of this file
+{$endif}
 {$A4}
 
-{$ENDIF}
+// {$ENDIF}
 implementation
 
 {*************************************************************************
@@ -1037,6 +1052,59 @@ end;
 
 
 
+function HRESULT_FROM_WIN32(x: ulong): HRESULT; inline;
+begin
+    if x <= 0 then
+        Result := x
+    else
+        Result := ((x and $0000FFFF) or (FACILITY_WIN32 shl 16) or $80000000);
+
+end;
+
+
+
+function XAudio2Create(out ppXAudio2: IXAudio2; Flags: UINT32 = 0;
+    XAudio2Processor: TXAUDIO2_PROCESSOR = XAUDIO2_DEFAULT_PROCESSOR): HRESULT; inline;
+type
+    // When compiled for RS5 or later, try to invoke XAudio2CreateWithVersionInfo.
+    // Need to use LoadLibrary in case the app is running on an older OS.
+    TXAudio2CreateWithVersionInfoFunc = function(out ppXAudio2: IXAudio2; Flags: UINT32; XAudio2Processor: TXAUDIO2_PROCESSOR;
+            ntddiVersion: DWORD): HResult; stdcall;
+    TXAudio2CreateInfoFunc = function(out ppXAudio2: IXAudio2; Flags: UINT32; XAudio2Processor: TXAUDIO2_PROCESSOR): HResult; stdcall;
+var
+    s_dllInstance: HMODULE = 0;
+    s_pfnAudio2CreateWithVersion: TXAudio2CreateWithVersionInfoFunc = nil;
+    s_pfnAudio2Create: TXAudio2CreateInfoFunc = nil;
+
+begin
+
+    if (s_dllInstance = 0) then
+    begin
+        s_dllInstance := LoadLibraryEx(XAUDIO2_DLL, 0, $00000800 { LOAD_LIBRARY_SEARCH_SYSTEM32 });
+        if (s_dllInstance = 0) then
+        begin
+            Result := HRESULT_FROM_WIN32(GetLastError());
+            Exit;
+        end;
+
+        s_pfnAudio2CreateWithVersion := GetProcAddress(s_dllInstance, 'XAudio2CreateWithVersionInfo');
+        if (@s_pfnAudio2CreateWithVersion = nil) then
+        begin
+            s_pfnAudio2Create := GetProcAddress(s_dllInstance, 'XAudio2Create');
+            if (@s_pfnAudio2Create = nil) then
+            begin
+                Result := HRESULT_FROM_WIN32(GetLastError());
+            end;
+        end;
+    end;
+
+    if (@s_pfnAudio2CreateWithVersion <> nil) then
+    begin
+        Result := s_pfnAudio2CreateWithVersion(ppXAudio2, Flags, XAudio2Processor, NTDDI_VERSION);
+    end;
+    Result := s_pfnAudio2Create(ppXAudio2, Flags, XAudio2Processor);
+end;
+
+
+
 end.
-
-
