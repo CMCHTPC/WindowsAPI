@@ -37,6 +37,7 @@ interface
 
 uses
     Windows, Classes, SysUtils,
+    Win32.WinNT,
     Win32.NTStatus;
 
 const
